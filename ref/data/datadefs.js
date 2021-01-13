@@ -67,8 +67,16 @@ module.exports = (function () {
         {f:"lp", d:"isodate", c:"last played timestamp"},
         {f:"nt", d:"text", c:"note text (whatever the user wrote)"}],
      cache:{minutes:0},
-     logflds:["aid", "ti", "ar"]}];
+     logflds:["aid", "ti", "ar"]},
         
+    {entity:"AppService", descr:"Processing service access", fields:[
+        {f:"name", d:"string req unique", c:"Name of service"},
+        {f:"ckey", d:"string", c:"consumer key"},
+        {f:"csec", d:"string", c:"consumer secret"},
+        {f:"data", d:"idcsv", c:"svc specific support data"}],
+     cache:{minutes:4*60},  //small instances, minimum change, used a lot
+     logflds:["name"]}];
+
 
     function makeFieldDescriptionLookup (fds, aliasKey) {
         descrLookup = descrLookup || {};

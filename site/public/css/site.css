@@ -1,0 +1,27 @@
+html {
+  min-height: 100%; margin:0; padding:0;
+}
+
+body {
+  margin:0px;
+  color:#111111;
+  height: 100%;
+  font-family: "Open Sans", "Helvetica", sans-serif;
+  font-size:large;
+  background:#e7e1e2;
+}
+
+A:link {text-decoration:none; color:#0590b8; }
+A:visited {text-decoration:none; color:#0590b8; }
+A:active {text-decoration:none; color:#0590b8; }
+A:hover {text-decoration:underline; color:#3bd4ff; }
+
+img { border:0px; vertical-align:middle; }
+
+button, .buttonspan { border: 2px solid #666666; border-radius:8px;
+  cursor:pointer; background:#c9b609; box-shadow:1px 1px 1px #2f2b00;
+  padding:0px 3px; font-size:large; font-weight:bold; }
+.ghostbutton { background:none; }
+
+#outercontentdiv { padding:5px 0px; }
+#contentdiv { position:relative; }
