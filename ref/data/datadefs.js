@@ -46,7 +46,7 @@ module.exports = (function () {
         {f:"actcode", d:"adm string", c:"account activation code"},
         {f:"lastsync", d:"string", c:"latest sync timestamp for this account"},
         {f:"firstname", d:"req string", c:"general display use"},
-        {f:"hashtag", d:"unique", c:"activity view handle"},
+        {f:"hashtag", d:"unique string", c:"activity view handle"},
         {f:"kwdefs", d:"json", c:"keyword definitions used by this account"},
         {f:"igfolds", d:"json", c:"ignore folders used by this account"},
         {f:"settings", d:"json", c:"general options, e.g. no activity disp"}],

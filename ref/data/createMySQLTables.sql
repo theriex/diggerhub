@@ -10,7 +10,7 @@ CREATE TABLE DigAcc (  -- Digger Hub access account
   actcode VARCHAR(256),
   lastsync VARCHAR(256),
   firstname VARCHAR(256) NOT NULL,
-  hashtag undefined UNIQUE,
+  hashtag VARCHAR(256) UNIQUE,
   kwdefs LONGTEXT,
   igfolds LONGTEXT,
   settings LONGTEXT,
@@ -38,4 +38,17 @@ CREATE TABLE Song (  -- Rating and play information
   PRIMARY KEY (dsId)
 );
 ALTER TABLE Song AUTO_INCREMENT = 2020;
+
+CREATE TABLE AppService (  -- Processing service access
+  dsId BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE,
+  created VARCHAR(256) NOT NULL,
+  modified VARCHAR(256) NOT NULL,
+  batchconv VARCHAR(256),
+  name VARCHAR(256) NOT NULL UNIQUE,
+  ckey VARCHAR(256),
+  csec VARCHAR(256),
+  data LONGTEXT,
+  PRIMARY KEY (dsId)
+);
+ALTER TABLE AppService AUTO_INCREMENT = 2020;
 

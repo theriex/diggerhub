@@ -34,11 +34,13 @@ INDEXHTML = """
 
 <p>Digger plays songs from your music library that match your current
 listening context.  If you've ever wanted to access your music through a
-mixing panel rather than as a file list, Digger is for you. </p>
+mixing panel instead of flipping through a list of files, this is for
+you. </p>
 
-<p>Digger is an <a href="https://github.com/theriex/digger">open source</a>
-unix-style application.  If you already have node.js installed, you can just
-run the source directly, otherwise use one of these prebuilt packages:</p>
+<p>Digger runs as an <a href="https://github.com/theriex/digger">open
+source</a> music server serving up your local music files to your browser.
+If you already have node.js, you can download and run the source directly.
+Or you can download and run one of these prebuilt packages:</p>
 
 <div id="downloadsdiv"></div>
 

@@ -66,7 +66,7 @@ entdefs = {
         "actcode": {"pt": "string", "un": False, "dv": ""},
         "lastsync": {"pt": "string", "un": False, "dv": ""},
         "firstname": {"pt": "string", "un": False, "dv": ""},
-        "hashtag": {"pt": "UnkownPyType!", "un": True, "dv": ""},
+        "hashtag": {"pt": "string", "un": True, "dv": ""},
         "kwdefs": {"pt": "string", "un": False, "dv": ""},
         "igfolds": {"pt": "string", "un": False, "dv": ""},
         "settings": {"pt": "string", "un": False, "dv": ""}
@@ -88,19 +88,31 @@ entdefs = {
         "fq": {"pt": "string", "un": False, "dv": ""},
         "lp": {"pt": "string", "un": False, "dv": ""},
         "nt": {"pt": "string", "un": False, "dv": ""}
+    },
+    "AppService": {  # Processing service access
+        "dsId": {"pt": "dbid", "un": True, "dv": 0},
+        "created": {"pt": "string", "un": False, "dv": ""},
+        "modified": {"pt": "string", "un": False, "dv": ""},
+        "batchconv": {"pt": "string", "un": False, "dv": ""},
+        "name": {"pt": "string", "un": True, "dv": ""},
+        "ckey": {"pt": "string", "un": False, "dv": ""},
+        "csec": {"pt": "string", "un": False, "dv": ""},
+        "data": {"pt": "string", "un": False, "dv": ""}
     }
 }
 
 
 entkeys = {
     "DigAcc": ["email", "hashtag"],
-    "Song": []
+    "Song": [],
+    "AppService": ["name"]
 }
 
 
 cachedefs = {
     "DigAcc": {"minutes": 120, "manualadd": False},
-    "Song": {"minutes": 0, "manualadd": False}
+    "Song": {"minutes": 0, "manualadd": False},
+    "AppService": {"minutes": 240, "manualadd": False}
 }
 
 
@@ -510,10 +522,51 @@ def db2app_Song(inst):
     return cnv
 
 
+# Convert the given AppService inst dict from app values to db values.  Removes
+# the dsType field to avoid trying to write it to the db.
+def app2db_AppService(inst, fill=True):
+    cnv = {}
+    cnv["dsId"] = None
+    if "dsId" in inst:
+        cnv["dsId"] = app2db_fieldval(None, "dsId", inst)
+    if fill or "created" in inst:
+        cnv["created"] = app2db_fieldval(None, "created", inst)
+    if fill or "modified" in inst:
+        cnv["modified"] = app2db_fieldval(None, "modified", inst)
+    if fill or "batchconv" in inst:
+        cnv["batchconv"] = app2db_fieldval(None, "batchconv", inst)
+    if fill or "name" in inst:
+        cnv["name"] = app2db_fieldval("AppService", "name", inst)
+    if fill or "ckey" in inst:
+        cnv["ckey"] = app2db_fieldval("AppService", "ckey", inst)
+    if fill or "csec" in inst:
+        cnv["csec"] = app2db_fieldval("AppService", "csec", inst)
+    if fill or "data" in inst:
+        cnv["data"] = app2db_fieldval("AppService", "data", inst)
+    return cnv
+
+
+# Convert the given AppService inst dict from db values to app values.  Adds the
+# dsType field for general app processing.
+def db2app_AppService(inst):
+    cnv = {}
+    cnv["dsType"] = "AppService"
+    cnv["dsId"] = db2app_fieldval(None, "dsId", inst)
+    cnv["created"] = db2app_fieldval(None, "created", inst)
+    cnv["modified"] = db2app_fieldval(None, "modified", inst)
+    cnv["batchconv"] = db2app_fieldval(None, "batchconv", inst)
+    cnv["name"] = db2app_fieldval("AppService", "name", inst)
+    cnv["ckey"] = db2app_fieldval("AppService", "ckey", inst)
+    cnv["csec"] = db2app_fieldval("AppService", "csec", inst)
+    cnv["data"] = db2app_fieldval("AppService", "data", inst)
+    return cnv
+
+
 def dblogmsg(op, entity, res):
     log_summary_flds = {
         "DigAcc": ["email", "firstname"],
-        "Song": ["aid", "ti", "ar"]}
+        "Song": ["aid", "ti", "ar"],
+        "AppService": ["name"]}
     if res:
         if op != "QRY":  # query is already a list, listify anything else
             res = [res]
@@ -640,6 +693,55 @@ def update_existing_Song(context, fields):
     return result
 
 
+# Write a new AppService row, using the given field values or defaults.
+def insert_new_AppService(cnx, cursor, fields):
+    fields = app2db_AppService(fields)
+    stmt = (
+        "INSERT INTO AppService (created, modified, name, ckey, csec, data) "
+        "VALUES (%(created)s, %(modified)s, %(name)s, %(ckey)s, %(csec)s, %(data)s)")
+    data = {
+        'created': fields.get("created"),
+        'modified': fields.get("modified"),
+        'name': fields.get("name", entdefs["AppService"]["name"]["dv"]),
+        'ckey': fields.get("ckey", entdefs["AppService"]["ckey"]["dv"]),
+        'csec': fields.get("csec", entdefs["AppService"]["csec"]["dv"]),
+        'data': fields.get("data", entdefs["AppService"]["data"]["dv"])}
+    cursor.execute(stmt, data)
+    fields["dsId"] = cursor.lastrowid
+    cnx.commit()
+    fields = db2app_AppService(fields)
+    dblogmsg("ADD", "AppService", fields)
+    return fields
+
+
+# Update the specified AppService row with the given field values.
+def update_existing_AppService(context, fields):
+    fields = app2db_AppService(fields, fill=False)
+    dsId = int(fields["dsId"])  # Verify int value
+    stmt = ""
+    for field in fields:  # only updating the fields passed in
+        if stmt:
+            stmt += ", "
+        stmt += field + "=(%(" + field + ")s)"
+    stmt = "UPDATE AppService SET " + stmt + " WHERE dsId=" + str(dsId)
+    if context["vck"] != "override":
+        stmt += " AND modified=\"" + context["vck"] + "\""
+    data = {}
+    for field in fields:
+        data[field] = fields[field]
+    context["cursor"].execute(stmt, data)
+    if context["cursor"].rowcount < 1 and context["vck"] != "override":
+        raise ValueError("AppService" + str(dsId) + " update received outdated version check value " + context["vck"] + ".")
+    context["cnx"].commit()
+    result = context["existing"]
+    for field in fields:
+        result[field] = fields[field]
+    result = db2app_AppService(result)
+    dblogmsg("UPD", "AppService", result)
+    entcache.cache_put(result)
+    return result
+
+
 # Write the given dict/object based on the dsType.  Binary field values must
 # be base64.b64encode.  Unspecified fields are set to default values for a
 # new instance, and left alone on update.  For update, the verification
@@ -661,6 +763,8 @@ def write_entity(inst, vck="1234-12-12T00:00:00Z"):
                     return update_existing_DigAcc(context, inst)
                 if entity == "Song":
                     return update_existing_Song(context, inst)
+                if entity == "AppService":
+                    return update_existing_AppService(context, inst)
                 raise ValueError("Cannot modify unknown entity dsType " +
                                  str(entity))
             # No existing instance to update.  Insert new.
@@ -669,6 +773,8 @@ def write_entity(inst, vck="1234-12-12T00:00:00Z"):
                 return insert_new_DigAcc(cnx, cursor, inst)
             if entity == "Song":
                 return insert_new_Song(cnx, cursor, inst)
+            if entity == "AppService":
+                return insert_new_AppService(cnx, cursor, inst)
             raise ValueError("Cannot create unknown entity dsType " +
                              str(entity))
         except mysql.connector.Error as e:
@@ -727,6 +833,20 @@ def query_Song(cnx, cursor, where):
     return res
 
 
+def query_AppService(cnx, cursor, where):
+    query = "SELECT dsId, created, modified, "
+    query += "name, ckey, csec, data"
+    query += " FROM AppService " + where
+    cursor.execute(query)
+    res = []
+    for (dsId, created, modified, name, ckey, csec, data) in cursor:
+        inst = {"dsType": "AppService", "dsId": dsId, "created": created, "modified": modified, "name": name, "ckey": ckey, "csec": csec, "data": data}
+        inst = db2app_AppService(inst)
+        res.append(inst)
+    dblogmsg("QRY", "AppService", res)
+    return res
+
+
 # Fetch all instances of the specified entity kind for the given WHERE
 # clause.  The WHERE clause should include a LIMIT, and should only match on
 # indexed fields and/or declared query indexes.  For speed and general
@@ -742,6 +862,8 @@ def query_entity(entity, where):
                 return query_DigAcc(cnx, cursor, where)
             if entity == "Song":
                 return query_Song(cnx, cursor, where)
+            if entity == "AppService":
+                return query_AppService(cnx, cursor, where)
         except mysql.connector.Error as e:
             raise ValueError(str(e) or "No mysql error text")  # see note 1
         finally:
@@ -774,6 +896,13 @@ def visible_Song_fields(obj, audience):
     return filtobj
 
 
+def visible_AppService_fields(obj, audience):
+    filtobj = {}
+    for fld, val in obj.items():
+        filtobj[fld] = val
+    return filtobj
+
+
 # Return a copied object with only the fields appropriate to the audience.
 # Specifying audience="private" includes peronal info.  The given obj is
 # assumed to already have been through db2app conversion.  Image fields are
@@ -783,6 +912,8 @@ def visible_fields(obj, audience="public"):
         return visible_DigAcc_fields(obj, audience)
     if obj["dsType"] == "Song":
         return visible_Song_fields(obj, audience)
+    if obj["dsType"] == "AppService":
+        return visible_AppService_fields(obj, audience)
     raise ValueError("Unknown object dsType: " + obj["dsType"])
 
 

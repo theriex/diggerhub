@@ -17,7 +17,7 @@ app.refmgr = (function () {
 
     var cache = {};
 
-    var persistentTypes = ["DigAcc", "Song"];
+    var persistentTypes = ["DigAcc", "Song", "AppService"];
 
 
     //All json fields are initialized to {} so they can be accessed directly.
@@ -53,6 +53,8 @@ app.refmgr = (function () {
             break;
         case "Song":
             break;
+        case "AppService":
+            break;
         }
         return obj;
     }
@@ -67,6 +69,8 @@ app.refmgr = (function () {
             break;
         case "Song":
             break;
+        case "AppService":
+            break;
         }
         return obj;
     }
@@ -79,6 +83,8 @@ app.refmgr = (function () {
             obj.status = "";
             break;
         case "Song":
+            break;
+        case "AppService":
             break;
         }
     }

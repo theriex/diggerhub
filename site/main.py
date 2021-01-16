@@ -35,14 +35,14 @@ def appversion():
     return "0.2"
 
 @app.route('/api/newacct', methods=['GET', 'POST'])
-def newacct(): # params: email, password
+def newacct(): # params: firstname, email, password
     return util.secure(util.newacct)
 
 @app.route('/api/updacc', methods=['GET', 'POST'])
 def updacc(): # params: auth, DigAcc
     return util.secure(util.updacc)
 
-@app.route('/api/acctok')
+@app.route('/api/acctok', methods=['GET', 'POST'])
 def acctok(): # params: email, password
     return util.secure(util.acctok)
 

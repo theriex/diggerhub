@@ -180,6 +180,8 @@ def authenticate():
         raise ValueError(emaddr + " not found")
     reqtok = dbacc.reqarg("at", "string")
     if not reqtok:
+        reqtok = dbacc.reqarg("token", "string")
+    if not reqtok:
         password = dbacc.reqarg("password", "string")
         if not password:
             raise ValueError("Access token or password required")
@@ -328,6 +330,7 @@ def newacct():
         emaddr = normalize_email(emaddr)
         verify_new_email_valid(emaddr)
         pwd = dbacc.reqarg("password", "string", required=True)
+        dbacc.reqarg("firstname", "DigAcc.firstname", required=True)
         cretime = dbacc.nowISO()
         digacc = {"dsType":"DigAcc", "created":cretime,
                   "email":"placeholder", "phash":"whatever"}
