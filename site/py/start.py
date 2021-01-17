@@ -24,7 +24,7 @@ INDEXHTML = """
   <meta property="twitter:image" content="$SITEPIC" />
   <meta itemprop="image" content="$SITEPIC" />
   <title>$TITLE</title>
-  <link href="$RDRcss/site.css?$CBPARAM" rel="stylesheet" type="text/css" />
+  <link href="css/site.css?$CBPARAM" rel="stylesheet" type="text/css" />
 </head>
 <body id="bodyid">
 
@@ -32,17 +32,21 @@ INDEXHTML = """
   <div id="contentdiv">
     <div id="splashdiv">
 
-<p>Digger plays songs from your music library that match your current
-listening context.  If you've ever wanted to access your music through a
-mixing panel instead of flipping through a list of files, this is for
-you. </p>
+<p><b>Digger</b> plays songs from your music library that match your listening
+context.  If you've ever wanted to access your music through a mixing panel
+instead of searching folders, now you can. </p>
 
-<p>Digger runs as an <a href="https://github.com/theriex/digger">open
-source</a> music server serving up your local music files to your browser.
-If you already have node.js, you can download and run the source directly.
-Or you can download and run one of these prebuilt packages:</p>
+<p>To install, download the <a
+href="https://github.com/theriex/digger#digger">open source</a>, or download
+one of these prebuilt packages: </p>
 
-<div id="downloadsdiv"></div>
+<div id="downloadsdiv">
+<a href="downloads/digger-linux">digger-linux</a>
+<a href="downloads/digger-macos">digger-macos</a>
+<a href="downloads/digger-win.exe">digger-win.exe</a>
+</div>
+
+<p>Run the Digger music server, then surf to localhost:6980. </p>
 
     </div>
   </div>
@@ -61,7 +65,7 @@ def startpage(path, refer):
         "replace": {
             "$CBPARAM": CACHE_BUST_PARAM,
             "$SITEPIC": "img/appicon.png?" + CACHE_BUST_PARAM,
-            "$TITLE": "Digger"}}
+            "$TITLE": "DiggerHub"}}
     if stinf["refer"]:
         logging.info("startpage referral: " + refer)
     if path and not path.startswith("index.htm"):

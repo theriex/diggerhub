@@ -8,7 +8,7 @@ body {
   height: 100%;
   font-family: "Open Sans", "Helvetica", sans-serif;
   font-size:large;
-  background:#e7e1e2;
+  background:#d8b1b1;
 }
 
 A:link {text-decoration:none; color:#0590b8; }
@@ -24,4 +24,14 @@ button, .buttonspan { border: 2px solid #666666; border-radius:8px;
 .ghostbutton { background:none; }
 
 #outercontentdiv { padding:5px 0px; }
-#contentdiv { position:relative; }
+#contentdiv { position:relative; width:80%; margin:0px auto; }
+
+/* -------------------- */
+/* splash */
+
+#splashdiv { padding:10px; background-image:url("../img/bglogo.png");
+  background-repeat:no-repeat; background-size:contain; }
+#splashdiv p { background-image:url("../img/white60percent.png");
+  padding:5px; }
+#downloadsdiv { text-align:center; }
+#downloadsdiv a { display:inline-block; padding:10px; }

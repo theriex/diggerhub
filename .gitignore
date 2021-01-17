@@ -2,4 +2,5 @@
 *.pyc
 .DS_Store
 logs
+site/public/downloads
 
