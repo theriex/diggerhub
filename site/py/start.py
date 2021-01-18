@@ -36,9 +36,9 @@ INDEXHTML = """
 context.  If you've ever wanted to access your music through a mixing panel
 instead of searching folders, now you can. </p>
 
-<p>To install, download the <a
-href="https://github.com/theriex/digger#digger">open source</a>, or download
-one of these prebuilt packages: </p>
+<p>To install, download one of the prebuilt executables below.  Or grab the
+<a href="https://github.com/theriex/digger#digger">open source</a> and run
+that. </p>
 
 <div id="downloadsdiv">
 <a href="downloads/digger-linux">digger-linux</a>

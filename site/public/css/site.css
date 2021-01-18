@@ -30,7 +30,8 @@ button, .buttonspan { border: 2px solid #666666; border-radius:8px;
 /* splash */
 
 #splashdiv { padding:10px; background-image:url("../img/bglogo.png");
-  background-repeat:no-repeat; background-size:contain; }
+  background-repeat:no-repeat; background-size:contain;
+  background-position: 10% 0%; }
 #splashdiv p { background-image:url("../img/white60percent.png");
   padding:5px; }
 #downloadsdiv { text-align:center; }
