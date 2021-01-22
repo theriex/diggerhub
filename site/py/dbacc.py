@@ -64,7 +64,6 @@ entdefs = {
         "status": {"pt": "string", "un": False, "dv": ""},
         "actsends": {"pt": "string", "un": False, "dv": ""},
         "actcode": {"pt": "string", "un": False, "dv": ""},
-        "lastsync": {"pt": "string", "un": False, "dv": ""},
         "firstname": {"pt": "string", "un": False, "dv": ""},
         "hashtag": {"pt": "string", "un": True, "dv": ""},
         "kwdefs": {"pt": "string", "un": False, "dv": ""},
@@ -420,8 +419,6 @@ def app2db_DigAcc(inst, fill=True):
         cnv["actsends"] = app2db_fieldval("DigAcc", "actsends", inst)
     if fill or "actcode" in inst:
         cnv["actcode"] = app2db_fieldval("DigAcc", "actcode", inst)
-    if fill or "lastsync" in inst:
-        cnv["lastsync"] = app2db_fieldval("DigAcc", "lastsync", inst)
     if fill or "firstname" in inst:
         cnv["firstname"] = app2db_fieldval("DigAcc", "firstname", inst)
     if fill or "hashtag" in inst:
@@ -449,7 +446,6 @@ def db2app_DigAcc(inst):
     cnv["status"] = db2app_fieldval("DigAcc", "status", inst)
     cnv["actsends"] = db2app_fieldval("DigAcc", "actsends", inst)
     cnv["actcode"] = db2app_fieldval("DigAcc", "actcode", inst)
-    cnv["lastsync"] = db2app_fieldval("DigAcc", "lastsync", inst)
     cnv["firstname"] = db2app_fieldval("DigAcc", "firstname", inst)
     cnv["hashtag"] = db2app_fieldval("DigAcc", "hashtag", inst)
     cnv["kwdefs"] = db2app_fieldval("DigAcc", "kwdefs", inst)
@@ -584,8 +580,8 @@ def dblogmsg(op, entity, res):
 def insert_new_DigAcc(cnx, cursor, fields):
     fields = app2db_DigAcc(fields)
     stmt = (
-        "INSERT INTO DigAcc (created, modified, email, phash, status, actsends, actcode, lastsync, firstname, hashtag, kwdefs, igfolds, settings) "
-        "VALUES (%(created)s, %(modified)s, %(email)s, %(phash)s, %(status)s, %(actsends)s, %(actcode)s, %(lastsync)s, %(firstname)s, %(hashtag)s, %(kwdefs)s, %(igfolds)s, %(settings)s)")
+        "INSERT INTO DigAcc (created, modified, email, phash, status, actsends, actcode, firstname, hashtag, kwdefs, igfolds, settings) "
+        "VALUES (%(created)s, %(modified)s, %(email)s, %(phash)s, %(status)s, %(actsends)s, %(actcode)s, %(firstname)s, %(hashtag)s, %(kwdefs)s, %(igfolds)s, %(settings)s)")
     data = {
         'created': fields.get("created"),
         'modified': fields.get("modified"),
@@ -594,7 +590,6 @@ def insert_new_DigAcc(cnx, cursor, fields):
         'status': fields.get("status", entdefs["DigAcc"]["status"]["dv"]),
         'actsends': fields.get("actsends", entdefs["DigAcc"]["actsends"]["dv"]),
         'actcode': fields.get("actcode", entdefs["DigAcc"]["actcode"]["dv"]),
-        'lastsync': fields.get("lastsync", entdefs["DigAcc"]["lastsync"]["dv"]),
         'firstname': fields.get("firstname", entdefs["DigAcc"]["firstname"]["dv"]),
         'hashtag': fields.get("hashtag", entdefs["DigAcc"]["hashtag"]["dv"]),
         'kwdefs': fields.get("kwdefs", entdefs["DigAcc"]["kwdefs"]["dv"]),
@@ -807,12 +802,12 @@ def delete_entity(entity, dsId):
 
 def query_DigAcc(cnx, cursor, where):
     query = "SELECT dsId, created, modified, "
-    query += "email, phash, status, actsends, actcode, lastsync, firstname, hashtag, kwdefs, igfolds, settings"
+    query += "email, phash, status, actsends, actcode, firstname, hashtag, kwdefs, igfolds, settings"
     query += " FROM DigAcc " + where
     cursor.execute(query)
     res = []
-    for (dsId, created, modified, email, phash, status, actsends, actcode, lastsync, firstname, hashtag, kwdefs, igfolds, settings) in cursor:
-        inst = {"dsType": "DigAcc", "dsId": dsId, "created": created, "modified": modified, "email": email, "phash": phash, "status": status, "actsends": actsends, "actcode": actcode, "lastsync": lastsync, "firstname": firstname, "hashtag": hashtag, "kwdefs": kwdefs, "igfolds": igfolds, "settings": settings}
+    for (dsId, created, modified, email, phash, status, actsends, actcode, firstname, hashtag, kwdefs, igfolds, settings) in cursor:
+        inst = {"dsType": "DigAcc", "dsId": dsId, "created": created, "modified": modified, "email": email, "phash": phash, "status": status, "actsends": actsends, "actcode": actcode, "firstname": firstname, "hashtag": hashtag, "kwdefs": kwdefs, "igfolds": igfolds, "settings": settings}
         inst = db2app_DigAcc(inst)
         res.append(inst)
     dblogmsg("QRY", "DigAcc", res)
