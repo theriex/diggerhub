@@ -237,6 +237,8 @@ def verify_new_email_valid(emaddr):
     # something @ something . something
     if not re.match(r"[^@]+@[^@]+\.[^@]+", emaddr):
         raise ValueError("Invalid email address: " + emaddr)
+    if emaddr == "support@diggerhub.com":
+        raise ValueError("Address reserved for default account")
     existing = dbacc.cfbk("DigAcc", "email", emaddr)
     if existing:
         raise ValueError("Email address already used")

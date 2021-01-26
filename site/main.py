@@ -54,13 +54,9 @@ def mailactcode(): # params: email, returl
 def mailpwr(): # params: email, returl
     return util.secure(util.mailpwr)
 
-@app.route('/api/uploadsongs', methods=['GET', 'POST'])
-def uploadsongs(): #params: auth, songs
-    return util.secure(appdat.uploadsongs)
-
-@app.route('/api/downloadsongs', methods=['GET', 'POST'])
-def downloadsongs(): #params: auth, since
-    return util.secure(appdat.downloadsongs)
+@app.route('/api/hubsync', methods=['GET', 'POST'])
+def hubsync(): # params: auth, acct + zero or more songs
+    return util.secure(appdat.hubsync)
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
