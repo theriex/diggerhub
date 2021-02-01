@@ -318,8 +318,9 @@ def fill_missing_fields(fields, src, trg):
 
 
 def update_account_fields(digacc):
-    set_fields_from_reqargs([
-        "firstname", "hashtag", "kwdefs", "igfolds", "settings"], digacc)
+    set_fields_from_reqargs(
+        ["firstname", "hashtag", "kwdefs", "igfolds", "settings", "guides"],
+        digacc)
 
 
 

@@ -58,6 +58,14 @@ def mailpwr(): # params: email, returl
 def hubsync(): # params: auth, acct + zero or more songs
     return util.secure(appdat.hubsync)
 
+@app.route('/api/addguide', methods=['GET', 'POST'])
+def addguide(): # params auth, gmaddr
+    return util.secure(appdat.addguide)
+
+@app.route('/api/guidedat')
+def guidedat(): # params auth, gid, since
+    return util.secure(appdat.guidedat)
+
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def startpage(path):

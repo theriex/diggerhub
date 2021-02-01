@@ -14,16 +14,22 @@ def dqe(text):
     return text.replace("\"", "\\\"")
 
 
+# It is NOT ok to look up the song by dsId.  An uploaded song can have a
+# dsId that should not be trusted.  Doing so could overwrite someone else's
+# data or create duplicate entries.  This is not even malicious, it can
+# happen with multiple users on the same data file, copying data, running a
+# local dev server etc.  The metadata rules.  It's acceptable to end up with
+# a new db entry if you change the song metadata.  While it might be
+# possible to avoid that by tracking the aid and path, in reality paths
+# change more frequently than metadata and are not reliable. Not worth the
+# overhead and complexity from trying.  Always look up by logical key.
 def find_song(spec):
-    """ Lookup by dsId or altkeys. Return None if no db inst. """
-    if spec.get("dsId", ""):
-        return dbacc.cfbk("Song", "dsId", spec["dsId"])
-    # Lookup by aid/title/artist/album
+    """ Lookup by aid/title/artist/album, return song instance or None """
     where = ("WHERE aid = " + spec["aid"] +
              " AND ti = \"" + dqe(spec["ti"]) + "\"" +
              " AND ar = \"" + dqe(spec["ar"]) + "\"" +
              " AND ab = \"" + dqe(spec["ab"]) + "\"" +
-             # should never be more than one, but be resilient and optimized
+             # should never be more than one, but just in case...
              " ORDER BY modified DESC LIMIT 1")
     songs = dbacc.query_entity("Song", where)
     if len(songs) > 0:
@@ -71,7 +77,7 @@ def note_sync_account_changes(srvacc, synacc, upldsongs):
         write_song(song, srvacc)
     # synacc may contain updates to client fields.  It may not contain
     # updates to hub server fields like email.
-    for ecf in ["kwdefs", "igfolds", "settings"]:
+    for ecf in ["kwdefs", "igfolds", "settings", "guides"]:
         if synacc[ecf] and srvacc[ecf] != synacc[ecf]:
             srvacc[ecf] = synacc[ecf]
     # always update the account so modified reflects latest sync
@@ -122,3 +128,40 @@ def hubsync():
     except ValueError as e:
         return util.serve_value_error(e)
     return util.respJSON(syncdat, audience="private")  # include email
+
+
+# gmaddr: guide mail address required for lookup. Stay personal.
+def addguide():
+    try:
+        digacc, _ = util.authenticate()
+        gmaddr = dbacc.reqarg("gmaddr", "json", required=True)
+        gacct = dbacc.cfbk("DigAcc", "email", gmaddr, required=True)
+        guides = json.loads(digacc.get("guides") or "[]")
+        guides = ([{"dsId": gacct["dsId"],
+                    "email": gacct["email"],
+                    "firstname": gacct["firstname"],
+                    "hashtag": (gacct.get("hashtag") or "")}] +
+                  [g for g in guides if g["dsId"] != gacct["dsId"]])
+        digacc["guides"] = json.dumps(guides)
+        digacc = dbacc.write_entity(digacc, digacc["modified"])
+        logging.info(digacc["email"] + " added guide: " + gacct["email"])
+    except ValueError as e:
+        return util.serve_value_error(e)
+    return util.respJSON([digacc], audience="private")
+
+
+# gid, since (timestamp). Auth required, need to know who is asking.
+def guidedat():
+    try:
+        digacc, _ = util.authenticate()
+        gid = dbacc.reqarg("gid", "dbid", required=True)
+        since = dbacc.reqarg("since", "string") or "1970-01-01T00:00:00Z"
+        logging.info(digacc["email"] + " requesting guide data from guide " +
+                     gid + " since " + since)
+        where = ("WHERE aid = " + gid +
+                 " AND modified > \"" + since + "\""
+                 " ORDER BY modified LIMIT 1000")
+        gdat = dbacc.query_entity("Song", where)
+    except ValueError as e:
+        return util.serve_value_error(e)
+    return util.respJSON(gdat)

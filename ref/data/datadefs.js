@@ -48,7 +48,17 @@ module.exports = (function () {
         {f:"hashtag", d:"unique string", c:"activity view handle"},
         {f:"kwdefs", d:"json", c:"keyword definitions used by this account"},
         {f:"igfolds", d:"json", c:"ignore folders used by this account"},
-        {f:"settings", d:"json", c:"ctrl vals, general options"}],
+        {f:"settings", d:"json", c:"ctrl vals, general options"},
+        {f:"guides", d:"json", c:"zero or more guide references (*1)"}],
+     //*1 Guide instance:
+     //    dsId: id of guiding account
+     //    email: guide account email (from when the guide was added)
+     //    firstname: for display purposes
+     //    hashtag: for playlist page link
+     //    lastrating: timestamp of the most recent rating in guide data
+     //    lastcheck: timestamp when guide's rating data was fetched
+     //    lastimport: timestamp when rating data was last imported
+     //    filled: how many songs ratings were filled out from this guide
      cache:{minutes:2*60}, //fast auth after initial load
      logflds:["email", "firstname"]},
 

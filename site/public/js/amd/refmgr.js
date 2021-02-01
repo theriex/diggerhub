@@ -50,6 +50,7 @@ app.refmgr = (function () {
             reconstituteFieldJSONObject("kwdefs", obj);
             reconstituteFieldJSONObject("igfolds", obj);
             reconstituteFieldJSONObject("settings", obj);
+            reconstituteFieldJSONObject("guides", obj);
             break;
         case "Song":
             break;
@@ -66,6 +67,7 @@ app.refmgr = (function () {
             obj.kwdefs = JSON.stringify(obj.kwdefs);
             obj.igfolds = JSON.stringify(obj.igfolds);
             obj.settings = JSON.stringify(obj.settings);
+            obj.guides = JSON.stringify(obj.guides);
             break;
         case "Song":
             break;

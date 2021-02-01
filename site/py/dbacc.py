@@ -68,7 +68,8 @@ entdefs = {
         "hashtag": {"pt": "string", "un": True, "dv": ""},
         "kwdefs": {"pt": "string", "un": False, "dv": ""},
         "igfolds": {"pt": "string", "un": False, "dv": ""},
-        "settings": {"pt": "string", "un": False, "dv": ""}
+        "settings": {"pt": "string", "un": False, "dv": ""},
+        "guides": {"pt": "string", "un": False, "dv": ""}
     },
     "Song": {  # Rating and play information
         "dsId": {"pt": "dbid", "un": True, "dv": 0},
@@ -429,6 +430,8 @@ def app2db_DigAcc(inst, fill=True):
         cnv["igfolds"] = app2db_fieldval("DigAcc", "igfolds", inst)
     if fill or "settings" in inst:
         cnv["settings"] = app2db_fieldval("DigAcc", "settings", inst)
+    if fill or "guides" in inst:
+        cnv["guides"] = app2db_fieldval("DigAcc", "guides", inst)
     return cnv
 
 
@@ -451,6 +454,7 @@ def db2app_DigAcc(inst):
     cnv["kwdefs"] = db2app_fieldval("DigAcc", "kwdefs", inst)
     cnv["igfolds"] = db2app_fieldval("DigAcc", "igfolds", inst)
     cnv["settings"] = db2app_fieldval("DigAcc", "settings", inst)
+    cnv["guides"] = db2app_fieldval("DigAcc", "guides", inst)
     return cnv
 
 
@@ -580,8 +584,8 @@ def dblogmsg(op, entity, res):
 def insert_new_DigAcc(cnx, cursor, fields):
     fields = app2db_DigAcc(fields)
     stmt = (
-        "INSERT INTO DigAcc (created, modified, email, phash, status, actsends, actcode, firstname, hashtag, kwdefs, igfolds, settings) "
-        "VALUES (%(created)s, %(modified)s, %(email)s, %(phash)s, %(status)s, %(actsends)s, %(actcode)s, %(firstname)s, %(hashtag)s, %(kwdefs)s, %(igfolds)s, %(settings)s)")
+        "INSERT INTO DigAcc (created, modified, email, phash, status, actsends, actcode, firstname, hashtag, kwdefs, igfolds, settings, guides) "
+        "VALUES (%(created)s, %(modified)s, %(email)s, %(phash)s, %(status)s, %(actsends)s, %(actcode)s, %(firstname)s, %(hashtag)s, %(kwdefs)s, %(igfolds)s, %(settings)s, %(guides)s)")
     data = {
         'created': fields.get("created"),
         'modified': fields.get("modified"),
@@ -594,7 +598,8 @@ def insert_new_DigAcc(cnx, cursor, fields):
         'hashtag': fields.get("hashtag", entdefs["DigAcc"]["hashtag"]["dv"]),
         'kwdefs': fields.get("kwdefs", entdefs["DigAcc"]["kwdefs"]["dv"]),
         'igfolds': fields.get("igfolds", entdefs["DigAcc"]["igfolds"]["dv"]),
-        'settings': fields.get("settings", entdefs["DigAcc"]["settings"]["dv"])}
+        'settings': fields.get("settings", entdefs["DigAcc"]["settings"]["dv"]),
+        'guides': fields.get("guides", entdefs["DigAcc"]["guides"]["dv"])}
     cursor.execute(stmt, data)
     fields["dsId"] = cursor.lastrowid
     cnx.commit()
@@ -802,12 +807,12 @@ def delete_entity(entity, dsId):
 
 def query_DigAcc(cnx, cursor, where):
     query = "SELECT dsId, created, modified, "
-    query += "email, phash, status, actsends, actcode, firstname, hashtag, kwdefs, igfolds, settings"
+    query += "email, phash, status, actsends, actcode, firstname, hashtag, kwdefs, igfolds, settings, guides"
     query += " FROM DigAcc " + where
     cursor.execute(query)
     res = []
-    for (dsId, created, modified, email, phash, status, actsends, actcode, firstname, hashtag, kwdefs, igfolds, settings) in cursor:
-        inst = {"dsType": "DigAcc", "dsId": dsId, "created": created, "modified": modified, "email": email, "phash": phash, "status": status, "actsends": actsends, "actcode": actcode, "firstname": firstname, "hashtag": hashtag, "kwdefs": kwdefs, "igfolds": igfolds, "settings": settings}
+    for (dsId, created, modified, email, phash, status, actsends, actcode, firstname, hashtag, kwdefs, igfolds, settings, guides) in cursor:
+        inst = {"dsType": "DigAcc", "dsId": dsId, "created": created, "modified": modified, "email": email, "phash": phash, "status": status, "actsends": actsends, "actcode": actcode, "firstname": firstname, "hashtag": hashtag, "kwdefs": kwdefs, "igfolds": igfolds, "settings": settings, "guides": guides}
         inst = db2app_DigAcc(inst)
         res.append(inst)
     dblogmsg("QRY", "DigAcc", res)
