@@ -53,81 +53,84 @@ def write_song(updsong, digacc):
     """ Write the given update song. """
     updsong["aid"] = digacc["dsId"]
     normalize_song_fields(updsong)
-    logging.info("appdat.write_song " + str(updsong))
+    # logging.info("appdat.write_song " + str(updsong))
     song = find_song(updsong)
-    if song:
-        for field, fdesc in dbacc.entdefs["Song"].items():
-            song[field] = updsong.get(field, fdesc["dv"])
-    else:
-        song = updsong
-    updsong = dbacc.write_entity(song, song.get("modified", ""))
+    if not song:  # create new
+        song = {"dsType":"Song"}
+    flds = {  # do not copy core db fields from client data. only these:
+        "path": {"pt": "string", "un": False, "dv": ""},
+        "ti": {"pt": "string", "un": False, "dv": ""},
+        "ar": {"pt": "string", "un": False, "dv": ""},
+        "ab": {"pt": "string", "un": False, "dv": ""},
+        "el": {"pt": "int", "un": False, "dv": 0},
+        "al": {"pt": "int", "un": False, "dv": 0},
+        "kws": {"pt": "string", "un": False, "dv": ""},
+        "rv": {"pt": "int", "un": False, "dv": 0},
+        "fq": {"pt": "string", "un": False, "dv": ""},
+        "lp": {"pt": "string", "un": False, "dv": ""},
+        "nt": {"pt": "string", "un": False, "dv": ""}}
+    for field, fdesc in flds.items():
+        song[field] = updsong.get(field, fdesc["dv"])
+    updsong = dbacc.write_entity(song, song.get("modified") or "")
     return updsong
 
 
-def note_sync_account_changes(srvacc, synacc, upldsongs):
-    if srvacc["modified"] > synacc["modified"]:
-        # If srvacc is newer, then the account was last updated from a
-        # different datastore than the synacc source.  Return srvacc so the
-        # synacc datastore can update to the latest.  Ignore any sent music
-        # files since they may be older than what is currently in the db.
-        srvacc["syncstat"] = "Changed"  # tell client their account is old
-        return srvacc
-    # write all given songs so they will be older than updacc.modified
-    for song in upldsongs:  # write all given songs so older than updacc
-        write_song(song, srvacc)
-    # synacc may contain updates to client fields.  It may not contain
+def find_hub_push_songs(digacc, prevsync):
+    maxsongs = 200
+    where = ("WHERE aid = " + digacc["dsId"] +
+             " AND modified > \"" + prevsync + "\""
+             " ORDER BY modified LIMIT " + str(maxsongs))
+    retsongs = dbacc.query_entity("Song", where)
+    if len(retsongs) >= maxsongs:  # let client know more to download
+        digacc["syncsince"] = retsongs[-1]["modified"]
+    return digacc, retsongs
+
+
+def receive_updated_songs(digacc, updacc, songs):
+    maxsongs = 200
+    if len(songs) > maxsongs:
+        raise ValueError("Request exceeded max " + str(maxsongs) + " songs")
+    retsongs = []
+    for song in songs:
+        # if any given song write fails, continue so the client doesn't
+        # just retry forever.  Leave for general log monitoring.
+        try:
+            retsongs.append(write_song(song, digacc))
+        except ValueError as e:
+            logging.warning("receive_updated_songs write_song " + str(e))
+    # updacc may contain updates to client fields.  It may not contain
     # updates to hub server fields like email.
     for ecf in ["kwdefs", "igfolds", "settings", "guides"]:
-        if synacc[ecf] and srvacc[ecf] != synacc[ecf]:
-            srvacc[ecf] = synacc[ecf]
+        if updacc.get(ecf) and updacc[ecf] != digacc[ecf]:
+            digacc[ecf] = updacc[ecf]
     # always update the account so modified reflects latest sync
-    updacc = dbacc.write_entity(srvacc, srvacc["modified"])
-    updacc["syncstat"] = "Unchanged"  # tell client their account is up to date
-    return updacc
-
-
-# When a sync call is received, find all the songs that have been previously
-# written that are newer than the given sync time.  After this call,
-# digacc.modified will be updated, and the song.modified will no longer be
-# newer, so all the newer songs need to be retrieved in one shot.  Normally
-# that should not be excessive, but it is possible that reactivating a long
-# dormant digger app install could trigger a massive number of song
-# downloads.  Song data is not large, but some kind of limit needs to be in
-# place.  Anything beyond this limit will essentially not be synced.
-def find_sync_push_songs(aid, prevsync):
-    # Find any previously updated song data that needs to be downloaded
-    where = ("WHERE aid = " + aid +
-             " AND modified > \"" + prevsync + "\""
-             " ORDER BY modified DESC LIMIT 3000")
-    pushsongs = dbacc.query_entity("Song", where)
-    return pushsongs
+    digacc = dbacc.write_entity(digacc, digacc["modified"])
+    return digacc, retsongs
 
 
 ############################################################
 ## API endpoints:
 
 # Received syncdata is the DigAcc followed by zero or more updated Songs.
+# See digger/docroot/docs/hubsyncNotes.txt
 def hubsync():
     try:
         digacc, _ = util.authenticate()
         syncdata = json.loads(dbacc.reqarg("syncdata", "json", required=True))
         updacc = syncdata[0]
         prevsync = updacc.get("syncsince") or updacc["modified"]
-        upldsongs = syncdata[1:]
-        maxsongs = 200  # keep low enough to not exceed worker thread max time
-        if len(upldsongs) > maxsongs:
-            return util.serve_value_error("Request exceeded max " + maxsongs +
-                                          " songs per sync.")
-        # get the songs to return before making any changes, so state is known
-        pushsongs = find_sync_push_songs(digacc["dsId"], prevsync)
-        updacc = note_sync_account_changes(digacc, updacc, upldsongs)
-        logging.info("hubsync " + updacc["email"] + " since " + prevsync +
-                     " (" + updacc["syncstat"] + ") songs up: " +
-                     str(len(upldsongs)) + " down: " + str(len(pushsongs)))
-        syncdat = [updacc] + pushsongs
+        if prevsync < digacc["modified"]:  # hub push
+            racc, rsongs = find_hub_push_songs(digacc, prevsync)
+            msg = "hub push"
+        else: # hub receive
+            racc, rsongs = receive_updated_songs(digacc, updacc, syncdata[1:])
+            msg = "hub receive"
+        syncdata = [racc] + rsongs
+        logging.info(msg + " " + digacc["email"] + " " + str(len(rsongs)) +
+                     " songs")
     except ValueError as e:
         return util.serve_value_error(e)
-    return util.respJSON(syncdat, audience="private")  # include email
+    return util.respJSON(syncdata, audience="private")  # include email
 
 
 # gmaddr: guide mail address required for lookup. Stay personal.
