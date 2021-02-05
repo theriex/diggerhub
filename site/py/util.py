@@ -253,7 +253,7 @@ def make_activation_code():
 def url_for_mail_message():
     returl = dbacc.reqarg("returl", "string")
     if not returl:
-        returl = site_home() + "/timeline/default"
+        returl = site_home()
     else:
         returl = urllib.parse.unquote(returl)
     return returl
