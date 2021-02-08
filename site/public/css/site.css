@@ -9,6 +9,7 @@ body {
   font-family: "Open Sans", "Helvetica", sans-serif;
   font-size:large;
   background:#ffc2a4;
+  background:linear-gradient(#ffc2a4, #ff9c6b);
 }
 
 A:link {text-decoration:none; color:#0590b8; }
@@ -18,21 +19,43 @@ A:hover {text-decoration:underline; color:#3bd4ff; }
 
 img { border:0px; vertical-align:middle; }
 
-button, .buttonspan { border: 2px solid #666666; border-radius:8px;
-  cursor:pointer; background:#c9b609; box-shadow:1px 1px 1px #2f2b00;
+button, .buttonstyle { border: 2px solid #666666; border-radius:8px;
+  cursor:pointer; background:#ffe155; box-shadow:1px 1px 1px #2f2b00;
   padding:0px 3px; font-size:large; font-weight:bold; }
 .ghostbutton { background:none; }
 
-#outercontentdiv { padding:5px 0px; }
+#outercontentdiv { }
 #contentdiv { position:relative; width:80%; margin:0px auto; }
+
+/* -------------------- */
+/* general */
+
+.formbuttonsdiv { text-align:center; margin:5px 0px 0px 0px; }
 
 /* -------------------- */
 /* splash */
 
-#splashdiv { padding:10px; background-image:url("../img/bglogo.png");
+#logodiv { position:absolute; top:30px; left:-12px; }
+#logodiv img { max-height:64px; }
+#splashdiv { background-image:url("../img/bglogo.png");
   background-repeat:no-repeat; background-size:contain;
-  background-position: 10% 0%; }
+  background-position: 10% 50%; }
 #splashdiv p { background-image:url("../img/white60percent.png");
   padding:5px; }
 #downloadsdiv { text-align:center; }
 #downloadsdiv a { display:inline-block; padding:10px; }
+
+/* -------------------- */
+/* actions */
+
+#loginvisualelementsdiv { 0px 2px 0px 10px; }
+.onelineformdiv { text-align:right; }
+#acctmsglinediv { margin:5px 5px 0px 64px; }
+#acctmsglinediv h1 { font-size:medium; }
+#loginb { font-size:small; }
+#loginlinksdiv { padding:8px 0px 0px 0px; text-align:right; }
+#loginlinksdiv a { padding:0px 10px; font-size:small; }
+#topactiondiv { display:table; margin:0px 10px 0px auto; min-height:53px; }
+.acctactdiv { padding:5px; text-align:center; }
+.forminlab { display:inline-block; width:80px; text-align:right;
+  padding:0px 5px 0px 0px; font-size:small; font-style:italic; }

@@ -6,7 +6,7 @@
 import logging
 import py.util as util
 
-CACHE_BUST_PARAM = "v=210204"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=210208"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -28,6 +28,31 @@ INDEXHTML = """
 </head>
 <body id="bodyid">
 
+<div id="topsectiondiv">
+  <div id="logodiv"><img src="img/appicon.png"/></div>
+  <!-- login has to be an actual form to enable remembered passwords -->
+  <div id="topactiondiv">
+    <form id="loginform" method="post" action="redirlogin">
+      <div id="loginparaminputs"></div>
+      <div id="loginvisualelementsdiv">
+        <div class="onelineformdiv">
+          <input type="email" class="lifin" name="emailin" id="emailin"
+                 size="20" placeholder="nospam@example.com"/>
+          <!-- no onchange submit for password. breaks autoforms on safari -->
+          <input type="password" class="lifin" name="passin" id="passin"
+                 size="12" placeholder="*password*"/>
+          <input value="LogIn" type="submit" class="buttonstyle" id="loginb"/>
+        </div>
+        <div id="acctmsglinediv"></div>
+        <div id="loginbuttonsdiv" class="formbuttonsdiv">
+          <div id="loginlinksdiv"/>
+        </div>
+      </div> <!-- loginvisualelementsdiv -->
+    </form>
+  </div>
+</div>
+
+
 <div id="outercontentdiv">
   <div id="contentdiv">
     <div id="splashdiv">
@@ -36,9 +61,9 @@ INDEXHTML = """
 context.  If you've ever wanted to access your music through a mixing panel
 instead of searching folders, now you can. </p>
 
-<p>To install, download one of the prebuilt executables below.  Or grab the
-<a href="https://github.com/theriex/digger#digger">open source</a> and run
-that. </p>
+<p>To install, download the
+<a href="https://github.com/theriex/digger#digger">open source</a> or one
+of the prebuilt executables below. </p>
 
 <div id="downloadsdiv">
 <a href="downloads/digger-linux">digger-linux</a>
@@ -46,11 +71,20 @@ that. </p>
 <a href="downloads/digger-win.exe">digger-win.exe</a>
 </div>
 
-<p>Run the Digger music server, then surf to localhost:6980. </p>
+<p>Run the Digger music server, then open
+<a href="http://localhost:6980"
+   onclick="window.open('http://localhost:6980');return false;"/>
+localhost:6980</a>. </p>
 
     </div>
   </div>
 </div>
+
+<script src="js/jtmin.js?$CBPARAM"></script>
+<script src="js/app.js?$CBPARAM"></script>
+<script>
+  app.init();
+</script>
 
 </body>
 </html>

@@ -173,6 +173,8 @@ def authenticate():
     if not emaddr:
         emaddr = dbacc.reqarg("email", "DigAcc.email")
     if not emaddr:
+        emaddr = dbacc.reqarg("emailin", "DigAcc.email")
+    if not emaddr:
         raise ValueError("'an' or 'email' parameter required")
     emaddr = normalize_email(emaddr)
     digacc = dbacc.cfbk("DigAcc", "email", emaddr)
@@ -183,6 +185,8 @@ def authenticate():
         reqtok = dbacc.reqarg("token", "string")
     if not reqtok:
         password = dbacc.reqarg("password", "string")
+        if not password:
+            password = dbacc.reqarg("passin", "string")
         if not password:
             raise ValueError("Access token or password required")
         phash = make_password_hash(emaddr, password, digacc["created"])
@@ -323,6 +327,18 @@ def update_account_fields(digacc):
         digacc)
 
 
+def checkActivationCode(digacc, save=False):
+    actcode = dbacc.reqarg("actcode", "string")
+    if actcode:
+        logging.info(digacc["email"] + " actcode: " + actcode)
+        if actcode == digacc["actcode"]:
+            digacc["status"] = "Active"
+            if save:
+                digacc = dbacc.write_entity(digacc, digacc["modified"])
+        else:
+            logging.info("actcode did not match: " + digacc["actcode"])
+    return digacc
+
 
 ############################################################
 ## API endpoints:
@@ -349,6 +365,7 @@ def newacct():
 def acctok():
     try:
         digacc, token = authenticate()
+        digacc = checkActivationCode(digacc, save=True)
     except ValueError as e:
         logging.info("acctok signin failed: " + str(e))
         return serve_value_error(e, quiet=True)
@@ -399,13 +416,7 @@ def updacc():
         if chg != "nochange":
             logging.info("Changing " + chg + " for " + digacc["email"])
         update_account_fields(digacc)
-        actcode = dbacc.reqarg("actcode", "string")
-        if actcode:
-            logging.info(digacc["email"] + " actcode: " + actcode)
-            if actcode == digacc["actcode"]:
-                digacc["status"] = "Active"
-            else:
-                logging.info("actcode did not match: " + digacc["actcode"])
+        digacc = checkActivationCode(digacc)
         digacc = dbacc.write_entity(digacc, digacc["modified"])
         token = token_for_user(digacc)    # return possibly updated token
     except ValueError as e:
