@@ -77,6 +77,16 @@ module.exports = (function () {
         {f:"nt", d:"text", c:"note text (whatever the user wrote)"}],
      cache:{minutes:0},
      logflds:["aid", "ti", "ar"]},
+
+    //Interaction log entries written by the recipient. Write-once.
+    {entity:"Collab", descr:"Initial ratings, suggestions and such", fields:[
+        {f:"ctype", d:"req string", c:"What kind of collaboration this was",
+         enumvals:["inrat", "sugg"]},
+        {f:"rec", d:"req dbid", c:"Recipient account for information"},
+        {f:"src", d:"req dbid", c:"Source account for information"},
+        {f:"ssid", d:"req dbid", c:"Source song dsId"}],
+     cache:{minutes:0},
+     logflds:["ctype", "rec", "src", "ssid"]},
         
     {entity:"AppService", descr:"Processing service access", fields:[
         {f:"name", d:"string req unique", c:"Name of service"},

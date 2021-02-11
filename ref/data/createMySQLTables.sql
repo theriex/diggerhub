@@ -39,6 +39,19 @@ CREATE TABLE Song (  -- Rating and play information
 );
 ALTER TABLE Song AUTO_INCREMENT = 2020;
 
+CREATE TABLE Collab (  -- Initial ratings, suggestions and such
+  dsId BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE,
+  created VARCHAR(256) NOT NULL,
+  modified VARCHAR(256) NOT NULL,
+  batchconv VARCHAR(256),
+  ctype VARCHAR(256) NOT NULL,
+  rec BIGINT NOT NULL,
+  src BIGINT NOT NULL,
+  ssid BIGINT NOT NULL,
+  PRIMARY KEY (dsId)
+);
+ALTER TABLE Collab AUTO_INCREMENT = 2020;
+
 CREATE TABLE AppService (  -- Processing service access
   dsId BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE,
   created VARCHAR(256) NOT NULL,

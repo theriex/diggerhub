@@ -163,8 +163,28 @@ def guidedat():
                      gid + " since " + since)
         where = ("WHERE aid = " + gid +
                  " AND modified > \"" + since + "\""
-                 " ORDER BY modified LIMIT 1000")
+                 " ORDER BY modified LIMIT 200")
         gdat = dbacc.query_entity("Song", where)
     except ValueError as e:
         return util.serve_value_error(e)
     return util.respJSON(gdat)
+
+
+# Collab actions are logged by the recipient.
+def collabs():
+    try:
+        digacc, _ = util.authenticate()
+        cacts = dbacc.reqarg("cacts", "string", required=True)
+        cacts = json.loads(cacts)
+        for cact in cacts:
+            if cact["rec"] != digacc["dsId"]:
+                raise ValueError("rec " + cact["rec"] + " != " + digacc["dsId"])
+            if cact["ctype"] != "inrat":
+                raise ValueError("Unknown ctype: " + cact["ctype"])
+            cact["dsType"] = "Collab"
+        resacts = []
+        for cact in cacts:
+            resacts.append(dbacc.write_entity(cact))
+    except ValueError as e:
+        return util.serve_value_error(e)
+    return util.respJSON(resacts)

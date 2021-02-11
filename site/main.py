@@ -66,6 +66,10 @@ def addguide(): # params auth, gmaddr
 def guidedat(): # params auth, gid, since
     return util.secure(appdat.guidedat)
 
+@app.route('/api/collabs', methods=['GET', 'POST'])
+def collabs(): # params auth, cacts
+    return util.secure(appdat.collabs)
+
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def startpage(path):
