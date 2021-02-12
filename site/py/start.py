@@ -6,7 +6,7 @@
 import logging
 import py.util as util
 
-CACHE_BUST_PARAM = "v=210211"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=210212"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -67,7 +67,7 @@ of the prebuilt executables below. </p>
 
 <div id="downloadsdiv">
 <a href="downloads/digger-linux">digger-linux</a>
-<a href="downloads/digger-macos">digger-macos</a>
+<a href="downloads/Digger.dmg">Digger.dmg</a>
 <a href="downloads/digger-win.exe">digger-win.exe</a>
 </div>
 
