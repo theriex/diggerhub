@@ -56,8 +56,9 @@ def write_song(updsong, digacc):
     # logging.info("appdat.write_song " + str(updsong))
     song = find_song(updsong)
     if not song:  # create new
-        song = {"dsType":"Song"}
-    flds = {  # do not copy core db fields from client data. only these:
+        song = {"dsType":"Song", "aid":digacc["dsId"]}
+    flds = {  # do NOT copy general db fields from client data. only these:
+        # field defs copied from dbacc.py
         "path": {"pt": "string", "un": False, "dv": ""},
         "ti": {"pt": "string", "un": False, "dv": ""},
         "ar": {"pt": "string", "un": False, "dv": ""},
