@@ -49,6 +49,15 @@ def normalize_song_fields(updsong):
         updsong["ti"] = updsong.get("path")
 
 
+def song_string(song):
+    return song["ti"] + " - " + song.get("ar") + " - " + song.get("ab")
+
+
+def is_unrated_song(song):
+    unrated = (not song["kws"]) and (song["el"] == 49) and (song["al"] == 49)
+    return unrated
+
+
 def write_song(updsong, digacc):
     """ Write the given update song. """
     updsong["aid"] = digacc["dsId"]
@@ -57,6 +66,12 @@ def write_song(updsong, digacc):
     song = find_song(updsong)
     if not song:  # create new
         song = {"dsType":"Song", "aid":digacc["dsId"]}
+    else: #updating existing song instance
+        if is_unrated_song(updsong) and not is_unrated_song(song):
+            # should never happen due to hub push before hub receive, but
+            # leaving in place as a general protective measure.
+            updsong = song  # ignore updsong to avoid information loss
+            logging.info("write_song not unrating " + song_string(song))
     flds = {  # do NOT copy general db fields from client data. only these:
         # field defs copied from dbacc.py
         "path": {"pt": "string", "un": False, "dv": ""},
