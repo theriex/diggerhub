@@ -32,7 +32,7 @@ app = flask.Flask(__name__)
 
 @app.route('/api/version')
 def appversion():
-    return "0.2"
+    return util.version()
 
 @app.route('/api/newacct', methods=['GET', 'POST'])
 def newacct(): # params: firstname, email, password

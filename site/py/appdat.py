@@ -141,6 +141,7 @@ def hubsync():
         else: # hub receive
             racc, rsongs = receive_updated_songs(digacc, updacc, syncdata[1:])
             msg = "hub receive"
+        racc["hubVersion"] = util.version()
         syncdata = [racc] + rsongs
         logging.info(msg + " " + digacc["email"] + " " + str(len(rsongs)) +
                      " songs")

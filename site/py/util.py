@@ -20,6 +20,9 @@ import flask
 import py.dbacc as dbacc
 import py.mconf as mconf
 
+def version():
+    return "v0.6"
+
 
 def srverr(msg, code=400):
     # 400 Bad Request
