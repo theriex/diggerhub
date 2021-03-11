@@ -6,7 +6,7 @@
 import logging
 import py.util as util
 
-CACHE_BUST_PARAM = "v=210305"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=210311"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -57,13 +57,15 @@ INDEXHTML = """
   <div id="contentdiv">
     <div id="splashdiv">
 
-<p><b>Digger</b> plays songs from your music library that match your listening
-context.  If you've ever wanted to access your music through a mixing panel
-instead of searching folders, now you can. </p>
+<div id="btidiggerdiv">Digger</div>
+<div id="btihubdiv">Hub</div>
+
+<p>If you've ever wanted to access your music through a mixing panel instead
+of searching folders, now you can. </p>
 
 <p>To install, download the
 <a href="https://github.com/theriex/digger#digger">open source</a> or one
-of the prebuilt executables below. </p>
+of these prebuilt executables: </p>
 
 <div id="downloadsdiv">
 <a href="downloads/digger-linux">digger-linux</a>

@@ -35,13 +35,17 @@ button, .buttonstyle { border: 2px solid #666666; border-radius:8px;
 /* -------------------- */
 /* splash */
 
+#btidiggerdiv { text-align:center; font-size:xx-large; font-weight:bold;
+  letter-spacing:0.42em; padding:5px; }
+#btihubdiv { text-align:center; font-size:x-large; letter-spacing:0.2em; 
+  font-style:italic; }
 #logodiv { position:absolute; top:30px; left:-12px; }
 #logodiv img { max-height:64px; }
 #splashdiv { background-image:url("../img/bglogo.png");
   background-repeat:no-repeat; background-size:contain;
-  background-position: 10% 50%; }
+  background-position: 10% 84%; }
 #splashdiv p { background-image:url("../img/white60percent.png");
-  padding:5px; }
+  padding:5px; margin:5px 0px 18px 0px; }
 #downloadsdiv { text-align:center; }
 #downloadsdiv a { display:inline-block; padding:10px; }
 
