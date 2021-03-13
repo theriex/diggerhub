@@ -26,6 +26,7 @@ button, .buttonstyle { border: 2px solid #666666; border-radius:8px;
 
 #outercontentdiv { }
 #contentdiv { position:relative; width:80%; margin:0px auto; }
+#vidcontentdiv { text-align:center; }
 
 /* -------------------- */
 /* general */

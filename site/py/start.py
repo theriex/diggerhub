@@ -6,7 +6,7 @@
 import logging
 import py.util as util
 
-CACHE_BUST_PARAM = "v=210311"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=210313"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -76,11 +76,15 @@ of these prebuilt executables: </p>
 <p>Run the Digger music server, then open
 <a href="http://localhost:6980"
    onclick="window.open('http://localhost:6980');return false;"/>
-localhost:6980</a>. </p>
+localhost:6980</a> </p>
 
-    </div>
+    </div> <!-- splashdiv -->
+  </div> <!-- contentdiv -->
+  <div id="vidcontentdiv">
+    <video controls src="img/DiggerDemo540HighBQ.mp4" width="300">
+      Video unavailable in this browser.</video>
   </div>
-</div>
+</div> <!-- outercontentdiv -->
 
 <script src="js/jtmin.js?$CBPARAM"></script>
 <script src="js/app.js?$CBPARAM"></script>
