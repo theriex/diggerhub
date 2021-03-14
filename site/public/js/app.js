@@ -33,7 +33,7 @@ var jt = {};   //Global access to general utility methods
         var modules = app.modules.map((p) => "js/amd/" + p.name);
         app.amdtimer = {};
         app.amdtimer.load = { start: new Date() };
-        jt.loadAppModules(app, modules, app.docroot, app.init2, "?v=210313");
+        jt.loadAppModules(app, modules, app.docroot, app.init2, "?v=210314");
     };
 
 
