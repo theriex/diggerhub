@@ -6,7 +6,7 @@
 import logging
 import py.util as util
 
-CACHE_BUST_PARAM = "v=210314"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=210315"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -84,6 +84,11 @@ localhost:6980</a> </p>
     <video controls src="img/DiggerDemo540HighBQ.mp4" width="300">
       Video unavailable in this browser.</video>
   </div>
+
+  <div id="localtestdiv" style="display:none">
+    <iframe title="test to see if local digger server is running" id="diggerlocaliframe" src="http://localhost:6980/version"></iframe>
+  </div>
+
 </div> <!-- outercontentdiv -->
 
 <script src="js/jtmin.js?$CBPARAM"></script>
