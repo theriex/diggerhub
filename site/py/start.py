@@ -25,8 +25,10 @@ INDEXHTML = """
   <meta itemprop="image" content="$SITEPIC" />
   <title>$TITLE</title>
   <link href="css/site.css?$CBPARAM" rel="stylesheet" type="text/css" />
+  <link href="css/digger.css?$CBPARAM" rel="stylesheet" type="text/css" />
 </head>
 <body id="bodyid">
+<div id="sitebody">
 
 <div id="topsectiondiv">
   <div id="logodiv"><img src="img/appicon.png"/></div>
@@ -45,7 +47,7 @@ INDEXHTML = """
         </div>
         <div id="acctmsglinediv"></div>
         <div id="loginbuttonsdiv" class="formbuttonsdiv">
-          <div id="loginlinksdiv"/>
+          <div id="loginlinksdiv"></div>
         </div>
       </div> <!-- loginvisualelementsdiv -->
     </form>
@@ -54,7 +56,7 @@ INDEXHTML = """
 
 
 <div id="outercontentdiv">
-  <div id="contentdiv">
+  <div id="textcontentdiv">
     <div id="splashdiv">
 
 <div id="btidiggerdiv">Digger</div>
@@ -79,7 +81,7 @@ of these prebuilt executables: </p>
 localhost:6980</a> </p>
 
     </div> <!-- splashdiv -->
-  </div> <!-- contentdiv -->
+  </div> <!-- textcontentdiv -->
   <div id="vidcontentdiv">
     <video controls src="img/DiggerDemo540HighBQ.mp4" width="300">
       Video unavailable in this browser.</video>
@@ -97,6 +99,7 @@ localhost:6980</a> </p>
   app.init();
 </script>
 
+</div> <!-- sitebody -->
 </body>
 </html>
 """
@@ -113,8 +116,6 @@ def startpage(path, refer):
             "$TITLE": "DiggerHub"}}
     if stinf["refer"]:
         logging.info("startpage referral: " + refer)
-    if path and not path.startswith("index.htm"):
-        logging.info("startpage path " + path + " not known.")
     html = INDEXHTML
     for dcode, value in stinf["replace"].items():
         html = html.replace(dcode, value)

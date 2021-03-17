@@ -9,14 +9,26 @@ var jt = {};   //Global access to general utility methods
 
     app.modules = [
         {name:"refmgr", desc:"Server data and client cache"},
-        {name:"login", desc:"Authentication and account managerment"}];
+        {name:"login", desc:"Authentication and account management"}];
 
 
     app.init2 = function () {
         app.amdtimer.load.end = new Date();
         jt.log("window.innerWidth: " + window.innerWidth);
         app.startParams = jt.parseParams("String");
+        app.startPath = window.location.pathname.toLowerCase();
         app.login.init();
+        if(app.startPath === "/digger") {
+            jt.byId("topsectiondiv").style.display = "none";
+            jt.out("outercontentdiv", jt.tac2html(
+                ["div", {id:"contentdiv"},
+                 [["div", {cla:"paneldiv", id:"pandbdiv"}],
+                  ["div", {cla:"paneldiv", id:"panplaydiv"}],
+                  ["div", {cla:"paneldiv", id:"panfiltdiv"}],
+                  ["div", {cla:"paneldiv", id:"pandeckdiv"}]]]));
+            app.modules.forEach(function (md) {
+                if(md.ty === "dm") {
+                    app[md.name].init(); } }); }
     };
 
 

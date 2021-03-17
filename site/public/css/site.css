@@ -8,6 +8,9 @@ body {
   height: 100%;
   font-family: "Open Sans", "Helvetica", sans-serif;
   font-size:large;
+}
+
+#sitebody {
   background:#ffc2a4;
   background:linear-gradient(#ffc2a4, #ff9c6b);
 }

@@ -171,6 +171,13 @@ def csv_to_list(csv):
     return csv.split(",")
 
 
+def first_group_match(expr, text):
+    m = re.match(expr, text)
+    if m:
+        return m.group(1)
+    return None
+
+
 def authenticate():
     emaddr = dbacc.reqarg("an", "DigAcc.email")
     if not emaddr:
