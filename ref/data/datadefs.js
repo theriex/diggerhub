@@ -79,7 +79,11 @@ module.exports = (function () {
         {f:"rv", d:"int", i:5, c:"rating value (stars) 1-10"},
         {f:"fq", d:"string", c:"play frequency code (see player)"},
         {f:"lp", d:"isodate", c:"last played timestamp"},
-        {f:"nt", d:"text", c:"note text (whatever the user wrote)"}],
+        {f:"nt", d:"text", c:"note text (whatever the user wrote)"},
+        {f:"spid", d:"string", c:"z:trackID, code:val or null/empty (*1)"}],
+     //*1 spid starts with "z:" followed by a spotify track id if it was
+     //   sucessfully mapped.  Otherwise it may start with any character
+     //   less than z, followed by whatever other info.
      cache:{minutes:0},
      logflds:["aid", "ti", "ar"]},
 
@@ -92,6 +96,13 @@ module.exports = (function () {
         {f:"ssid", d:"req dbid", c:"Source song dsId"}],
      cache:{minutes:0},
      logflds:["ctype", "rec", "src", "ssid"]},
+
+    {entity:"SKeyMap", descr:"Song Title/Artist/Album key mappings", fields:[
+        {f:"skey", d:"req string unique", c:"Canonical ti/ar/ab text"},
+        {f:"spid", d:"string", c:"same as Song.spid"},
+        {f:"notes", d:"json", c:"optional data processing details"}],
+     cache:{minutes:0},
+     logflds:["skey", "spid"]},
         
     {entity:"AppService", descr:"Processing service access", fields:[
         {f:"name", d:"string req unique", c:"Name of service"},

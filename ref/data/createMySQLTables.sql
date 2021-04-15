@@ -35,6 +35,7 @@ CREATE TABLE Song (  -- Rating and play information
   fq VARCHAR(256),
   lp VARCHAR(256),
   nt LONGTEXT,
+  spid VARCHAR(256),
   PRIMARY KEY (dsId)
 );
 ALTER TABLE Song AUTO_INCREMENT = 2020;
@@ -51,6 +52,18 @@ CREATE TABLE Collab (  -- Initial ratings, suggestions and such
   PRIMARY KEY (dsId)
 );
 ALTER TABLE Collab AUTO_INCREMENT = 2020;
+
+CREATE TABLE SKeyMap (  -- Song Title/Artist/Album key mappings
+  dsId BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE,
+  created VARCHAR(256) NOT NULL,
+  modified VARCHAR(256) NOT NULL,
+  batchconv VARCHAR(256),
+  skey VARCHAR(256) NOT NULL UNIQUE,
+  spid VARCHAR(256),
+  notes LONGTEXT,
+  PRIMARY KEY (dsId)
+);
+ALTER TABLE SKeyMap AUTO_INCREMENT = 2020;
 
 CREATE TABLE AppService (  -- Processing service access
   dsId BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE,

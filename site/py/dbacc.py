@@ -87,7 +87,8 @@ entdefs = {
         "rv": {"pt": "int", "un": False, "dv": 0},
         "fq": {"pt": "string", "un": False, "dv": ""},
         "lp": {"pt": "string", "un": False, "dv": ""},
-        "nt": {"pt": "string", "un": False, "dv": ""}
+        "nt": {"pt": "string", "un": False, "dv": ""},
+        "spid": {"pt": "string", "un": False, "dv": ""}
     },
     "Collab": {  # Initial ratings, suggestions and such
         "dsId": {"pt": "dbid", "un": True, "dv": 0},
@@ -98,6 +99,15 @@ entdefs = {
         "rec": {"pt": "dbid", "un": False, "dv": 0},
         "src": {"pt": "dbid", "un": False, "dv": 0},
         "ssid": {"pt": "dbid", "un": False, "dv": 0}
+    },
+    "SKeyMap": {  # Song Title/Artist/Album key mappings
+        "dsId": {"pt": "dbid", "un": True, "dv": 0},
+        "created": {"pt": "string", "un": False, "dv": ""},
+        "modified": {"pt": "string", "un": False, "dv": ""},
+        "batchconv": {"pt": "string", "un": False, "dv": ""},
+        "skey": {"pt": "string", "un": True, "dv": ""},
+        "spid": {"pt": "string", "un": False, "dv": ""},
+        "notes": {"pt": "string", "un": False, "dv": ""}
     },
     "AppService": {  # Processing service access
         "dsId": {"pt": "dbid", "un": True, "dv": 0},
@@ -116,6 +126,7 @@ entkeys = {
     "DigAcc": ["email", "hashtag"],
     "Song": [],
     "Collab": [],
+    "SKeyMap": ["skey"],
     "AppService": ["name"]
 }
 
@@ -124,6 +135,7 @@ cachedefs = {
     "DigAcc": {"minutes": 120, "manualadd": False},
     "Song": {"minutes": 0, "manualadd": False},
     "Collab": {"minutes": 0, "manualadd": False},
+    "SKeyMap": {"minutes": 0, "manualadd": False},
     "AppService": {"minutes": 240, "manualadd": False}
 }
 
@@ -507,6 +519,8 @@ def app2db_Song(inst, fill=True):
         cnv["lp"] = app2db_fieldval("Song", "lp", inst)
     if fill or "nt" in inst:
         cnv["nt"] = app2db_fieldval("Song", "nt", inst)
+    if fill or "spid" in inst:
+        cnv["spid"] = app2db_fieldval("Song", "spid", inst)
     return cnv
 
 
@@ -531,6 +545,7 @@ def db2app_Song(inst):
     cnv["fq"] = db2app_fieldval("Song", "fq", inst)
     cnv["lp"] = db2app_fieldval("Song", "lp", inst)
     cnv["nt"] = db2app_fieldval("Song", "nt", inst)
+    cnv["spid"] = db2app_fieldval("Song", "spid", inst)
     return cnv
 
 
@@ -571,6 +586,43 @@ def db2app_Collab(inst):
     cnv["rec"] = db2app_fieldval("Collab", "rec", inst)
     cnv["src"] = db2app_fieldval("Collab", "src", inst)
     cnv["ssid"] = db2app_fieldval("Collab", "ssid", inst)
+    return cnv
+
+
+# Convert the given SKeyMap inst dict from app values to db values.  Removes
+# the dsType field to avoid trying to write it to the db.
+def app2db_SKeyMap(inst, fill=True):
+    cnv = {}
+    cnv["dsId"] = None
+    if "dsId" in inst:
+        cnv["dsId"] = app2db_fieldval(None, "dsId", inst)
+    if fill or "created" in inst:
+        cnv["created"] = app2db_fieldval(None, "created", inst)
+    if fill or "modified" in inst:
+        cnv["modified"] = app2db_fieldval(None, "modified", inst)
+    if fill or "batchconv" in inst:
+        cnv["batchconv"] = app2db_fieldval(None, "batchconv", inst)
+    if fill or "skey" in inst:
+        cnv["skey"] = app2db_fieldval("SKeyMap", "skey", inst)
+    if fill or "spid" in inst:
+        cnv["spid"] = app2db_fieldval("SKeyMap", "spid", inst)
+    if fill or "notes" in inst:
+        cnv["notes"] = app2db_fieldval("SKeyMap", "notes", inst)
+    return cnv
+
+
+# Convert the given SKeyMap inst dict from db values to app values.  Adds the
+# dsType field for general app processing.
+def db2app_SKeyMap(inst):
+    cnv = {}
+    cnv["dsType"] = "SKeyMap"
+    cnv["dsId"] = db2app_fieldval(None, "dsId", inst)
+    cnv["created"] = db2app_fieldval(None, "created", inst)
+    cnv["modified"] = db2app_fieldval(None, "modified", inst)
+    cnv["batchconv"] = db2app_fieldval(None, "batchconv", inst)
+    cnv["skey"] = db2app_fieldval("SKeyMap", "skey", inst)
+    cnv["spid"] = db2app_fieldval("SKeyMap", "spid", inst)
+    cnv["notes"] = db2app_fieldval("SKeyMap", "notes", inst)
     return cnv
 
 
@@ -619,6 +671,7 @@ def dblogmsg(op, entity, res):
         "DigAcc": ["email", "firstname"],
         "Song": ["aid", "ti", "ar"],
         "Collab": ["ctype", "rec", "src", "ssid"],
+        "SKeyMap": ["skey", "spid"],
         "AppService": ["name"]}
     if res:
         if op != "QRY":  # query is already a list, listify anything else
@@ -693,8 +746,8 @@ def update_existing_DigAcc(context, fields):
 def insert_new_Song(cnx, cursor, fields):
     fields = app2db_Song(fields)
     stmt = (
-        "INSERT INTO Song (created, modified, aid, path, ti, ar, ab, el, al, kws, rv, fq, lp, nt) "
-        "VALUES (%(created)s, %(modified)s, %(aid)s, %(path)s, %(ti)s, %(ar)s, %(ab)s, %(el)s, %(al)s, %(kws)s, %(rv)s, %(fq)s, %(lp)s, %(nt)s)")
+        "INSERT INTO Song (created, modified, aid, path, ti, ar, ab, el, al, kws, rv, fq, lp, nt, spid) "
+        "VALUES (%(created)s, %(modified)s, %(aid)s, %(path)s, %(ti)s, %(ar)s, %(ab)s, %(el)s, %(al)s, %(kws)s, %(rv)s, %(fq)s, %(lp)s, %(nt)s, %(spid)s)")
     data = {
         'created': fields.get("created"),
         'modified': fields.get("modified"),
@@ -709,7 +762,8 @@ def insert_new_Song(cnx, cursor, fields):
         'rv': fields.get("rv", entdefs["Song"]["rv"]["dv"]),
         'fq': fields.get("fq", entdefs["Song"]["fq"]["dv"]),
         'lp': fields.get("lp", entdefs["Song"]["lp"]["dv"]),
-        'nt': fields.get("nt", entdefs["Song"]["nt"]["dv"])}
+        'nt': fields.get("nt", entdefs["Song"]["nt"]["dv"]),
+        'spid': fields.get("spid", entdefs["Song"]["spid"]["dv"])}
     cursor.execute(stmt, data)
     fields["dsId"] = cursor.lastrowid
     cnx.commit()
@@ -795,6 +849,54 @@ def update_existing_Collab(context, fields):
     return result
 
 
+# Write a new SKeyMap row, using the given field values or defaults.
+def insert_new_SKeyMap(cnx, cursor, fields):
+    fields = app2db_SKeyMap(fields)
+    stmt = (
+        "INSERT INTO SKeyMap (created, modified, skey, spid, notes) "
+        "VALUES (%(created)s, %(modified)s, %(skey)s, %(spid)s, %(notes)s)")
+    data = {
+        'created': fields.get("created"),
+        'modified': fields.get("modified"),
+        'skey': fields.get("skey", entdefs["SKeyMap"]["skey"]["dv"]),
+        'spid': fields.get("spid", entdefs["SKeyMap"]["spid"]["dv"]),
+        'notes': fields.get("notes", entdefs["SKeyMap"]["notes"]["dv"])}
+    cursor.execute(stmt, data)
+    fields["dsId"] = cursor.lastrowid
+    cnx.commit()
+    fields = db2app_SKeyMap(fields)
+    dblogmsg("ADD", "SKeyMap", fields)
+    return fields
+
+
+# Update the specified SKeyMap row with the given field values.
+def update_existing_SKeyMap(context, fields):
+    fields = app2db_SKeyMap(fields, fill=False)
+    dsId = int(fields["dsId"])  # Verify int value
+    stmt = ""
+    for field in fields:  # only updating the fields passed in
+        if stmt:
+            stmt += ", "
+        stmt += field + "=(%(" + field + ")s)"
+    stmt = "UPDATE SKeyMap SET " + stmt + " WHERE dsId=" + str(dsId)
+    if context["vck"] != "override":
+        stmt += " AND modified=\"" + context["vck"] + "\""
+    data = {}
+    for field in fields:
+        data[field] = fields[field]
+    context["cursor"].execute(stmt, data)
+    if context["cursor"].rowcount < 1 and context["vck"] != "override":
+        raise ValueError("SKeyMap" + str(dsId) + " update received outdated version check value " + context["vck"] + ".")
+    context["cnx"].commit()
+    result = context["existing"]
+    for field in fields:
+        result[field] = fields[field]
+    result = db2app_SKeyMap(result)
+    dblogmsg("UPD", "SKeyMap", result)
+    entcache.cache_remove(result)
+    return result
+
+
 # Write a new AppService row, using the given field values or defaults.
 def insert_new_AppService(cnx, cursor, fields):
     fields = app2db_AppService(fields)
@@ -867,6 +969,8 @@ def write_entity(inst, vck="1234-12-12T00:00:00Z"):
                     return update_existing_Song(context, inst)
                 if entity == "Collab":
                     return update_existing_Collab(context, inst)
+                if entity == "SKeyMap":
+                    return update_existing_SKeyMap(context, inst)
                 if entity == "AppService":
                     return update_existing_AppService(context, inst)
                 raise ValueError("Cannot modify unknown entity dsType " +
@@ -879,6 +983,8 @@ def write_entity(inst, vck="1234-12-12T00:00:00Z"):
                 return insert_new_Song(cnx, cursor, inst)
             if entity == "Collab":
                 return insert_new_Collab(cnx, cursor, inst)
+            if entity == "SKeyMap":
+                return insert_new_SKeyMap(cnx, cursor, inst)
             if entity == "AppService":
                 return insert_new_AppService(cnx, cursor, inst)
             raise ValueError("Cannot create unknown entity dsType " +
@@ -927,12 +1033,12 @@ def query_DigAcc(cnx, cursor, where):
 
 def query_Song(cnx, cursor, where):
     query = "SELECT dsId, created, modified, "
-    query += "aid, path, ti, ar, ab, el, al, kws, rv, fq, lp, nt"
+    query += "aid, path, ti, ar, ab, el, al, kws, rv, fq, lp, nt, spid"
     query += " FROM Song " + where
     cursor.execute(query)
     res = []
-    for (dsId, created, modified, aid, path, ti, ar, ab, el, al, kws, rv, fq, lp, nt) in cursor:
-        inst = {"dsType": "Song", "dsId": dsId, "created": created, "modified": modified, "aid": aid, "path": path, "ti": ti, "ar": ar, "ab": ab, "el": el, "al": al, "kws": kws, "rv": rv, "fq": fq, "lp": lp, "nt": nt}
+    for (dsId, created, modified, aid, path, ti, ar, ab, el, al, kws, rv, fq, lp, nt, spid) in cursor:
+        inst = {"dsType": "Song", "dsId": dsId, "created": created, "modified": modified, "aid": aid, "path": path, "ti": ti, "ar": ar, "ab": ab, "el": el, "al": al, "kws": kws, "rv": rv, "fq": fq, "lp": lp, "nt": nt, "spid": spid}
         inst = db2app_Song(inst)
         res.append(inst)
     dblogmsg("QRY", "Song", res)
@@ -950,6 +1056,20 @@ def query_Collab(cnx, cursor, where):
         inst = db2app_Collab(inst)
         res.append(inst)
     dblogmsg("QRY", "Collab", res)
+    return res
+
+
+def query_SKeyMap(cnx, cursor, where):
+    query = "SELECT dsId, created, modified, "
+    query += "skey, spid, notes"
+    query += " FROM SKeyMap " + where
+    cursor.execute(query)
+    res = []
+    for (dsId, created, modified, skey, spid, notes) in cursor:
+        inst = {"dsType": "SKeyMap", "dsId": dsId, "created": created, "modified": modified, "skey": skey, "spid": spid, "notes": notes}
+        inst = db2app_SKeyMap(inst)
+        res.append(inst)
+    dblogmsg("QRY", "SKeyMap", res)
     return res
 
 
@@ -984,6 +1104,8 @@ def query_entity(entity, where):
                 return query_Song(cnx, cursor, where)
             if entity == "Collab":
                 return query_Collab(cnx, cursor, where)
+            if entity == "SKeyMap":
+                return query_SKeyMap(cnx, cursor, where)
             if entity == "AppService":
                 return query_AppService(cnx, cursor, where)
         except mysql.connector.Error as e:
@@ -1025,6 +1147,13 @@ def visible_Collab_fields(obj, audience):
     return filtobj
 
 
+def visible_SKeyMap_fields(obj, audience):
+    filtobj = {}
+    for fld, val in obj.items():
+        filtobj[fld] = val
+    return filtobj
+
+
 def visible_AppService_fields(obj, audience):
     filtobj = {}
     for fld, val in obj.items():
@@ -1043,6 +1172,8 @@ def visible_fields(obj, audience="public"):
         return visible_Song_fields(obj, audience)
     if obj["dsType"] == "Collab":
         return visible_Collab_fields(obj, audience)
+    if obj["dsType"] == "SKeyMap":
+        return visible_SKeyMap_fields(obj, audience)
     if obj["dsType"] == "AppService":
         return visible_AppService_fields(obj, audience)
     raise ValueError("Unknown object dsType: " + obj["dsType"])
