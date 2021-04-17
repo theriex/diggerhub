@@ -81,9 +81,9 @@ module.exports = (function () {
         {f:"lp", d:"isodate", c:"last played timestamp"},
         {f:"nt", d:"text", c:"note text (whatever the user wrote)"},
         {f:"spid", d:"string", c:"z:trackID, code:val or null/empty (*1)"}],
-     //*1 spid starts with "z:" followed by a spotify track id if it was
-     //   sucessfully mapped.  Otherwise it may start with any character
-     //   less than z, followed by whatever other info.
+     //*1 spid: "z:" + spotify track id if successfully mapped
+     //         "x:" + ISO time if no mapping found.  null if not searched.
+     //   bcid, ytid, azid, apid etc. will be additional fields as needed.
      cache:{minutes:0},
      logflds:["aid", "ti", "ar"]},
 

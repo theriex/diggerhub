@@ -19,6 +19,8 @@ import re
 import requests
 import urllib.parse     # to be able to use urllib.parse.quote
 import string
+import json
+import sys
 
 
 svcdef = util.get_connection_service("spotify")
@@ -38,15 +40,6 @@ def verify_token():
                              ": " + resp.text)
         logging.info(resp.text)
         ainf["tok"] = resp.json()["access_token"]
-
-
-def extract_spid(rob):
-    items = rob["tracks"]["items"]
-    spid = "x:NoItems" + dbacc.nowISO()
-    if len(items) > 0:
-        spid = "z:" + items[0]["id"]
-    logging.info(spid)
-    return spid
 
 
 def has_contained_punctuation(word):
@@ -91,9 +84,7 @@ def make_query_string(ti, ar, ab):
     return query
 
 
-def find_spid(ti, ar, ab):
-    verify_token()
-    query = make_query_string(ti, ar, ab)
+def fetch_spid(query):
     resp = requests.get(
         "https://api.spotify.com/v1/search?q=" + query,
         headers={"Authorization": "Bearer " + ainf["tok"]})
@@ -101,14 +92,34 @@ def find_spid(ti, ar, ab):
         raise ValueError("Search failed " + str(resp.status_code) +
                          ": " + resp.text)
     logging.info(resp.text)
-    return extract_spid(resp.json())
+    rob = resp.json()
+    spid = ""
+    items = rob["tracks"]["items"]
+    if len(items) > 0:
+        spid = items[0]["id"]
+    return spid
 
 
-def get_song_key(song):
-    return skey
+# e.g. find_spid("I'm Every Woman", "Chaka Khan", "Epiphany - The Best Of Chaka Khan Vol 1")
+def find_spid(ti, ar, ab):
+    verify_token()
+    skm = {"qtxt":make_query_string(ti, ar, ab), "qtype":"tiarab"}
+    spid = fetch_spid(skm["qtxt"])
+    # Common for an artist to release a track on more than one album, and
+    # common for Spotify to only have one of them.
+    if not spid:  # retry with just title and artist
+        skm["qtxt"] = make_query_string(ti, ar, "")
+        skm["qtype"] = "tiar"
+        spid = fetch_spid(skm["qtxt"])
+    if spid:  # found a mapping
+        skm["spid"] = "z:" + spid
+    else:   # nothing found at this time
+        skm["qtype"] = "failed"
+        skm["spid"] = "x:" + dbacc.nowISO()
+    return skm
 
 
-def map_song_spid(song):
+def map_song_spid(song, refetch=False, title="", artist=""):
     ti = song["ti"]
     ar = song.get("ar", "")
     ab = song.get("ab", "")
@@ -117,19 +128,52 @@ def map_song_spid(song):
     skey = re.sub(srx, "", ti) + re.sub(srx, "", ar) + re.sub(srx, "", ab)
     skey = skey.lower()
     skmap = dbacc.cfbk("SKeyMap", "skey", skey)
-    if not skmap:
-        spid = find_spid(ti, ar, ab)
-        skmap = dbacc.write_entity(
-            {"dsType":"SKeyMap", "skey":skey, "spid":spid})
+    if not skmap:  # no mapping for key yet, make one
+        refetch = True
+        skmap = {"dsType":"SKeyMap", "modified":"", "skey":skey,
+                 "notes":json.dumps({
+                     "orgsong":{"dsId":song["dsId"],
+                                "ti":ti, "ar":ar, "ab":ab}})}
+    if refetch:  # new or specific request
+        skm = find_spid(title or ti, artist or ar, ab)
+        skmap["spid"] = skm["spid"]
+        notes = json.loads(skmap["notes"])
+        notes["spotify"] = {"qtxt":skm["qtxt"], "qtype":skm["qtype"]}
+        skmap["notes"] = json.dumps(notes)
+        skmap = dbacc.write_entity(skmap, vck=skmap["modified"])
+        logging.info(skmap.notes)
     song["spid"] = skmap["spid"]
-    dbacc.write_entity(song, vck=song["modified"])
+    song = dbacc.write_entity(song, vck=song["modified"])
+    return song
 
 
+# A previously failed mapping could succeed on retry at a later time.  To
+# automate retry, the spid for a Song could be cleared if it starts with
+# "x:" followed by a time older than 4 weeks.  Meanwhile the sweep process
+# could remove or ignore any "x:" mappings older than 3 weeks.
 def sweep_songs():
-    for song in dbacc.query_entity("Song", "WHERE spid IS NULL LIMIT 1"):
-        map_song_spid(song)
+    songs = dbacc.query_entity("Song", "WHERE spid IS NULL LIMIT 50")
+    for song in songs:
+        updsong = map_song_spid(song)
+        if not updsong["spid"].startswith("z"):
+            logging.info("Song " + song["dsId"] + " not mapped, stopping.")
+            break
+
+
+def recheck_or_sweep():
+    if len(sys.argv) > 1:
+        song = dbacc.cfbk("Song", "dsId", sys.argv[1])
+        ovrti = ""
+        ovrar = ""
+        if len(sys.argv) > 3:
+            if sys.argv[2] == "title":
+                ovrti = sys.argv[3]
+            elif sys.argv[2] == "artist":
+                ovrar = sys.argv[3]
+        map_song_spid(song, refetch=True, title=ovrti, artist=ovrar)
+    else:
+        sweep_songs()
 
 
 # run it
-sweep_songs()
-# find_spid("I'm Every Woman", "Chaka Khan", "Epiphany - The Best Of Chaka Khan Vol 1")
+recheck_or_sweep()
