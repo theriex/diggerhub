@@ -81,9 +81,12 @@ module.exports = (function () {
         {f:"lp", d:"isodate", c:"last played timestamp"},
         {f:"nt", d:"text", c:"note text (whatever the user wrote)"},
         {f:"spid", d:"string", c:"z:trackID, code:val or null/empty (*1)"}],
-     //*1 spid: "z:" + spotify track id if successfully mapped
-     //         "x:" + ISO time if no mapping found.  null if not searched.
-     //   bcid, ytid, azid, apid etc. will be additional fields as needed.
+     //*1 spid: null if not searched.
+     //         "z:" + spotify track id - successfully mapped.
+     //         "x:" + ISO time - no spotify mapping found.
+     //         "m:" + ISO time - unmappable due to bad metadata.
+     //         "k:" + ISO time - known unmappable (previously verified)
+     //   bcid, ytid, azid, apid etc. can be additional fields as needed.
      cache:{minutes:0},
      logflds:["aid", "ti", "ar"]},
 

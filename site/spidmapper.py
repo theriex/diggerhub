@@ -53,7 +53,7 @@ def prepare_query_term(value):
     words = value.split()  # trim/strip and split on whitespace
     for idx, word in enumerate(words):  # remove all surrounding punctuation
         words[idx] = word.strip(string.punctuation)
-    # 15apr21 search will NOT match embedded ' or " even if encoded
+    # 15apr21 search will NOT match embedded ' or " even if encoded, so
     # remove any preceding or trailing words with contained punctuation
     while len(words) > 0 and has_contained_punctuation(words[0]):
         words = words[1:]
@@ -100,17 +100,99 @@ def fetch_spid(query):
     return spid
 
 
+# Adjust known album name mismatches to what spotify wants.
+def fix_album_name(album):
+    sxps = [{"exp":r"Oumou\s+[\(\[]disk\s+1[\)\]]", "use":"Oumou"}]
+    for sxp in sxps:
+        abfix = re.sub(sxp["exp"], sxp["use"], album, flags=re.I)
+        if abfix != album:
+            return abfix
+    return album
+
+
+def remove_contextual_title_suffix(title, album):
+    cxps = [{"abx":r"Oumou", "tix":r"\(.*\)", "trt":""},
+            {"abx":r"Paganini: 24 Caprices for Solo Violin, Op. 1",
+             "tix":r"Paganini: Caprice #\d\d? In", "trt":"Caprice In"},
+            {"abx":r"Paganini: 24 Caprices for Solo Violin, Op. 1",
+             "tix":r"Op\.\s1/", "trt":"Op. 1, No. "},
+            {"abx":r"Paganini: 24 Caprices for Solo Violin, Op. 1",
+             "tix":r" - .*", "trt":""}]
+    for cxp in cxps:
+        if re.match(cxp["abx"], album, flags=re.I):
+            title = re.sub(cxp["tix"], cxp["trt"], title, flags=re.I)
+    return title
+
+
+def remove_general_suffix(title):
+    rxs = [r"\s*[\(\[]\d{4}\s+Digital\s+Remaster.*[\)\]]",
+           r"\s*[\(\[]Remastered\s+Version.*[\)\]]",
+           r"\s*[\(\[]Explicit[\)\]]"]
+    for rx in rxs:
+        tifix = re.sub(rx, "", title, flags=re.I)
+        if tifix != title:
+            return tifix
+    return title
+
+
+# Suffixes that can be removed from the title if no match was found.
+def remove_ignorable_suffix(title, album):
+    tifix = remove_contextual_title_suffix(title, album)
+    if tifix != title:
+        return tifix
+    return remove_general_suffix(title)
+
+
+def reduce_collaborative_name(artist):
+    # Sarah Vaughan With Her Trio is not the same as with her orchestra.
+    sxps = [{"exp":r"Prince\s+(&|And)\s+The+\s+Revolution", "use":"Prince"},
+            {"exp":r"Patti\s+Smith\s+Group", "use":"Patti Smith"},
+            {"exp":r"Patti\s+La\s+Belle", "use":"Patti LaBelle"},
+            {"exp":r"Oceania", "use":"Jaz Coleman"},  # very ugly
+            {"exp":r"^OMD$", "use":"Orchestral Manoeuvres In The Dark"},
+            {"exp":r"Midori", "use":"Niccolò Paganini"}]  # absurd
+    for sxp in sxps:
+        artfix = re.sub(sxp["exp"], sxp["use"], artist, flags=re.I)
+        if artfix != artist:
+            return artfix
+    return artist
+
+
 # e.g. find_spid("I'm Every Woman", "Chaka Khan", "Epiphany - The Best Of Chaka Khan Vol 1")
 def find_spid(ti, ar, ab):
     verify_token()
+    ab = fix_album_name(ab)
     skm = {"qtxt":make_query_string(ti, ar, ab), "qtype":"tiarab"}
     spid = fetch_spid(skm["qtxt"])
+    # ti: "whatever song (2015 Digital Remaster) is not how Spotify lists it.
+    if not spid:  # check for ignorable title suffix
+        tifix = remove_ignorable_suffix(ti, ab)
+        if tifix != ti:  # retry without ignorable suffix
+            ti = tifix
+            skm = {"qtxt":make_query_string(ti, ar, ab), "qtype":"tiarab"}
+            spid = fetch_spid(skm["qtxt"])
+    # Spotify reduces collaborative names to individual artists
+    if not spid:  # check if known collaborative name
+        artfix = reduce_collaborative_name(ar)
+        if artfix != ar:  # retry with individual name
+            ar = artfix
+            skm = {"qtxt":make_query_string(ti, ar, ab), "qtype":"tiarab"}
+            spid = fetch_spid(skm["qtxt"])
     # Common for an artist to release a track on more than one album, and
-    # common for Spotify to only have one of them.
+    # equally common for Spotify to only carry one of them, so generalize.
     if not spid:  # retry with just title and artist
         skm["qtxt"] = make_query_string(ti, ar, "")
         skm["qtype"] = "tiar"
         spid = fetch_spid(skm["qtxt"])
+    # Pretenders, KLF, Buzzcocks etc have inconsistent metadata "The" naming
+    if not spid:  # retry with alternate "The" prefix
+        if ar.lower().startswith("the "):
+            ar = ar[4:]
+        else:
+            ar = "The " + ar
+        skm["altq"] = make_query_string(ti, ar, "")
+        spid = fetch_spid(skm["altq"])
+    # Done with attempts, return found or not
     if spid:  # found a mapping
         skm["spid"] = "z:" + spid
     else:   # nothing found at this time
@@ -119,7 +201,19 @@ def find_spid(ti, ar, ab):
     return skm
 
 
-def map_song_spid(song, refetch=False, title="", artist=""):
+def has_bad_metadata(song):
+    # Could also check for placeholder title ending with ".mp3", or
+    # containing multiple "/"s, but in those cases the artist is also
+    # missing.  Realistically, if there is no artist, the chances of finding
+    # a reasonable mapping to the appropriate track is basically zero.
+    # Fixing bad metadata is a local storage issue, not a mapping issue.
+    ar = song.get("ar", "")
+    if not ar:
+        return True
+    return False
+
+
+def get_song_key_map(song):
     ti = song["ti"]
     ar = song.get("ar", "")
     ab = song.get("ab", "")
@@ -129,22 +223,62 @@ def map_song_spid(song, refetch=False, title="", artist=""):
     skey = skey.lower()
     skmap = dbacc.cfbk("SKeyMap", "skey", skey)
     if not skmap:  # no mapping for key yet, make one
-        refetch = True
         skmap = {"dsType":"SKeyMap", "modified":"", "skey":skey,
                  "notes":json.dumps({
                      "orgsong":{"dsId":song["dsId"],
                                 "ti":ti, "ar":ar, "ab":ab}})}
-    if refetch:  # new or specific request
-        skm = find_spid(title or ti, artist or ar, ab)
-        skmap["spid"] = skm["spid"]
-        notes = json.loads(skmap["notes"])
-        notes["spotify"] = {"qtxt":skm["qtxt"], "qtype":skm["qtype"]}
-        skmap["notes"] = json.dumps(notes)
-        skmap = dbacc.write_entity(skmap, vck=skmap["modified"])
-        logging.info(skmap.notes)
+    return skmap
+
+
+def map_song_spid(song, refetch=False, title="", artist=""):
+    if has_bad_metadata(song):
+        song["spid"] = "m:" + dbacc.nowISO()
+    else:
+        skmap = get_song_key_map(song)
+        if refetch or ("dsId" not in skmap):
+            skm = find_spid(title or song["ti"],
+                            artist or song.get("ar", ""),
+                            song.get("ab", ""))
+            skmap["spid"] = skm["spid"]
+            notes = json.loads(skmap["notes"])
+            notes["spotify"] = {"qtxt":skm["qtxt"], "qtype":skm["qtype"]}
+            skmap["notes"] = json.dumps(notes)
+            skmap = dbacc.write_entity(skmap, vck=skmap["modified"])
+            logging.info(skmap["notes"])
+            song["spid"] = skmap["spid"]
+        else: # not refetch, so using existing lookup
+            if skmap["spid"].startswith("x:"):
+                # note this is a known failed lookup so sweep doesn't halt
+                song["spid"] = "k:" + skmap["spid"][2:]
+            else:
+                song["spid"] = skmap["spid"]
+    song = dbacc.write_entity(song, vck=song["modified"])
+    return song
+
+
+def explicitely_map(song, spid):
+    if not spid.startswith("z:"):
+        spid = "z:" + spid
+    skmap = get_song_key_map(song)
+    skmap["spid"] = spid
+    notes = json.loads(skmap["notes"])
+    notes["spotify"] = {"qtxt":"", "qtype":"hardmapped"}
+    skmap["notes"] = json.dumps(notes)
+    skmap = dbacc.write_entity(skmap, vck=skmap["modified"])
+    logging.info(skmap["notes"])
     song["spid"] = skmap["spid"]
     song = dbacc.write_entity(song, vck=song["modified"])
     return song
+
+
+def manual_verification_needed(song):
+    if song["spid"].startswith("z"):  # mapped
+        return False
+    if song["spid"].startswith("m"):  # bad metadata
+        return False
+    if song["spid"].startswith("k"):  # known unmappable
+        return False
+    return True
 
 
 # A previously failed mapping could succeed on retry at a later time.  To
@@ -155,21 +289,37 @@ def sweep_songs():
     songs = dbacc.query_entity("Song", "WHERE spid IS NULL LIMIT 50")
     for song in songs:
         updsong = map_song_spid(song)
-        if not updsong["spid"].startswith("z"):
+        if manual_verification_needed(updsong):
             logging.info("Song " + song["dsId"] + " not mapped, stopping.")
             break
 
 
+def interactive_lookup(title, artist, album):
+    print("title: " + title)
+    print("artist: " + artist)
+    print("album: " + album)
+    print(json.dumps(find_spid(title, artist, album)))
+
+
 def recheck_or_sweep():
     if len(sys.argv) > 1:
+        if sys.argv[1] == "lookup":
+            interactive_lookup(sys.argv[2], sys.argv[3], sys.argv[4])
+            return
         song = dbacc.cfbk("Song", "dsId", sys.argv[1])
         ovrti = ""
         ovrar = ""
         if len(sys.argv) > 3:
             if sys.argv[2] == "title":
                 ovrti = sys.argv[3]
+                if len(sys.argv) > 5:
+                    if sys.argv[4] == "artist":
+                        ovrar = sys.argv[5]
             elif sys.argv[2] == "artist":
                 ovrar = sys.argv[3]
+            elif sys.argv[2] == "spid":
+                explicitely_map(song, sys.argv[3])
+                return
         map_song_spid(song, refetch=True, title=ovrti, artist=ovrar)
     else:
         sweep_songs()
