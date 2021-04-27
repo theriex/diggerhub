@@ -39,16 +39,16 @@ app.login = (function () {
                           //expire if inactive, since security and storage
                           //options continue to evolve.
                           30);
-                jt.log("mgrs.ap.save success");
+                jt.log("login.mgrs.ap.save success");
             } catch (e) {
-                jt.log("mgrs.ap.save exception: " + e); } },
+                jt.log("login.mgrs.ap.save exception: " + e); } },
         read: function () {
             var ret = null;
             try {
                 ret = jt.cookie(sname);  //ret null if not found
                 if(ret) {
                     if(ret.indexOf(delim) < 0) {
-                        jt.log("mgrs.ap.read clearing " + ret + ": " +
+                        jt.log("login.mgrs.ap.read clearing " + ret + ": " +
                                delim + " delimiter not found.");
                         mgrs.ap.clear();
                         ret = null; }
@@ -56,15 +56,15 @@ app.login = (function () {
                         ret = ret.split(delim);
                         ret[0] = ret[0].replace("%40", "@");
                         if(!jt.isProbablyEmail(ret[0]) || ret[1].length < 20) {
-                            jt.log("mgrs.ap.read clearing bad values: " +
+                            jt.log("login.mgrs.ap.read clearing bad values: " +
                                    ret[0] + ", " + ret[1]);
                             mgrs.ap.clear();
                             ret = null; }
                         else {
-                            jt.log("mgrs.ap.read success");
+                            jt.log("login.mgrs.ap.read success");
                             ret = {authname:ret[0], authtoken:ret[1]}; } } }
             } catch (e) {
-                jt.log("mgrs.ap.read exception: " + e);
+                jt.log("login.mgrs.ap.read exception: " + e);
                 ret = null;
             }
             return ret; },
@@ -72,11 +72,12 @@ app.login = (function () {
             try {
                 jt.cookie(sname, "", -1);
             } catch (e) {
-                jt.log("mgrs.ap.clear exception: " + e); } }
+                jt.log("login.mgrs.ap.clear exception: " + e); } }
     };  //end mgrs.ap returned functions
     }());
 
 
+    //The action manager handles signin/out and account updates
     mgrs.act = (function () {
         var authflds = ["an", "at", "email", "emailin", "passin"];
     return {
@@ -288,6 +289,7 @@ return {
     init: function (restore) { initialize(restore); },
     formSubmit: function (event) { jt.evtend(event); signIn(); },
     signIn: function () { signIn(); },
+    getAuth: function () { return authobj; },
     managerDispatch: function (mgrname, fname, ...args) {
         return mgrs[mgrname][fname].apply(app.login, args); }
 };  //end of returned functions

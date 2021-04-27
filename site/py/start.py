@@ -6,7 +6,7 @@
 import logging
 import py.util as util
 
-CACHE_BUST_PARAM = "v=210415"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=210426"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -93,6 +93,18 @@ localhost:6980</a> </p>
 
 </div> <!-- outercontentdiv -->
 
+<script>
+  var diggerapp = {
+      context:"web",
+      modules:[
+          {name:"refmgr", desc:"Server data and client cache"},
+          {name:"login", desc:"Authentication and account management"},
+          {name:"svc", type:"dm", desc:"webapp server interaction calls"},
+          {name:"top", type:"dm", desc:"top panel functions"},
+          {name:"player", type:"dm", desc:"player panel functions"},
+          {name:"filter", type:"dm", desc:"filter panel functions"},
+          {name:"deck", type:"dm", desc:"deck panel functions"}]};
+</script>
 <script src="js/jtmin.js?$CBPARAM"></script>
 <script src="js/app.js?$CBPARAM"></script>
 <script>
