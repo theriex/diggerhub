@@ -212,6 +212,7 @@ def authenticate():
         logging.info("  reqtok: " + reqtok)
         logging.info("  srvtok: " + srvtok)
         raise ValueError("Wrong password")
+    digacc["diggerVersion"] = version()
     return digacc, srvtok
 
 

@@ -6,6 +6,7 @@
 
 import logging
 import json
+import datetime
 import py.dbacc as dbacc
 import py.util as util
 
@@ -148,6 +149,47 @@ def hubsync():
     except ValueError as e:
         return util.serve_value_error(e)
     return util.respJSON(syncdata, audience="private")  # include email
+
+
+def songfetch():
+    try:
+        digacc, _ = util.authenticate()
+        fvs = json.loads(dbacc.reqarg("fvs", "json", required=True))
+        where = ("WHERE aid = " + digacc["dsId"] +
+                 " AND spid LIKE \"z:%\"" +
+                 " AND el >= " + str(fvs["elmin"]) +
+                 " AND el <= " + str(fvs["elmax"]) +
+                 " AND al >= " + str(fvs["almin"]) +
+                 " AND al <= " + str(fvs["almax"]) +
+                 " AND rv >= " + str(fvs["minrat"]))
+        if fvs["tagfidx"] == 2:  # Untagged only
+            where += " AND kws IS NULL"
+        elif fvs["tagfidx"] == 1:  # Tagged only
+            where += " AND kws NOT NULL"
+        if fvs["poskws"]:
+            for kw in fvs["poskws"].split(","):
+                where += " AND FIND_IN_SET(\"" + kw + "\", kws)"
+        if fvs["negkws"]:
+            for kw in fvs["negkws"].split(","):
+                where += " AND NOT FIND_IN_SET(\"" + kw + "\", kws)"
+        if fvs["srchtxt"]:
+            where += (" AND (ti LIKE \"%" + fvs["srchtxt"] + "%\"" +
+                      " OR ar LIKE \"%" + fvs["srchtxt"] + "%\"" +
+                      " OR ab LIKE \"%" + fvs["srchtxt"] + "%\"")
+        if fvs["fq"] == "on":  # frequency filtering active
+            now = datetime.datetime.utcnow().replace(microsecond=0)
+            pst = dbacc.dt2ISO(now - datetime.timedelta(days=1))
+            bst = dbacc.dt2ISO(now - datetime.timedelta(days=90))
+            zst = dbacc.dt2ISO(now - datetime.timedelta(days=180))
+            where += (" AND ((fq IN (\"N\", \"P\") AND lp < \"" + pst + "\")" +
+                      " OR (fq = \"B\" AND lp < \"" + bst + "\")" +
+                      " OR (fq = \"Z\" AND lp < \"" + zst + "\"))")
+        where += " ORDER BY lp LIMIT 400"
+        logging.info("songfetch " + where)
+        songs = dbacc.query_entity("Song", where)
+    except ValueError as e:
+        return util.serve_value_error(e)
+    return util.respJSON(songs)
 
 
 # gmaddr: guide mail address required for lookup. Stay personal.

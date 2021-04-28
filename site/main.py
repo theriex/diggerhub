@@ -58,6 +58,10 @@ def mailpwr(): # params: email, returl
 def hubsync(): # params: auth, acct + zero or more songs
     return util.secure(appdat.hubsync)
 
+@app.route('/api/songfetch')
+def songfetch(): #params: auth, fvs
+    return util.secure(appdat.songfetch)
+
 @app.route('/api/addguide', methods=['GET', 'POST'])
 def addguide(): # params auth, gmaddr
     return util.secure(appdat.addguide)
