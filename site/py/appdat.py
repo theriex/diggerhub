@@ -7,6 +7,8 @@
 import logging
 import json
 import datetime
+import base64
+import requests
 import py.dbacc as dbacc
 import py.util as util
 
@@ -247,3 +249,31 @@ def collabs():
     except ValueError as e:
         return util.serve_value_error(e)
     return util.respJSON(resacts)
+
+
+# https://developer.spotify.com/documentation/general/guides/authorization-guide
+# For now the approach is to use the granted token as long as possible, then
+# go back for a full new one rather than using a the returned refresh token.
+# Easier to implement, information may be stale if the app was inactive for
+# a while, and scopes may change as things develop further.
+def spotifytoken():
+    try:
+        digacc, _ = util.authenticate()
+        hubdat = json.loads(digacc["hubdat"])
+        svcdef = util.get_connection_service("spotify")
+        svckey = svcdef["ckey"] + ":" + svcdef["csec"]
+        authkey = base64.b64encode(svckey.encode("UTF-8")).decode("UTF-8")
+        resp = requests.post(
+            "https://accounts.spotify.com/api/token",
+            headers={"Authorization": "Basic " + authkey},
+            data={"grant_type": "authorization_code",
+                  "code": hubdat["spa"]["code"],
+                  "redirect_uri": svcdef["data"]})
+        if resp.status_code != 200:
+            raise ValueError("Code for token exchange failed " +
+                             str(resp.status_code) + ": " + resp.text)
+        tokinfo = resp.json()
+        tokinfo["useby"] = dbacc.timestamp((tokinfo["expires_in"] - 1) // 60)
+    except ValueError as e:
+        return util.serve_value_error(e)
+    return util.respJSON(tokinfo)

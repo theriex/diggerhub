@@ -74,6 +74,10 @@ def guidedat(): # params auth, gid, since
 def collabs(): # params auth, cacts
     return util.secure(appdat.collabs)
 
+@app.route('/api/spotifytoken')
+def spotifytoken(): #params: auth
+    return util.secure(appdat.spotifytoken)
+
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def startpage(path):

@@ -38,8 +38,9 @@ module.exports = (function () {
     var ddefs = [ //data storage entity definitions
 
     {entity:"DigAcc", descr:"Digger Hub access account", fields:[
-        {f:"email", d:"priv req unique email"},
-        {f:"phash", d:"adm req string"},
+        {f:"email", d:"priv req unique email", c:"username/contact" },
+        {f:"phash", d:"adm req string", c:"Auth processing"},
+        {f:"hubdat", d:"priv json", c:"OAuth and similar server side data"},
         {f:"status", d:"priv string", c:"Not currently used",
          enumvals:["Pending", "Active", "Inactive", "Unreachable"]},
         {f:"actsends", d:"adm gencsv", c:"latest first isod;emaddr vals"},

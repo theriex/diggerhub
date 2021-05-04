@@ -12,7 +12,7 @@ app.login = (function () {
     function mdfs (mgrfname, ...args) {
         var pstr = app.paramstr(args);
         mgrfname = mgrfname.split(".");
-        var fstr = "app.login.managerDispatch('" + mgrfname[0] + "','" +
+        var fstr = "app.login.dispatch('" + mgrfname[0] + "','" +
             mgrfname[1] + "'" + pstr + ")";
         if(pstr !== ",event") {  //don't return false from event hooks
             fstr = jt.fs(fstr); }
@@ -129,20 +129,20 @@ app.login = (function () {
                   ["button", {type:"button", id:"updaccb",
                               onclick:mdfs("act.updateAccountInfo")},
                    "Update Account"]]])); },
+        updateAccount: function (data, contf, errf) {
+            jt.call("POST", app.dr("/api/updacc"), data, contf, errf,
+                    jt.semaphore("login.act.updateAccount")); },
         updateAccountInfo: function () {
             jt.byId("updaccb").disabled = true;
             var data = jt.objdata(
                 {an:authobj.email, at:authobj.token,
                  firstname:jt.byId("firstnamein").value || "NOVAL",
                  hashtag:jt.byId("hashtagin").value || "NOVAL"});
-            jt.call("POST", app.dr("/api/updacc"), data,
-                    function (result) {
-                        mgrs.act.successfulSignIn(result); },
-                    function (code, errtxt) {
-                        jt.byId("updaccb").disabled = false;
-                        jt.out("acctmsglinediv", "Account update failed " +
-                               code + ": " + errtxt); },
-                    jt.semaphore("login.act.updateAccountInfo")); },
+            mgrs.act.updateAccount(data, mgrs.act.successfulSignIn,
+                function (code, errtxt) {
+                    jt.byId("updaccb").disabled = false;
+                    jt.out("acctmsglinediv", "Account update failed " +
+                           code + ": " + errtxt); }); },
         changePasswordDisplay: function () {
             jt.out("tactdiv", jt.tac2html(
                 [["div", {cla:"forminline"},
@@ -160,13 +160,10 @@ app.login = (function () {
             var data = jt.objdata(
                 {an:authobj.email, at:authobj.token, updemail:authobj.email,
                  updpassword:jt.byId("pwdin").value});
-            jt.call("POST", app.dr("/api/updacc"), data,
-                    function (result) {
-                        mgrs.act.successfulSignIn(result); },
-                    function (code, errtxt) {
-                        jt.out("acctmsglinediv", "Password change failed " +
-                               code + ": " + errtxt); },
-                    jt.semaphore("login.act.changePassword")); },
+            mgrs.act.updateAccount(data, mgrs.act.successfulSignIn,
+                function (code, errtxt) {
+                    jt.out("acctmsglinediv", "Password change failed " +
+                           code + ": " + errtxt); }); },
         acctActivHTML: function () {
             if(authobj.status !== "Pending") { return ""; }
             return jt.tac2html(
@@ -290,7 +287,7 @@ return {
     formSubmit: function (event) { jt.evtend(event); signIn(); },
     signIn: function () { signIn(); },
     getAuth: function () { return authobj; },
-    managerDispatch: function (mgrname, fname, ...args) {
+    dispatch: function (mgrname, fname, ...args) {
         return mgrs[mgrname][fname].apply(app.login, args); }
 };  //end of returned functions
 }());

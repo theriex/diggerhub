@@ -212,7 +212,6 @@ def authenticate():
         logging.info("  reqtok: " + reqtok)
         logging.info("  srvtok: " + srvtok)
         raise ValueError("Wrong password")
-    digacc["diggerVersion"] = version()
     return digacc, srvtok
 
 
@@ -351,6 +350,18 @@ def checkActivationCode(digacc, save=False):
     return digacc
 
 
+def runtime_decorate_account(digacc):
+    """ Add other general reference server info used by client. """
+    digacc["diggerVersion"] = version()
+    hubdat = json.loads(digacc.get("hubdat") or "{}")
+    spotify = get_connection_service("spotify")
+    if not hubdat.get("spa"):
+        hubdat["spa"] = {}
+    hubdat["spa"]["clikey"] = spotify.get("ckey")  # not confidential
+    hubdat["spa"]["returi"] = spotify.get("data")  # auth callback uri
+    digacc["hubdat"] = json.dumps(hubdat)
+
+
 ############################################################
 ## API endpoints:
 
@@ -367,6 +378,7 @@ def newacct():
         update_email_and_password(digacc, emaddr, pwd)
         update_account_fields(digacc)
         digacc = dbacc.write_entity(digacc)
+        runtime_decorate_account(digacc)
         token = token_for_user(digacc)
     except ValueError as e:
         return serve_value_error(e)
@@ -377,6 +389,7 @@ def acctok():
     try:
         digacc, token = authenticate()
         digacc = checkActivationCode(digacc, save=True)
+        runtime_decorate_account(digacc)
     except ValueError as e:
         logging.info("acctok signin failed: " + str(e))
         return serve_value_error(e, quiet=True)
@@ -429,6 +442,7 @@ def updacc():
         update_account_fields(digacc)
         digacc = checkActivationCode(digacc)
         digacc = dbacc.write_entity(digacc, digacc["modified"])
+        runtime_decorate_account(digacc)
         token = token_for_user(digacc)    # return possibly updated token
     except ValueError as e:
         return serve_value_error(e)

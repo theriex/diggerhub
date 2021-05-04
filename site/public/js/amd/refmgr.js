@@ -47,6 +47,7 @@ app.refmgr = (function () {
     function deserialize (obj) {
         switch(obj.dsType) {
         case "DigAcc":
+            reconstituteFieldJSONObject("hubdat", obj);
             reconstituteFieldJSONObject("kwdefs", obj);
             reconstituteFieldJSONObject("igfolds", obj);
             reconstituteFieldJSONObject("settings", obj);
@@ -69,6 +70,7 @@ app.refmgr = (function () {
     function serialize (obj) {
         switch(obj.dsType) {
         case "DigAcc":
+            obj.hubdat = JSON.stringify(obj.hubdat);
             obj.kwdefs = JSON.stringify(obj.kwdefs);
             obj.igfolds = JSON.stringify(obj.igfolds);
             obj.settings = JSON.stringify(obj.settings);
@@ -92,6 +94,7 @@ app.refmgr = (function () {
         switch(obj.dsType) {
         case "DigAcc":
             obj.email = "";
+            obj.hubdat = "";
             obj.status = "";
             break;
         case "Song":

@@ -5,6 +5,7 @@ CREATE TABLE DigAcc (  -- Digger Hub access account
   batchconv VARCHAR(256),
   email VARCHAR(256) NOT NULL UNIQUE,
   phash VARCHAR(256) NOT NULL,
+  hubdat LONGTEXT,
   status VARCHAR(256),
   actsends LONGTEXT,
   actcode VARCHAR(256),
