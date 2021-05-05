@@ -333,7 +333,8 @@ def fill_missing_fields(fields, src, trg):
 
 def update_account_fields(digacc):
     set_fields_from_reqargs(
-        ["firstname", "hashtag", "kwdefs", "igfolds", "settings", "guides"],
+        ["hubdat", "firstname", "hashtag", "kwdefs", "igfolds", "settings",
+         "guides"],
         digacc)
 
 
@@ -352,6 +353,7 @@ def checkActivationCode(digacc, save=False):
 
 def runtime_decorate_account(digacc):
     """ Add other general reference server info used by client. """
+    digacc["hubVersion"] = version()
     digacc["diggerVersion"] = version()
     hubdat = json.loads(digacc.get("hubdat") or "{}")
     spotify = get_connection_service("spotify")

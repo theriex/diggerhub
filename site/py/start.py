@@ -6,7 +6,7 @@
 import logging
 import py.util as util
 
-CACHE_BUST_PARAM = "v=210504"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=210505"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -24,8 +24,8 @@ INDEXHTML = """
   <meta property="twitter:image" content="$SITEPIC" />
   <meta itemprop="image" content="$SITEPIC" />
   <title>$TITLE</title>
-  <link href="css/site.css?$CBPARAM" rel="stylesheet" type="text/css" />
-  <link href="css/digger.css?$CBPARAM" rel="stylesheet" type="text/css" />
+  <link href="$RDRcss/site.css?$CBPARAM" rel="stylesheet" type="text/css" />
+  <link href="$RDRcss/digger.css?$CBPARAM" rel="stylesheet" type="text/css" />
 </head>
 <body id="bodyid">
 <div id="sitebody">
@@ -105,8 +105,8 @@ localhost:6980</a> </p>
           {name:"filter", type:"dm", desc:"filter panel functions"},
           {name:"deck", type:"dm", desc:"deck panel functions"}]};
 </script>
-<script src="js/jtmin.js?$CBPARAM"></script>
-<script src="js/app.js?$CBPARAM"></script>
+<script src="$RDRjs/jtmin.js?$CBPARAM"></script>
+<script src="$RDRjs/app.js?$CBPARAM"></script>
 <script>
   app.init();
 </script>
@@ -118,11 +118,15 @@ localhost:6980</a> </p>
 
 # path is everything after the root url slash.
 def startpage(path, refer):
+    reldocroot = path.split("/")[0]
+    if reldocroot:
+        reldocroot = "../"
     stinf = {
         "rawpath": path,
         "path": path.lower(),
         "refer": refer or "",
         "replace": {
+            "$RDR": reldocroot,
             "$CBPARAM": CACHE_BUST_PARAM,
             "$SITEPIC": "img/appicon.png?" + CACHE_BUST_PARAM,
             "$TITLE": "DiggerHub"}}

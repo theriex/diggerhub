@@ -85,7 +85,7 @@ app.login = (function () {
             authobj = app.refmgr.deserialize(accntok[0]);
             authobj.token = accntok[1];
             mgrs.ap.save(); },
-        successfulSignIn: function (result) {
+        successfulSignIn: function (result, contf) {
             mgrs.act.updateAuthObjFromResult(result);
             jt.out("acctmsglinediv", "");
             if(authflds.some((f) => app.startParams[f])) {
@@ -100,7 +100,9 @@ app.login = (function () {
                    ["a", {href:"#signout", title:"Sign out and clear cookie",
                           onclick:mdfs("act.signOut")},
                     "Sign Out"]]],
-                 ["div", {id:"tactdiv"}]])); },
+                 ["div", {id:"tactdiv"}]]));
+            if(contf) {
+                contf(); } },
         signOut: function () {
             mgrs.ap.clear();
             authobj = null;
@@ -232,8 +234,10 @@ app.login = (function () {
     }());
 
 
-    function signIn () {
+    function signIn (contf) {
+        var statmsg = "Authentication information not available";
         jt.out("acctmsglinediv", "");  //clear any previous login error
+        contf = contf || function () { jt.log(statmsg); };
         var sav = mgrs.ap.read() || {};
         var ps = {an:app.startParams.an || sav.authname || "",
                   at:app.startParams.at || sav.authtoken || "",
@@ -242,16 +246,17 @@ app.login = (function () {
                   actcode:app.startParams.actcode || ""};
         if(ps.emailin && !(ps.at || ps.passin)) {
             jt.byId("passin").focus();
-            return; }
+            return contf(); }
         if(!((ps.an || ps.emailin) && (ps.at || ps.passin))) {
-            return; }  //not trying to sign in (or activate) yet.
+            return contf(); }  //not trying to sign in (or activate) yet.
         jt.out("acctmsglinediv", "Signing in...");
         jt.byId("topsectiondiv").style.cursor = "wait";
         //URL parameters cleared after sign in
         jt.call("POST", app.dr("/api/acctok"), jt.objdata(ps),
                 function (result) {
+                    statmsg = "acctok signIn successful return";
                     jt.byId("topsectiondiv").style.cursor = "default";
-                    mgrs.act.successfulSignIn(result); },
+                    mgrs.act.successfulSignIn(result, contf); },
                 function (code, errtxt) {
                     jt.byId("topsectiondiv").style.cursor = "default";
                     jt.log("authentication failure " + code + ": " + errtxt);
@@ -262,9 +267,9 @@ app.login = (function () {
 
     //This works in conjunction with the static undecorated form created by
     //start.py, decorating to provide login without page reload.
-    function initialize (restore) {
+    function initialize (restore, contf) {
         if(initialTopActionHTML && !restore) {
-            return; }  //login form was already set up, nothing to do.
+            return; }  //form setup and initial signIn already done.
         if(!initialTopActionHTML) {  //save so it can be restored on logout
             initialTopActionHTML = jt.byId("topactiondiv").innerHTML; }
         if(restore) {
@@ -278,12 +283,12 @@ app.login = (function () {
                     onclick:mdfs("act.sendResetPasswordLink")},
               "reset password"]]));
         jt.on("loginform", "submit", app.login.formSubmit);
-        signIn();  //attempt to sign in with cookie.
+        signIn(contf);  //attempt to sign in with cookie.
     }
 
 
 return {
-    init: function (restore) { initialize(restore); },
+    init: function (restore, contf) { initialize(restore, contf); },
     formSubmit: function (event) { jt.evtend(event); signIn(); },
     signIn: function () { signIn(); },
     getAuth: function () { return authobj; },
