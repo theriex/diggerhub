@@ -80,13 +80,13 @@ app.login = (function () {
     //The action manager handles signin/out and account updates
     mgrs.act = (function () {
         var authflds = ["an", "at", "email", "emailin", "passin"];
-    return {
-        updateAuthObjFromResult: function (accntok) {
+        function updateAuthObj (accntok) {
             authobj = app.refmgr.deserialize(accntok[0]);
             authobj.token = accntok[1];
-            mgrs.ap.save(); },
+            mgrs.ap.save(); }
+    return {
         successfulSignIn: function (result, contf) {
-            mgrs.act.updateAuthObjFromResult(result);
+            updateAuthObj(result);
             jt.out("acctmsglinediv", "");
             if(authflds.some((f) => app.startParams[f])) {
                 //clear auth app params to avoid conflicts with auth changes
@@ -132,7 +132,11 @@ app.login = (function () {
                               onclick:mdfs("act.updateAccountInfo")},
                    "Update Account"]]])); },
         updateAccount: function (data, contf, errf) {
-            jt.call("POST", app.dr("/api/updacc"), data, contf, errf,
+            jt.call("POST", app.dr("/api/updacc"), data,
+                    function (accntok) {
+                        updateAuthObj(accntok);
+                        contf(); },
+                    errf,
                     jt.semaphore("login.act.updateAccount")); },
         updateAccountInfo: function () {
             jt.byId("updaccb").disabled = true;
