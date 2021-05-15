@@ -312,16 +312,20 @@ def update_email_and_password(digacc, emaddr, pwd):
     return change
 
 
-def set_fields_from_reqargs(fields, obj):
+def set_fields_from_reqargs(fields, obj, ftype="string"):
     for fld in fields:
-        val = dbacc.reqarg(fld, "string")
+        val = dbacc.reqarg(fld, ftype)
         if not val:
-            val = dbacc.reqarg(fld + "in", "string")
+            val = dbacc.reqarg(fld + "in", ftype)
         if val:
-            if val.lower() == "noval":  # remove any existing value
-                val = ""
+            if ftype == "string" and val.lower() == "noval":
+                val = ""  # remove any existing value
             obj[fld] = val
     return obj
+
+
+def eedq(val):  #escape embedded double quotes in value string
+    return val.replace("\"", "\\\"")
 
 
 def fill_missing_fields(fields, src, trg):

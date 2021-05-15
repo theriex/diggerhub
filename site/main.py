@@ -62,6 +62,14 @@ def hubsync(): # params: auth, acct + zero or more songs
 def songfetch(): #params: auth, fvs
     return util.secure(appdat.songfetch)
 
+@app.route('/api/songupd', methods=['GET', 'POST'])
+def songupd(): #params: auth, song
+    return util.secure(appdat.songupd)
+
+@app.route('/api/albumfetch')
+def albumfetch(): #params: auth, ar, ab
+    return util.secure(appdat.albumfetch)
+
 @app.route('/api/addguide', methods=['GET', 'POST'])
 def addguide(): # params auth, gmaddr
     return util.secure(appdat.addguide)

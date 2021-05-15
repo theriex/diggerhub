@@ -194,6 +194,38 @@ def songfetch():
     return util.respJSON(songs)
 
 
+def songupd():
+    try:
+        digacc, _ = util.authenticate()
+        dsId = dbacc.reqarg("dsId", "dbid", required=True)
+        song = dbacc.cfbk("Song", "dsId", dsId, required=True)
+        if song["aid"] != digacc["dsId"]:
+            raise ValueError("Song author id mismatch")
+        util.set_fields_from_reqargs(["ti", "ar", "ab", "kws", "fq", "lp",
+                                      "nt", "spid"], song)
+        util.set_fields_from_reqargs(["el", "al", "rv"], song, "int")
+        song = dbacc.write_entity(song, song["modified"])
+    except ValueError as e:
+        return util.serve_value_error(e)
+    return util.respJSON([song])
+
+
+def albumfetch():
+    try:
+        digacc, _ = util.authenticate()
+        ar = dbacc.reqarg("ar", "string", required=True)
+        ab = dbacc.reqarg("ab", "string", required=True)
+        where = ("WHERE aid = " + digacc["dsId"] +
+                 " AND spid LIKE \"z:%\"" +
+                 " AND ar = \"" + util.eedq(ar) + "\"" +
+                 " AND ab = \"" + util.eedq(ab) + "\"" +
+                 " ORDER BY path")
+        songs = dbacc.query_entity("Song", where)
+    except ValueError as e:
+        return util.serve_value_error(e)
+    return util.respJSON(songs)
+
+
 # gmaddr: guide mail address required for lookup. Stay personal.
 def addguide():
     try:
