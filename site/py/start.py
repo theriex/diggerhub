@@ -6,7 +6,7 @@
 import logging
 import py.util as util
 
-CACHE_BUST_PARAM = "v=210514"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=210516"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -99,9 +99,11 @@ localhost:6980</a> </p>
       modules:[
           {name:"refmgr", desc:"Server data and client cache"},
           {name:"login", desc:"Authentication and account management"},
+          //svc determines "web" or "loc" run
           {name:"svc", type:"dm", desc:"webapp server interaction calls"},
-          {name:"top", type:"dm", desc:"top panel functions"},
+          //player may redirect to load supporting libraries
           {name:"player", type:"dm", desc:"player panel functions"},
+          {name:"top", type:"dm", desc:"top panel functions"},
           {name:"filter", type:"dm", desc:"filter panel functions"},
           {name:"deck", type:"dm", desc:"deck panel functions"}]};
 </script>
