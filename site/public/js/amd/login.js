@@ -149,6 +149,10 @@ app.login = (function () {
                     jt.byId("updaccb").disabled = false;
                     jt.out("acctmsglinediv", "Account update failed " +
                            code + ": " + errtxt); }); },
+        noteUpdatedAccount: function (digacc) {
+            digacc.token = authobj.token;
+            authobj = digacc;
+            return authobj; },
         changePasswordDisplay: function () {
             jt.out("tactdiv", jt.tac2html(
                 [["div", {cla:"forminline"},

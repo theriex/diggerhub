@@ -60,7 +60,8 @@ module.exports = (function () {
      //    dsId: id of guiding account
      //    email: guide account email (from when the guide was added)
      //    firstname: for display purposes
-     //    hashtag: for playlist page link
+     //    hashtag: for playlist page (not currently available)
+     //    status: Active|New|Available|Inactive|Deleted
      //    lastrating: timestamp of the most recent rating in guide data
      //    lastcheck: timestamp when guide's rating data was fetched
      //    lastimport: timestamp when rating data was last imported

@@ -233,10 +233,13 @@ def addguide():
         gmaddr = dbacc.reqarg("gmaddr", "json", required=True)
         gacct = dbacc.cfbk("DigAcc", "email", gmaddr, required=True)
         guides = json.loads(digacc.get("guides") or "[]")
+        # A subsequent invite after a guide status was set to "Deleted" is
+        # more likely helpful than spam.  So always recreate with latest info
         guides = ([{"dsId": gacct["dsId"],
                     "email": gacct["email"],
                     "firstname": gacct["firstname"],
-                    "hashtag": (gacct.get("hashtag") or "")}] +
+                    "hashtag": (gacct.get("hashtag") or ""),
+                    "status": "New"}] +
                   [g for g in guides if g["dsId"] != gacct["dsId"]])
         digacc["guides"] = json.dumps(guides)
         digacc = dbacc.write_entity(digacc, digacc["modified"])
