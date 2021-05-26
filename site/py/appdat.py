@@ -266,6 +266,24 @@ def guidedat():
     return util.respJSON(gdat)
 
 
+# Auth required.  Updates DigAcc.settings.songcounts
+def songttls():
+    try:
+        digacc, _ = util.authenticate()
+        settings = json.loads(digacc.get("settings") or "{}")
+        scs = settings.get("songcounts") or {"posschg": ""}
+        totals = dbacc.fetch_song_counts(digacc["dsId"])[0]
+        scs["fetched"] = dbacc.nowISO()
+        scs["hubdb"] = totals["hubdb"]
+        scs["spotify"] = totals["spotify"]
+        settings["songcounts"] = scs
+        digacc["settings"] = json.dumps(settings)
+        digacc = dbacc.write_entity(digacc, digacc["modified"])
+    except ValueError as e:
+        return util.serve_value_error(e)
+    return util.respJSON([digacc], audience="private")
+
+
 # Collab actions are logged by the recipient.
 def collabs():
     try:

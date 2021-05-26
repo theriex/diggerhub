@@ -78,6 +78,10 @@ def addguide(): # params auth, gmaddr
 def guidedat(): # params auth, gid, since
     return util.secure(appdat.guidedat)
 
+@app.route('/api/songttls', methods=['GET', 'POST'])
+def songttls(): # params auth
+    return util.secure(appdat.songttls)
+
 @app.route('/api/collabs', methods=['GET', 'POST'])
 def collabs(): # params auth, cacts
     return util.secure(appdat.collabs)

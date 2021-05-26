@@ -49,14 +49,18 @@ module.exports = (function () {
         {f:"hashtag", d:"unique string", c:"activity view handle"},
         {f:"kwdefs", d:"json", c:"keyword definitions for this account (*1)"},
         {f:"igfolds", d:"json", c:"ignore folders used by this account"},
-        {f:"settings", d:"json", c:"ctrl vals, general options"},
-        {f:"guides", d:"json", c:"zero or more guide references (*2)"}],
+        {f:"settings", d:"json", c:"ctrl vals, general options (*2)"},
+        {f:"guides", d:"json", c:"zero or more guide references (*3)"}],
      //*1 kwdefs: At least 4 keyword definitions by keyword, each with
      //    pos: position of keyword in selection/filters
      //    sc: song count, how many songs have this keyword
      //    ig: ignore flag, hide this keyword from display even if used
      //    dsc: description of what the keyword means
-     //*2 Guide instance:
+     //*2 settings:
+     //    ctrls: last saved state of the UI control values
+     //    waitcodedays: player.js mgrs.tun B/Z/O time overrides
+     //    songcounts: fetched, posschg, totals
+     //*3 Guide instance:
      //    dsId: id of guiding account
      //    email: guide account email (from when the guide was added)
      //    firstname: for display purposes

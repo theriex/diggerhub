@@ -3,7 +3,7 @@
 #
 #       D O   N O T   E D I T
 #
-# This file was written by makeMySQLCRUD.js.  Any changes should be made there.
+# This file was written by makeCRUD.js.  Any changes should be made there.
 #
 ########################################
 
@@ -1184,5 +1184,30 @@ def visible_fields(obj, audience="public"):
     if obj["dsType"] == "AppService":
         return visible_AppService_fields(obj, audience)
     raise ValueError("Unknown object dsType: " + obj["dsType"])
+
+
+# For a given user, count their total songs and how many are streaming
+def fetch_song_counts(daid):
+    cnx = get_mysql_connector()
+    if not cnx:
+        raise ValueError("Database connection failed.")
+    try:
+        cursor = cnx.cursor()
+        try:
+            query = ("SELECT COUNT(dsId) AS hubdb" +
+                     ", COUNT(IF(spid LIKE \"z:%\", 1, NULL)) AS spotify" +
+                     " FROM (SELECT dsId, spid FROM Song WHERE aid=2020)" +
+                     " AS usersongs;")
+            cursor.execute(query)
+            res = []
+            for (hubdb, spotify) in cursor:
+                res.append({"hubdb":hubdb, "spotify":spotify})
+            return res
+        except mysql.connector.Error as e:
+            raise ValueError(str(e) or "No song fetch error details")
+        finally:
+            cursor.close()
+    finally:
+        cnx.close()
 
 

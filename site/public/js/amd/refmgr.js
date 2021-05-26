@@ -2,7 +2,7 @@
 //
 //     D O   N O T   E D I T
 //
-// This file was written by makeMySQLCRUD.js.  Any changes should be made there.
+// This file was written by makeCRUD.js.  Any changes should be made there.
 //
 //////////////////////////////////////////////////
 // Local object reference cache and server persistence access.  Automatically
