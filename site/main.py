@@ -66,6 +66,10 @@ def songfetch(): #params: auth, fvs
 def songupd(): #params: auth, song
     return util.secure(appdat.songupd)
 
+@app.route('/api/multiupd', methods=['GET', 'POST'])
+def multipupd(): #params: auth, songs
+    return util.secure(appdat.multiupd)
+
 @app.route('/api/albumfetch')
 def albumfetch(): #params: auth, ar, ab
     return util.secure(appdat.albumfetch)

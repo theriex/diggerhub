@@ -60,6 +60,7 @@ module.exports = (function () {
      //    ctrls: last saved state of the UI control values
      //    waitcodedays: player.js mgrs.tun B/Z/O time overrides
      //    songcounts: fetched, posschg, totals
+     //    xps: playlist exports by platform, then by playlist name
      //*3 Guide instance:
      //    dsId: id of guiding account
      //    email: guide account email (from when the guide was added)

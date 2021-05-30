@@ -210,6 +210,23 @@ def songupd():
     return util.respJSON([song])
 
 
+def multiupd():
+    try:
+        digacc, _ = util.authenticate()
+        songs = json.loads(dbacc.reqarg("songs", "json", required=True))
+        flds = ["lp"]  # can expand as needed, support known needs only
+        for idx, song in enumerate(songs):
+            if song["aid"] != digacc["dsId"]:
+                raise ValueError("Song author id mismatch")
+            dbsong = dbacc.cfbk("Song", "dsId", song["dsId"], required=True)
+            for fld in flds:
+                dbsong[fld] = song[fld]
+            songs[idx] = dbacc.write_entity(dbsong, dbsong["modified"])
+    except ValueError as e:
+        return util.serve_value_error(e)
+    return util.respJSON(songs)
+
+
 def albumfetch():
     try:
         digacc, _ = util.authenticate()
