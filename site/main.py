@@ -90,9 +90,9 @@ def songttls(): # params auth
 def collabs(): # params auth, cacts
     return util.secure(appdat.collabs)
 
-@app.route('/api/spotifytoken')
-def spotifytoken(): #params: auth
-    return util.secure(appdat.spotifytoken)
+@app.route('/api/impsptracks', methods=['GET', 'POST'])
+def impsptracks(): # params: auth, items
+    return util.secure(appdat.impsptracks)
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')

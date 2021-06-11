@@ -7,14 +7,15 @@
 import logging
 import json
 import datetime
-import base64
-import requests
 import py.dbacc as dbacc
 import py.util as util
 
 
 def dqe(text):
     return text.replace("\"", "\\\"")
+
+def dqv(text):
+    return "\"" + dqe(text) + "\""
 
 
 # It is NOT ok to look up the song by dsId.  An uploaded song can have a
@@ -127,6 +128,63 @@ def receive_updated_songs(digacc, updacc, songs):
     return digacc, retsongs
 
 
+# Seems like all Spotify tracks have an album, but synthesize if not.
+def spotify_track_album(track):
+    album = "Singles"
+    if "album" in track:
+        album = track["album"]["name"]
+    return album
+
+
+def path_for_spotify_track(track):
+    artist = track["artists"][0]["name"]
+    album = spotify_track_album(track)
+    title = track["name"]
+    tno = (str(track["disc_number"]).zfill(2) + "_" +
+           str(track["track_number"]).zfill(2))
+    return artist + "/" + album + "/" + tno + " " + title
+
+
+def merge_spotify_track(digacc, track):
+    spid = "z:" + track["id"]
+    # lookup by aid/spid to check if track already exists
+    where = "WHERE aid = " + digacc["dsId"] + " AND spid = " + dqv(spid)
+    retsongs = dbacc.query_entity("Song", where)
+    if len(retsongs) >= 1:
+        return None   # track already exists, no updated data
+    # lookup by ti/ar/ab, checking all artists.  Assumption local db
+    # contents has already been best effort spidmapper matched.  Dupes handled
+    # by dupe detection flagging and playback chaining.
+    artists = []
+    for artist in track["artists"]:
+        artists.append(dqv(artist["name"]))
+    artists = "(" + ", ".join(artists) + ")"
+    where = "WHERE aid = " + digacc["dsId"] + " AND ti = " + dqv(track["name"])
+    if "album" in track:
+        where += " AND ab = " + dqv(track["album"]["name"])
+    where += " AND ar IN " + artists
+    retsongs = dbacc.query_entity("Song", where)
+    if len(retsongs) >= 1:
+        song = retsongs[0]
+        song["spid"] = spid
+        song = dbacc.write_entity(song, song["modified"])
+        return song
+    # no existing song found, add new with sortable path for album view
+    song = {"dsType": "Song", "aid": digacc["dsId"], "batchconv": "spidimp",
+            "path": path_for_spotify_track(track),
+            "ti": track["name"],
+            "ar": track["artists"][0]["name"],
+            "ab": spotify_track_album(track),
+            "el": 49, "al": 49, "kws": "",
+            "rv": 7,  # above average since they liked it
+            "fq": "P",  # playable rather than newly added since filling in lp
+            "lp": dbacc.timestamp(-1 * 60 * 24),  # yesterday, so ok to play now
+            "nt": "", "spid": spid}
+    song = dbacc.write_entity(song)
+    return song
+
+
+
 ############################################################
 ## API endpoints:
 
@@ -177,7 +235,7 @@ def songfetch():
         if fvs["srchtxt"]:
             where += (" AND (ti LIKE \"%" + fvs["srchtxt"] + "%\"" +
                       " OR ar LIKE \"%" + fvs["srchtxt"] + "%\"" +
-                      " OR ab LIKE \"%" + fvs["srchtxt"] + "%\"")
+                      " OR ab LIKE \"%" + fvs["srchtxt"] + "%\")")
         if fvs["fq"] == "on":  # frequency filtering active
             now = datetime.datetime.utcnow().replace(microsecond=0)
             pst = dbacc.dt2ISO(now - datetime.timedelta(days=1))
@@ -321,29 +379,40 @@ def collabs():
     return util.respJSON(resacts)
 
 
-# https://developer.spotify.com/documentation/general/guides/authorization-guide
-# For now the approach is to use the granted token as long as possible, then
-# go back for a full new one rather than using a the returned refresh token.
-# Easier to implement, information may be stale if the app was inactive for
-# a while, and scopes may change as things develop further.
-def spotifytoken():
+# Walk all the given tracks and create or update Songs.  Update DigAcc
+# settings spimport to reflect work done.
+#  - lastcheck: ISO timestamp when Spotify last checked.  On app startup, if
+#    this value was more than 24 hours ago, then import processing reads
+#    songs until the "added_at" value of a song is older than this value.
+#  - initsync: ISO timestamp filled after all spotify library tracks imported.
+#  - processed: Count of how many spotify library songs have been checked.
+#    Equivalent to the paging offset while import is ongoing.
+#  - imported: Count of how many DiggerHub songs created.
+def impsptracks():
     try:
         digacc, _ = util.authenticate()
-        hubdat = json.loads(digacc["hubdat"])
-        svcdef = util.get_connection_service("spotify")
-        svckey = svcdef["ckey"] + ":" + svcdef["csec"]
-        authkey = base64.b64encode(svckey.encode("UTF-8")).decode("UTF-8")
-        resp = requests.post(
-            "https://accounts.spotify.com/api/token",
-            headers={"Authorization": "Basic " + authkey},
-            data={"grant_type": "authorization_code",
-                  "code": hubdat["spa"]["code"],
-                  "redirect_uri": svcdef["data"]})
-        if resp.status_code != 200:
-            raise ValueError("Code for token exchange failed " +
-                             str(resp.status_code) + ": " + resp.text)
-        tokinfo = resp.json()
-        tokinfo["useby"] = dbacc.timestamp((tokinfo["expires_in"] - 1) // 60)
+        settings = json.loads(digacc.get("settings") or "{}")
+        spi = settings.get("spimport", {"lastcheck":"1970-01-01T00:00:00Z",
+                                        "initsync":"",
+                                        "processed":0,
+                                        "imported":0})
+        songs = []
+        items = dbacc.reqarg("items", "string", required=True)
+        items = json.loads(items)
+        if len(items) > 0:
+            for item in items:
+                song = merge_spotify_track(digacc, item["track"])
+                if song:
+                    songs.append(song)
+                    spi["imported"] += 1
+                spi["processed"] += 1
+            settings["spimport"] = spi
+        else:  # no more items to import, note completed
+            ts = dbacc.nowISO()
+            spi["initsync"] = spi.get("initsync") or ts
+            spi["lastcheck"] = ts
+        digacc["settings"] = json.dumps(settings)
+        digacc = dbacc.write_entity(digacc, digacc["modified"])
     except ValueError as e:
         return util.serve_value_error(e)
-    return util.respJSON(tokinfo)
+    return util.respJSON([digacc] + songs, audience="private")
