@@ -17,6 +17,9 @@ def dqe(text):
 def dqv(text):
     return "\"" + dqe(text) + "\""
 
+def strl2inexp(strl):
+    return "(" + ", ".join([dqv(name) for name in strl]) + ")"
+
 
 # It is NOT ok to look up the song by dsId.  An uploaded song can have a
 # dsId that should not be trusted.  Doing so could overwrite someone else's
@@ -128,6 +131,22 @@ def receive_updated_songs(digacc, updacc, songs):
     return digacc, retsongs
 
 
+# When importing from Spotify, title details like parenthetical expressions
+# can reference a different song.  Matching too broadly is unsafe.  Rather
+# create a perceived duplicate than create a broken mapping.
+def spotmatch(song, spid, title):
+    if song["spid"] == spid or song["ti"].lower() == title.lower():
+        return True
+    return False
+
+
+# All songs need a path for client album display sorting
+def make_song_path(discnum, tracknum, artist, album, title):
+    discnum = discnum or 1
+    tno = str(discnum).zfill(2) + "_" + str(tracknum).zfill(2)
+    return artist + "/" + album + "/" + tno + " " + title
+
+
 # Seems like all Spotify tracks have an album, but synthesize if not.
 def spotify_track_album(track):
     album = "Singles"
@@ -140,9 +159,9 @@ def path_for_spotify_track(track):
     artist = track["artists"][0]["name"]
     album = spotify_track_album(track)
     title = track["name"]
-    tno = (str(track["disc_number"]).zfill(2) + "_" +
-           str(track["track_number"]).zfill(2))
-    return artist + "/" + album + "/" + tno + " " + title
+    dno = track["disc_number"]
+    tno = track["track_number"]
+    return make_song_path(dno, tno, artist, album, title)
 
 
 def merge_spotify_track(digacc, track):
@@ -155,14 +174,11 @@ def merge_spotify_track(digacc, track):
     # lookup by ti/ar/ab, checking all artists.  Assumption local db
     # contents has already been best effort spidmapper matched.  Dupes handled
     # by dupe detection flagging and playback chaining.
-    artists = []
-    for artist in track["artists"]:
-        artists.append(dqv(artist["name"]))
-    artists = "(" + ", ".join(artists) + ")"
     where = "WHERE aid = " + digacc["dsId"] + " AND ti = " + dqv(track["name"])
     if "album" in track:
         where += " AND ab = " + dqv(track["album"]["name"])
-    where += " AND ar IN " + artists
+    where += " AND ar IN " + strl2inexp(a["name"] for a in track["artists"])
+    logging.info("merge_spotify_track " + where)
     retsongs = dbacc.query_entity("Song", where)
     if len(retsongs) >= 1:
         song = retsongs[0]
@@ -285,22 +301,6 @@ def multiupd():
     return util.respJSON(songs)
 
 
-def albumfetch():
-    try:
-        digacc, _ = util.authenticate()
-        ar = dbacc.reqarg("ar", "string", required=True)
-        ab = dbacc.reqarg("ab", "string", required=True)
-        where = ("WHERE aid = " + digacc["dsId"] +
-                 " AND spid LIKE \"z:%\"" +
-                 " AND ar = \"" + util.eedq(ar) + "\"" +
-                 " AND ab = \"" + util.eedq(ab) + "\"" +
-                 " ORDER BY path")
-        songs = dbacc.query_entity("Song", where)
-    except ValueError as e:
-        return util.serve_value_error(e)
-    return util.respJSON(songs)
-
-
 # gmaddr: guide mail address required for lookup. Stay personal.
 def addguide():
     try:
@@ -416,3 +416,49 @@ def impsptracks():
     except ValueError as e:
         return util.serve_value_error(e)
     return util.respJSON([digacc] + songs, audience="private")
+
+
+# Import the given spotify album/artists/tracks
+def spabimp():
+    try:
+        digacc, _ = util.authenticate()
+        abinf = dbacc.reqarg("abinf", "string", required=True)
+        abinf = json.loads(abinf)
+        album = abinf["album"]
+        # Fetch known existing songs from album and choose listing artist
+        where = ("WHERE aid = " + digacc["dsId"] +
+                 " AND ab = \"" + album + "\"" +
+                 " AND ar IN " + strl2inexp(abinf["artists"]) +
+                 " ORDER BY modified DESC LIMIT 100")
+        kns = dbacc.query_entity("Song", where)
+        if len(kns) > 0:
+            artist = kns[0]["ar"]
+        else:
+            artist = abinf["artists"][0]
+        # convert tracks into song instances
+        songs = []
+        for track in abinf["tracks"]:
+            title = track["name"]
+            spid = "z:" + track["tid"]
+            song = next((s for s in kns if spotmatch(s, spid, title)), None)
+            if not song:
+                song = {"dsType": "Song", "aid": digacc["dsId"],
+                        "batchconv": "spalbimp",
+                        "path": make_song_path(track["dn"], track["tn"],
+                                               artist, abinf["album"], title),
+                        "ti": title,
+                        "ar": artist,
+                        "ab": album,
+                        "el": 49, "al": 49, "kws": "",
+                        "rv": 5,  # standard import value
+                        "fq": "N",  # Newly added
+                        "lp": "",
+                        "nt": "", "spid": spid}
+                logging.info("spabimp adding " + song["path"])
+                song = dbacc.write_entity(song)
+            elif not song["spid"].startswith("z:"):
+                song["spid"] = spid
+            songs.append(song)
+    except ValueError as e:
+        return util.serve_value_error(e)
+    return util.respJSON(songs)

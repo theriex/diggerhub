@@ -70,10 +70,6 @@ def songupd(): #params: auth, song
 def multipupd(): #params: auth, songs
     return util.secure(appdat.multiupd)
 
-@app.route('/api/albumfetch')
-def albumfetch(): #params: auth, ar, ab
-    return util.secure(appdat.albumfetch)
-
 @app.route('/api/addguide', methods=['GET', 'POST'])
 def addguide(): # params auth, gmaddr
     return util.secure(appdat.addguide)
@@ -93,6 +89,10 @@ def collabs(): # params auth, cacts
 @app.route('/api/impsptracks', methods=['GET', 'POST'])
 def impsptracks(): # params: auth, items
     return util.secure(appdat.impsptracks)
+
+@app.route('/api/spabimp', methods=['GET', 'POST'])
+def spabimp(): # params auth, abinf
+    return util.secure(appdat.spabimp)
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
