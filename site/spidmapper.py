@@ -4,6 +4,7 @@
 #pylint: disable=invalid-name
 #pylint: disable=missing-function-docstring
 #pylint: disable=logging-not-lazy
+#pylint: disable=line-too-long
 import py.mconf as mconf
 import logging
 import logging.handlers
@@ -21,6 +22,7 @@ import urllib.parse     # to be able to use urllib.parse.quote
 import string
 import json
 import sys
+from string import Template
 
 
 svcdef = util.get_connection_service("spotify")
@@ -104,7 +106,9 @@ def fetch_spid(query):
 def fix_album_name(album):
     sxps = [{"exp":r"Oumou\s+[\(\[]disk\s+1[\)\]]", "use":"Oumou"},
             {"exp":r"Swiss\sMovement\s.*",
-             "use":"Swiss Movement (Montreux 30th Anniversary)"}]
+             "use":"Swiss Movement (Montreux 30th Anniversary)"},
+            {"exp":r"Astro[\-\s]Creep:\s2000.*",
+             "use":"Astro Creep: 2000 Songs Of Love, Destruction And Other Synthetic Delusions Of The Electric Head"}]
     for sxp in sxps:
         abfix = re.sub(sxp["exp"], sxp["use"], album, flags=re.I)
         if abfix != album:
@@ -145,7 +149,8 @@ def remove_contextual_title_suffix(title, album):
              "tix":r"Op\.\s1/", "trt":"Op. 1, No. "},
             {"abx":r"Paganini: 24 Caprices for Solo Violin, Op. 1",
              "tix":r" - .*", "trt":""},
-            {"abx":r"Storm The Studio", "tix":r"\(Part", "trt":"(Pt"}]
+            {"abx":r"Storm The Studio", "tix":r"\(Part", "trt":"(Pt"},
+            {"abx":r"Astro[\-\s]Creep:\s2000.*", "tix":r"Pt\.\s", "trt":"Part "}]
     for cxp in cxps:
         if re.match(cxp["abx"], album, flags=re.I):
             title = re.sub(cxp["tix"], cxp["trt"], title, flags=re.I)
@@ -330,19 +335,42 @@ def manual_verification_needed(song):
         return False
     if song["spid"].startswith("k"):  # known unmappable
         return False
-    return True
+    return True  # spid set to x:timestamp
 
 
+def notice_body(song):
+    return Template("""spidmapper was unable to map Song $dsId
+    ti: $ti
+    ar: $ar
+    ab: $ab
+If the equivalent can be found on Spotify, remap manually e.g.
+python spidmapper.py $dsId spid <spotify track id>
+
+Alternatively, specify "title" or "artist" instead of "spid".
+Add a general mapping rule if that makes sense.
+
+You can test automated lookup using:
+python spidmapper.py lookup "$ti" "$ar" "$ab"
+
+If not remapped, subsequent lookups will assume the track is unavailable.
+""").substitute(song)
+
+
+# Attempt to map all songs with no spid value.  Send an email message if
+# running in batch and manual intervention needed.
 # A previously failed mapping could succeed on retry at a later time.  To
 # automate retry, the spid for a Song could be cleared if it starts with
 # "x:" followed by a time older than 4 weeks.  Meanwhile the sweep process
 # could remove or ignore any "x:" mappings older than 3 weeks.
-def sweep_songs():
+def sweep_songs(batch=False):
     songs = dbacc.query_entity("Song", "WHERE spid IS NULL LIMIT 50")
     for song in songs:
         updsong = map_song_spid(song)
         if manual_verification_needed(updsong):
             logging.info("Song " + song["dsId"] + " not mapped, stopping.")
+            if batch:
+                util.send_mail(None, "spidmapper sweep", notice_body(updsong),
+                               domain="diggerhub.com")
             break
 
 
@@ -355,10 +383,13 @@ def interactive_lookup(title, artist, album):
 
 def recheck_or_sweep():
     if len(sys.argv) > 1:
+        if sys.argv[1] == "batch":
+            sweep_songs(batch=True)
+            return
         if sys.argv[1] == "lookup":
             interactive_lookup(sys.argv[2], sys.argv[3], sys.argv[4])
             return
-        song = dbacc.cfbk("Song", "dsId", sys.argv[1])
+        song = dbacc.cfbk("Song", "dsId", sys.argv[1], required=True)
         ovrti = ""
         ovrar = ""
         if len(sys.argv) > 3:
@@ -374,7 +405,7 @@ def recheck_or_sweep():
                 return
         map_song_spid(song, refetch=True, title=ovrti, artist=ovrar)
     else:
-        sweep_songs()
+        sweep_songs()  # default is interactive sweep (no email)
 
 
 # run it
