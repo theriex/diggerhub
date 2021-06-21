@@ -207,7 +207,10 @@ def reduce_collaborative_name(artist):
             {"exp":r"Robert Fripp and Brian Eno", "use":"Robert Fripp"},
             {"exp":r"Band of Gypsys", "use":"Jimi Hendrix"},
             {"exp":r"Gary Clail and On-U Sound System", "use":"Gary Clail"},
-            {"exp":r"Gary Clail & On-U Sound System", "use":"Gary Clail"}]
+            {"exp":r"Gary Clail & On-U Sound System", "use":"Gary Clail"},
+            {"exp":r"Thelonius Monk with John Coltrane",
+             "use":"Thelonious Monk"},
+            {"exp":r"The Royal Macademians", "use":"The Royal Macadamians"}]
     for sxp in sxps:
         artfix = re.sub(sxp["exp"], sxp["use"], artist, flags=re.I)
         if artfix != artist:
@@ -328,12 +331,34 @@ def explicitely_map(song, spid):
     return song
 
 
+def is_known_unavailable_artist_work(song):
+    artists = ["Toshinori Kondo & IMA",
+               "The Miceteeth"]
+    arf = song["ar"].casefold()
+    if arf in [a.casefold() for a in artists]:
+        return True
+    # If a song was available on a different album, that should have been
+    # remapped.  This is for when all songs on the entire album are
+    # generally unavailable.
+    artalbs = {"Think Tree": ["Like The Idea"],
+               "The Zulus": ["Down on the Floor"],
+               "Thievery Corporation": ["Abductions and Reconstructions"],
+               "The Mighty Lemon Drops": ["World Without End"]}
+    albums = next((v for k, v in artalbs.items() if k.casefold() == arf), [])
+    abf = song["ab"].casefold()
+    if abf in [b.casefold() for b in albums]:
+        return True
+    return False
+
+
 def manual_verification_needed(song):
     if song["spid"].startswith("z"):  # mapped
         return False
     if song["spid"].startswith("m"):  # bad metadata
         return False
     if song["spid"].startswith("k"):  # known unmappable
+        return False
+    if is_known_unavailable_artist_work(song):
         return False
     return True  # spid set to x:timestamp
 
