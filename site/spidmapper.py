@@ -110,7 +110,8 @@ def fix_album_name(album):
             {"exp":r"Astro[\-\s]Creep:\s2000.*",
              "use":"Astro Creep: 2000 Songs Of Love, Destruction And Other Synthetic Delusions Of The Electric Head"},
             {"exp":r"Like Stars In My Hands",
-             "use":"Millions, Like Stars in My Hands, The Daggers in My Heart Wage War (Bonus Version)"}]
+             "use":"Millions, Like Stars in My Hands, The Daggers in My Heart Wage War (Bonus Version)"},
+            {"exp":r"Sandinista!.*", "use":"Sandinista! (Remastered)"}]
     for sxp in sxps:
         abfix = re.sub(sxp["exp"], sxp["use"], album, flags=re.I)
         if abfix != album:
@@ -222,7 +223,8 @@ def reduce_collaborative_name(artist):
             {"exp":r"Elizabeth Daily", "use":"E.G. Daily"},
             {"exp":r"Jerome Patrick Holan/Chuck Berry", "use":"Chuck Berry"},
             {"exp":r"Cure, The", "use":"The Cure"},
-            {"exp":r"Jesse Johnson & Stephanie Spruill", "use":"Jesse Johnson"}]
+            {"exp":r"Jesse Johnson & Stephanie Spruill", "use":"Jesse Johnson"},
+            {"exp":r"Screaming Jay Hawkins", "use":"Screamin' Jay Hawkins"}]
     for sxp in sxps:
         artfix = re.sub(sxp["exp"], sxp["use"], artist, flags=re.I)
         if artfix != artist:
@@ -357,7 +359,8 @@ def is_known_unavailable_artist_work(song):
                "Thievery Corporation": ["Abductions and Reconstructions"],
                "The Mighty Lemon Drops": ["World Without End"],
                "Talvin Singh": ["Anokha"],
-               "Stone Fox": ["Stone Fox"]}  # The 90's San Francisco band
+               "Stone Fox": ["Stone Fox"],  # The 90's San Francisco band
+               "Scientist": ["Heavyweight Dub Champion"]}
     albums = next((v for k, v in artalbs.items() if k.casefold() == arf), [])
     abf = song["ab"].casefold()
     if abf in [b.casefold() for b in albums]:
