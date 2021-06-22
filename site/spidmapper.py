@@ -108,7 +108,9 @@ def fix_album_name(album):
             {"exp":r"Swiss\sMovement\s.*",
              "use":"Swiss Movement (Montreux 30th Anniversary)"},
             {"exp":r"Astro[\-\s]Creep:\s2000.*",
-             "use":"Astro Creep: 2000 Songs Of Love, Destruction And Other Synthetic Delusions Of The Electric Head"}]
+             "use":"Astro Creep: 2000 Songs Of Love, Destruction And Other Synthetic Delusions Of The Electric Head"},
+            {"exp":r"Like Stars In My Hands",
+             "use":"Millions, Like Stars in My Hands, The Daggers in My Heart Wage War (Bonus Version)"}]
     for sxp in sxps:
         abfix = re.sub(sxp["exp"], sxp["use"], album, flags=re.I)
         if abfix != album:
@@ -120,10 +122,13 @@ def fix_album_name(album):
 def unpack_general_compilation(ti, ar, ab):
     cxps = [{"abx":r"^God Save the Queen: 76-96.*", "spo":"arti", "sep":" / "},
             {"abx":r"Racer Radio, Vol 1", "spo":"arti", "sep":" / "},
-            {"abx":r"Great 70's Dance Grooves", "spo":"arti", "sep":" / "}]
+            {"abx":r"Great 70's Dance Grooves", "spo":"arti", "sep":" / "},
+            {"abx":r"The Breakfast Club", "spo":"arti", "sep":" / "}]
     for cxp in cxps:
         if re.match(cxp["abx"], ab, flags=re.I):
             tes = ti.split(cxp["sep"])
+            if len(tes) < 2:
+                break  # separator not found, can't fix track.
             if cxp["spo"] == "arti":
                 ar = tes[0]
                 ti = tes[1]
@@ -150,7 +155,8 @@ def remove_contextual_title_suffix(title, album):
             {"abx":r"Paganini: 24 Caprices for Solo Violin, Op. 1",
              "tix":r" - .*", "trt":""},
             {"abx":r"Storm The Studio", "tix":r"\(Part", "trt":"(Pt"},
-            {"abx":r"Astro[\-\s]Creep:\s2000.*", "tix":r"Pt\.\s", "trt":"Part "}]
+            {"abx":r"Astro[\-\s]Creep:\s2000.*", "tix":r"Pt\.\s", "trt":"Part "},
+            {"abx":r"Guilty 'Til Proved Innocent!", "tix":r"\[Hidden Track\] \[Live\]", "trt":""}]
     for cxp in cxps:
         if re.match(cxp["abx"], album, flags=re.I):
             title = re.sub(cxp["tix"], cxp["trt"], title, flags=re.I)
@@ -168,6 +174,7 @@ def remove_general_suffix(title):
            r"\s[\(\[]\d\d?\-\d\d?\-\d\d[\)\]]$",  # recording date
            r"^\d\d?\s",  # title starts with track number
            r"\.mp3$",
+           r"\S\s(re)?mix",  # whoever "mix" or "remix", just match on whoever.
            r"\s*[\(\[]Featuring\s+.*[\)\]]"]
     for rx in rxs:
         title = re.sub(rx, "", title, flags=re.I)
@@ -182,6 +189,7 @@ def remove_ignorable_suffix(title, album):
     return remove_general_suffix(title)
 
 
+# reduce artist name if initial match fails.  Also used for name corrections.
 def reduce_collaborative_name(artist):
     # Sarah Vaughan With Her Trio is not the same as with her orchestra.
     sxps = [{"exp":r"Prince\s+(&|And)\s+The+\s+Revolution", "use":"Prince"},
@@ -210,7 +218,11 @@ def reduce_collaborative_name(artist):
             {"exp":r"Gary Clail & On-U Sound System", "use":"Gary Clail"},
             {"exp":r"Thelonius Monk with John Coltrane",
              "use":"Thelonious Monk"},
-            {"exp":r"The Royal Macademians", "use":"The Royal Macadamians"}]
+            {"exp":r"The Royal Macademians", "use":"The Royal Macadamians"},
+            {"exp":r"Elizabeth Daily", "use":"E.G. Daily"},
+            {"exp":r"Jerome Patrick Holan/Chuck Berry", "use":"Chuck Berry"},
+            {"exp":r"Cure, The", "use":"The Cure"},
+            {"exp":r"Jesse Johnson & Stephanie Spruill", "use":"Jesse Johnson"}]
     for sxp in sxps:
         artfix = re.sub(sxp["exp"], sxp["use"], artist, flags=re.I)
         if artfix != artist:
@@ -343,7 +355,9 @@ def is_known_unavailable_artist_work(song):
     artalbs = {"Think Tree": ["Like The Idea"],
                "The Zulus": ["Down on the Floor"],
                "Thievery Corporation": ["Abductions and Reconstructions"],
-               "The Mighty Lemon Drops": ["World Without End"]}
+               "The Mighty Lemon Drops": ["World Without End"],
+               "Talvin Singh": ["Anokha"],
+               "Stone Fox": ["Stone Fox"]}  # The 90's San Francisco band
     albums = next((v for k, v in artalbs.items() if k.casefold() == arf), [])
     abf = song["ab"].casefold()
     if abf in [b.casefold() for b in albums]:
