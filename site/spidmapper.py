@@ -119,6 +119,15 @@ def fix_album_name(album):
     return album
 
 
+def fix_artist_album_name(artist, album):
+    sxps = [{"arx":"Oceania", "abx":"CD", "use":"Oceania"}]
+    for sxp in sxps:
+        if re.match(sxp["arx"], artist, flags=re.I):
+            if re.match(sxp["abx"], album, flags=re.I):
+                return sxp["use"]
+    return album
+
+
 # General compilations where the artist is "Various"
 def unpack_general_compilation(ti, ar, ab):
     cxps = [{"abx":r"^God Save the Queen: 76-96.*", "spo":"arti", "sep":" / "},
@@ -143,11 +152,12 @@ def unpack_general_compilation(ti, ar, ab):
 # General alterations to be done before attempting a match
 def fix_known_bad_values(ti, ar, ab):
     ab = fix_album_name(ab)
+    ab = fix_artist_album_name(ar, ab)
     ti, ar, ab = unpack_general_compilation(ti, ar, ab)
     return ti, ar, ab
 
 
-def remove_contextual_title_suffix(title, album):
+def remove_contextual_title(title, album):
     cxps = [{"abx":r"Oumou", "tix":r"\(.*\)", "trt":""},
             {"abx":r"Paganini: 24 Caprices for Solo Violin, Op. 1",
              "tix":r"Paganini: Caprice #\d\d? In", "trt":"Caprice In"},
@@ -157,7 +167,8 @@ def remove_contextual_title_suffix(title, album):
              "tix":r" - .*", "trt":""},
             {"abx":r"Storm The Studio", "tix":r"\(Part", "trt":"(Pt"},
             {"abx":r"Astro[\-\s]Creep:\s2000.*", "tix":r"Pt\.\s", "trt":"Part "},
-            {"abx":r"Guilty 'Til Proved Innocent!", "tix":r"\[Hidden Track\] \[Live\]", "trt":""}]
+            {"abx":r"Guilty 'Til Proved Innocent!", "tix":r"\[Hidden Track\] \[Live\]", "trt":""},
+            {"abx":r"Twitch", "tix":r"^Ministry", "trt":""}]
     for cxp in cxps:
         if re.match(cxp["abx"], album, flags=re.I):
             title = re.sub(cxp["tix"], cxp["trt"], title, flags=re.I)
@@ -184,7 +195,7 @@ def remove_general_suffix(title):
 
 # Suffixes that can be removed from the title if no match was found.
 def remove_ignorable_suffix(title, album):
-    tifix = remove_contextual_title_suffix(title, album)
+    tifix = remove_contextual_title(title, album)
     if tifix != title:
         return tifix
     return remove_general_suffix(title)
@@ -224,7 +235,9 @@ def reduce_collaborative_name(artist):
             {"exp":r"Jerome Patrick Holan/Chuck Berry", "use":"Chuck Berry"},
             {"exp":r"Cure, The", "use":"The Cure"},
             {"exp":r"Jesse Johnson & Stephanie Spruill", "use":"Jesse Johnson"},
-            {"exp":r"Screaming Jay Hawkins", "use":"Screamin' Jay Hawkins"}]
+            {"exp":r"Screaming Jay Hawkins", "use":"Screamin' Jay Hawkins"},
+            {"exp":r"Robert Fripp featuring.*", "use":"Robert Fripp"},
+            {"exp":r"M.I.A.\sfeat.*", "use":"M.I.A."}]
     for sxp in sxps:
         artfix = re.sub(sxp["exp"], sxp["use"], artist, flags=re.I)
         if artfix != artist:
@@ -346,13 +359,15 @@ def explicitely_map(song, spid):
 
 
 def is_known_unavailable_artist_work(song):
-    artists = ["Toshinori Kondo & IMA",
+    artists = [r"Toshinori Kondo.*IMA",
                "The Miceteeth"]
-    arf = song["ar"].casefold()
-    if arf in [a.casefold() for a in artists]:
+    art = song["ar"]
+    arm = [a for a in artists if re.match(a, art, flags=re.I)]
+    if arm and len(arm) > 0:
+        logging.info("known unavail arm: " + str(arm))
         return True
-    # If a song was available on a different album, that should have been
-    # remapped.  This is for when all songs on the entire album are
+    # If a song was available on a different album, that should have already
+    # been remapped.  This is for when all songs on the entire album are
     # generally unavailable.
     artalbs = {"Think Tree": ["Like The Idea"],
                "The Zulus": ["Down on the Floor"],
@@ -360,10 +375,21 @@ def is_known_unavailable_artist_work(song):
                "The Mighty Lemon Drops": ["World Without End"],
                "Talvin Singh": ["Anokha"],
                "Stone Fox": ["Stone Fox"],  # The 90's San Francisco band
-               "Scientist": ["Heavyweight Dub Champion"]}
-    albums = next((v for k, v in artalbs.items() if k.casefold() == arf), [])
-    abf = song["ab"].casefold()
-    if abf in [b.casefold() for b in albums]:
+               "Scientist": ["Heavyweight Dub Champion"],
+               "Keith Jarret.*": [r"Live, Hanover Germany.*"],
+               "Ray Charles": [r"Genius.*Soul.*50.*Anniversary"],
+               "Prach": [r"Dalama.*"],
+               "Pizzicato Five": ["女性上位時代"],
+               "No Man": ["Whammon Express"],
+               "Arthur Loves Plastic": ["The Zero State"],
+               "Jon Hassel": [r"The Surgeon of the Nightsky.*"]}
+    albums = [v for k, v in artalbs.items() if re.match(k, art, flags=re.I)]
+    if not albums or len(albums) < 1:
+        return False
+    albums = albums[0]
+    mabs = [a for a in albums if re.match(a, song["ab"], flags=re.I)]
+    if len(mabs) > 0:
+        logging.info("known unavail mabs: " + str(mabs))
         return True
     return False
 
@@ -420,7 +446,10 @@ def interactive_lookup(title, artist, album):
     print("title: " + title)
     print("artist: " + artist)
     print("album: " + album)
-    print(json.dumps(find_spid(title, artist, album)))
+    if is_known_unavailable_artist_work({"ar":artist, "ti":title, "ab":album}):
+        print("Known unavailable")
+    else:
+        print(json.dumps(find_spid(title, artist, album)))
 
 
 def recheck_or_sweep():
