@@ -237,7 +237,10 @@ def reduce_collaborative_name(artist):
             {"exp":r"Jesse Johnson & Stephanie Spruill", "use":"Jesse Johnson"},
             {"exp":r"Screaming Jay Hawkins", "use":"Screamin' Jay Hawkins"},
             {"exp":r"Robert Fripp featuring.*", "use":"Robert Fripp"},
-            {"exp":r"M.I.A.\sfeat.*", "use":"M.I.A."}]
+            {"exp":r"M.I.A.\sfeat.*", "use":"M.I.A."},
+            {"exp":r"Geri Allen\s.*", "use":"Geri Allen"},
+            {"exp":"Gus Gus", "use":"GusGus"},
+            {"exp":"くるり", "use":"Quruli"}]
     for sxp in sxps:
         artfix = re.sub(sxp["exp"], sxp["use"], artist, flags=re.I)
         if artfix != artist:
@@ -366,6 +369,13 @@ def is_known_unavailable_artist_work(song):
     if arm and len(arm) > 0:
         logging.info("known unavail arm: " + str(arm))
         return True
+    albums = [r"Deep In The Heart Of Tuva.*Cowboy Music From The Wild East",
+              r"Requiem For The Americas.*Songs From The Lost World",
+              r"The Wired CD.*"]
+    abm = [a for a in albums if re.match(a, song["ab"], flags=re.I)]
+    if abm and len(abm) > 0:
+        logging.info("known unavail abm: " + str(abm))
+        return True
     # If a song was available on a different album, that should have already
     # been remapped.  This is for when all songs on the entire album are
     # generally unavailable.
@@ -379,10 +389,19 @@ def is_known_unavailable_artist_work(song):
                "Keith Jarret.*": [r"Live, Hanover Germany.*"],
                "Ray Charles": [r"Genius.*Soul.*50.*Anniversary"],
                "Prach": [r"Dalama.*"],
-               "Pizzicato Five": ["女性上位時代"],
+               "Pizzicato Five": ["女性上位時代", r"singles.*"],
                "No Man": ["Whammon Express"],
                "Arthur Loves Plastic": ["The Zero State"],
-               "Jon Hassel": [r"The Surgeon of the Nightsky.*"]}
+               "Jon Hassel": [r"The Surgeon of the Nightsky.*"],
+               "小沢健二": [r"Ecology Of Everyday Life.*"],
+               "Ini Kamoze": ["Lyrical Gangsta"],
+               "Curve": ["Doppelgänger"],
+               "Birdsongs Of The Mesozoic": ["Sonic Geology"],
+               "Franco Battiato": ["Shadow, Light"],
+               "King Tubby": [r"Meets Scientist In A World Of.*"],
+               "小沢健二": ["Eclectic"],
+               "Omoide Hatoba": ["Mantako"],
+               "World's End Girlfriend": ["Xmas Song"]}
     albums = [v for k, v in artalbs.items() if re.match(k, art, flags=re.I)]
     if not albums or len(albums) < 1:
         return False
