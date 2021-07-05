@@ -70,13 +70,13 @@ def songupd(): #params: auth, song
 def multipupd(): #params: auth, songs
     return util.secure(appdat.multiupd)
 
-@app.route('/api/addguide', methods=['GET', 'POST'])
-def addguide(): # params auth, gmaddr
-    return util.secure(appdat.addguide)
+@app.route('/api/addmusf', methods=['GET', 'POST'])
+def addmusf(): # params auth, gmaddr
+    return util.secure(appdat.addmusf)
 
-@app.route('/api/guidedat')
-def guidedat(): # params auth, gid, since
-    return util.secure(appdat.guidedat)
+@app.route('/api/musfdat')
+def musfdat(): # params auth, gid, since
+    return util.secure(appdat.musfdat)
 
 @app.route('/api/songttls', methods=['GET', 'POST'])
 def songttls(): # params auth

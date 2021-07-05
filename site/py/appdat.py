@@ -123,7 +123,7 @@ def receive_updated_songs(digacc, updacc, songs):
             logging.warning("receive_updated_songs write_song " + str(e))
     # updacc may contain updates to client fields.  It may not contain
     # updates to hub server fields like email.
-    for ecf in ["kwdefs", "igfolds", "settings", "guides"]:
+    for ecf in ["kwdefs", "igfolds", "settings", "musfs"]:
         if updacc.get(ecf) and updacc[ecf] != digacc[ecf]:
             digacc[ecf] = updacc[ecf]
     # always update the account so modified reflects latest sync
@@ -301,38 +301,38 @@ def multiupd():
     return util.respJSON(songs)
 
 
-# gmaddr: guide mail address required for lookup. Stay personal.
-def addguide():
+# gmaddr: musical friend mail address required for lookup. Stay personal.
+def addmusf():
     try:
         digacc, _ = util.authenticate()
         gmaddr = dbacc.reqarg("gmaddr", "json", required=True)
         gacct = dbacc.cfbk("DigAcc", "email", gmaddr, required=True)
-        guides = json.loads(digacc.get("guides") or "[]")
-        # A subsequent invite after a guide status was set to "Deleted" is
-        # more likely helpful than spam.  So always recreate with latest info
-        guides = ([{"dsId": gacct["dsId"],
-                    "email": gacct["email"],
-                    "firstname": gacct["firstname"],
-                    "hashtag": (gacct.get("hashtag") or ""),
-                    "status": "New"}] +
-                  [g for g in guides if g["dsId"] != gacct["dsId"]])
-        digacc["guides"] = json.dumps(guides)
+        musfs = json.loads(digacc.get("musfs") or "[]")
+        # A subsequent invite after musf status was set to "Removed" is
+        # more likely helpful than spam, so always recreate with latest info
+        musfs = ([{"dsId": gacct["dsId"],
+                   "email": gacct["email"],
+                   "firstname": gacct["firstname"],
+                   "hashtag": (gacct.get("hashtag") or ""),
+                   "status": "New"}] +
+                  [mf for mf in musfs if mf["dsId"] != gacct["dsId"]])
+        digacc["musfs"] = json.dumps(musfs)
         digacc = dbacc.write_entity(digacc, digacc["modified"])
-        logging.info(digacc["email"] + " added guide: " + gacct["email"])
+        logging.info(digacc["email"] + " added music friend: " + gacct["email"])
     except ValueError as e:
         return util.serve_value_error(e)
     return util.respJSON([digacc], audience="private")
 
 
 # gid, since (timestamp). Auth required, need to know who is asking.
-def guidedat():
+def musfdat():
     try:
         digacc, _ = util.authenticate()
-        gid = dbacc.reqarg("gid", "dbid", required=True)
+        mfid = dbacc.reqarg("mfid", "dbid", required=True)
         since = dbacc.reqarg("since", "string") or "1970-01-01T00:00:00Z"
-        logging.info(digacc["email"] + " requesting guide data from guide " +
-                     gid + " since " + since)
-        where = ("WHERE aid = " + gid +
+        logging.info(digacc["email"] + " requesting musf data from DigAcc " +
+                     mfid + " since " + since)
+        where = ("WHERE aid = " + mfid +
                  " AND modified > \"" + since + "\""
                  " ORDER BY modified LIMIT 200")
         gdat = dbacc.query_entity("Song", where)
@@ -406,11 +406,11 @@ def impsptracks():
                     songs.append(song)
                     spi["imported"] += 1
                 spi["processed"] += 1
-            settings["spimport"] = spi
         else:  # no more items to import, note completed
             ts = dbacc.nowISO()
             spi["initsync"] = spi.get("initsync") or ts
             spi["lastcheck"] = ts
+        settings["spimport"] = spi
         digacc["settings"] = json.dumps(settings)
         digacc = dbacc.write_entity(digacc, digacc["modified"])
     except ValueError as e:

@@ -50,7 +50,7 @@ module.exports = (function () {
         {f:"kwdefs", d:"json", c:"keyword definitions for this account (*1)"},
         {f:"igfolds", d:"json", c:"ignore folders used by this account"},
         {f:"settings", d:"json", c:"ctrl vals, general options (*2)"},
-        {f:"guides", d:"json", c:"zero or more guide references (*3)"}],
+        {f:"musfs", d:"json", c:"music friends in prio order (*3)"}],
      //*1 kwdefs: At least 4 keyword definitions by keyword, each with
      //    pos: position of keyword in selection/filters
      //    sc: song count, how many songs have this keyword
@@ -62,16 +62,17 @@ module.exports = (function () {
      //    songcounts: fetched, posschg, totals
      //    xps: playlist exports by platform, then by playlist name
      //    spimport: counts of imported library tracks and when
-     //*3 Guide instance:
-     //    dsId: id of guiding account
-     //    email: guide account email (from when the guide was added)
+     //*3 Music friend instance:
+     //    dsId: id of music friend's account
+     //    email: email address at the time friend was added
      //    firstname: for display purposes
      //    hashtag: for playlist page (not currently available)
-     //    status: Active|New|Available|Inactive|Deleted
-     //    lastrating: timestamp of the most recent rating in guide data
-     //    lastcheck: timestamp when guide's rating data was fetched
+     //    status: Active|Inactive|Removed  (preserve refs for default ratings)
+     //    actord: Ordering index for Active friends (one-based)
+     //    lastrating: timestamp of friend's most recent rating
+     //    lastcheck: timestamp when friend's rating data was fetched
      //    lastimport: timestamp when rating data was last imported
-     //    filled: how many songs ratings were filled out from this guide
+     //    filled: how many songs ratings were filled out from this friend
      cache:{minutes:2*60}, //fast auth after initial load
      logflds:["email", "firstname"]},
 

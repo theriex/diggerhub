@@ -14,7 +14,7 @@ CREATE TABLE DigAcc (  -- Digger Hub access account
   kwdefs LONGTEXT,
   igfolds LONGTEXT,
   settings LONGTEXT,
-  guides LONGTEXT,
+  musfs LONGTEXT,
   PRIMARY KEY (dsId)
 );
 ALTER TABLE DigAcc AUTO_INCREMENT = 2020;
