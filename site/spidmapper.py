@@ -389,7 +389,8 @@ def is_known_unavailable_artist_work(song):
                "Keith Jarret.*": [r"Live, Hanover Germany.*"],
                "Ray Charles": [r"Genius.*Soul.*50.*Anniversary"],
                "Prach": [r"Dalama.*"],
-               "Pizzicato Five": ["女性上位時代", r"singles.*"],
+               "Pizzicato Five": ["女性上位時代", r"singles.*",
+                                  r".*Big Hits and Jet Lags*"],
                "No Man": ["Whammon Express"],
                "Arthur Loves Plastic": ["The Zero State"],
                "Jon Hassel": [r"The Surgeon of the Nightsky.*"],
@@ -401,7 +402,8 @@ def is_known_unavailable_artist_work(song):
                "King Tubby": [r"Meets Scientist In A World Of.*"],
                "小沢健二": ["Eclectic"],
                "Omoide Hatoba": ["Mantako"],
-               "World's End Girlfriend": ["Xmas Song"]}
+               "World's End Girlfriend": ["Xmas Song"],
+               "Mussolini Headkick": ["Blood on the Flag"]}
     albums = [v for k, v in artalbs.items() if re.match(k, art, flags=re.I)]
     if not albums or len(albums) < 1:
         return False
