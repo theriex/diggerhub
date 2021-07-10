@@ -170,7 +170,7 @@ def merge_spotify_track(digacc, track):
     where = "WHERE aid = " + digacc["dsId"] + " AND spid = " + dqv(spid)
     retsongs = dbacc.query_entity("Song", where)
     if len(retsongs) >= 1:
-        return None   # track already exists, no updated data
+        return retsongs[0], "existing"
     # lookup by ti/ar/ab, checking all artists.  Assumption local db
     # contents has already been best effort spidmapper matched.  Dupes handled
     # by dupe detection flagging and playback chaining.
@@ -184,7 +184,7 @@ def merge_spotify_track(digacc, track):
         song = retsongs[0]
         song["spid"] = spid
         song = dbacc.write_entity(song, song["modified"])
-        return song
+        return song, "updated"
     # no existing song found, add new with sortable path for album view
     song = {"dsType": "Song", "aid": digacc["dsId"], "batchconv": "spidimp",
             "path": path_for_spotify_track(track),
@@ -197,7 +197,55 @@ def merge_spotify_track(digacc, track):
             "lp": dbacc.timestamp(-1 * 60 * 24),  # yesterday, so ok to play now
             "nt": "", "spid": spid}
     song = dbacc.write_entity(song)
-    return song
+    return song, "created"
+
+
+
+# Convert the given album items to track items so they can be processed by
+# standard import.
+# Background notes:
+
+#  - The "added_at" field contains a UTC timestamp when the item was added
+#    to the library.  Presumably the latest time if they unlike something
+#    and then like it again.  If a track item is individually "liked", then
+#    "added_at" is at the same level as the item "track" field.  If an album
+#    is "liked", then "added_at" is provided at the album level and not for
+#    each track.  Presumably if a user also liked a track from the album in
+#    addition to liking the album, that will be reflected when retrieving
+#    liked tracks but not at the album level.
+#  - For an album item, the "tracks" field contains exactly the same
+#    information as if you had queried the API for the tracks on the album.
+#    Each track object has the same info as for an individual liked track
+#    except the "album" field is not included.
+#  - Core structure of a track item:
+#    {
+#        "added_at" : "UTC timestamp",
+#        "track" : {
+#            "album" : {
+#                "name" : "Name of Album",
+#            },
+#            "artists" : [ {
+#                "name" : "Name of Band",
+#            } ],
+#            "disc_number" : 1,
+#            "id" : "2jpDioAB9tlYXMdXDK3BGl",
+#            "name" : "Name of Track",
+#            "track_number" : 1
+#        }
+#    }
+# Conversion basically consists of unpacking the "tracks" for each item and
+# creating an item instance with a "track" field, and inserting the "album"
+# info into it.
+def convert_albums_to_tracks(items):
+    ret = []
+    for item in items:
+        # logging.info("convert_albums_to_tracks item: " +
+        #              json.dumps(item, indent=2, separators=(',', ': ')))
+        album = {"name": item["album"]["name"]}
+        for track in item["album"]["tracks"]["items"]:
+            track["album"] = album
+            ret.append({"track":track})
+    return ret
 
 
 
@@ -315,7 +363,7 @@ def addmusf():
                    "firstname": gacct["firstname"],
                    "hashtag": (gacct.get("hashtag") or ""),
                    "status": "New"}] +
-                  [mf for mf in musfs if mf["dsId"] != gacct["dsId"]])
+                 [mf for mf in musfs if mf["dsId"] != gacct["dsId"]])
         digacc["musfs"] = json.dumps(musfs)
         digacc = dbacc.write_entity(digacc, digacc["modified"])
         logging.info(digacc["email"] + " added music friend: " + gacct["email"])
@@ -379,37 +427,40 @@ def collabs():
     return util.respJSON(resacts)
 
 
-# Walk all the given tracks and create or update Songs.  Update DigAcc
-# settings spimport to reflect work done.
-#  - lastcheck: ISO timestamp when Spotify last checked.  On app startup, if
-#    this value was more than 24 hours ago, then import processing reads
-#    songs until the "added_at" value of a song is older than this value.
-#  - initsync: ISO timestamp filled after all spotify library tracks imported.
-#  - processed: Count of how many spotify library songs have been checked.
-#    Equivalent to the paging offset while import is ongoing.
-#  - imported: Count of how many DiggerHub songs created.
+# Read the given items in the given dataformat (albums or tracks), and
+# create or update corresponding Songs.  Update DigAcc.settings.spimport
+# after successful import of all tracks to record progress.
+# Notes:
+#   - Because traversal of a Spotify library is done using offsets, it is
+#     possible that a subsequent import may miss new additions if the user
+#     first unlikes something and then likes something else.  Recovering
+#     would require re-traversing the library at a later time, comparing
+#     "added_at" values to when the last import was completed.  Assuming
+#     that most people just add to their libraries.  If necessary, an option
+#     to force a full re-import sweep could be provided.
 def impsptracks():
     try:
         digacc, _ = util.authenticate()
         settings = json.loads(digacc.get("settings") or "{}")
-        spi = settings.get("spimport", {"lastcheck":"1970-01-01T00:00:00Z",
-                                        "initsync":"",
-                                        "processed":0,
-                                        "imported":0})
-        songs = []
+        spi = settings.get("spimport")
+        if (not spi) or ((spi["lastcheck"] > "2020" and
+                          spi["lastcheck"] < "2021-07-10")):  # version check
+            spi = {"lastcheck":"1970-01-01T00:00:00Z",
+                   "offsets":{"albums":0, "tracks":0},
+                   "imported":0}
+        dataformat = dbacc.reqarg("dataformat", "string", required=True)
         items = dbacc.reqarg("items", "string", required=True)
         items = json.loads(items)
-        if len(items) > 0:
-            for item in items:
-                song = merge_spotify_track(digacc, item["track"])
-                if song:
-                    songs.append(song)
-                    spi["imported"] += 1
-                spi["processed"] += 1
-        else:  # no more items to import, note completed
-            ts = dbacc.nowISO()
-            spi["initsync"] = spi.get("initsync") or ts
-            spi["lastcheck"] = ts
+        # update offset before any data conv.  Save after all items processed.
+        spi["offsets"][dataformat] += len(items)
+        if dataformat == "albums":
+            items = convert_albums_to_tracks(items)
+        songs = []
+        for item in items:
+            song, updt = merge_spotify_track(digacc, item["track"])
+            if updt in ["updated", "created"]:
+                spi["imported"] += 1
+            songs.append(song)
         settings["spimport"] = spi
         digacc["settings"] = json.dumps(settings)
         digacc = dbacc.write_entity(digacc, digacc["modified"])
@@ -418,7 +469,9 @@ def impsptracks():
     return util.respJSON([digacc] + songs, audience="private")
 
 
-# Import the given spotify album/artists/tracks
+# Import the given spotify album/artists/tracks.  Not converting the album
+# into separate tracks because it is important the resulting songs all have
+# the same album/artist in order to display the complete album.
 def spabimp():
     try:
         digacc, _ = util.authenticate()
