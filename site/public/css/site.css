@@ -30,13 +30,15 @@ button, .buttonstyle { border: 2px solid #666666; border-radius:8px;
 
 #outercontentdiv { }
 #contentdiv { position:relative; width:80%; margin:0px auto; }
-#textcontentdiv { margin:0px 10px; }
+#textcontentdiv { margin:0px 10px 10px 10px; }
 #vidcontentdiv { text-align:center; }
 
 /* -------------------- */
 /* general */
 
 .formbuttonsdiv { text-align:center; margin:5px 0px 0px 0px; }
+.tcgcinactive { opacity:0.5; }
+#contactdiv { text-align:center; margin:10px 0px 0px 0px; }
 
 /* -------------------- */
 /* splash */
@@ -50,8 +52,12 @@ button, .buttonstyle { border: 2px solid #666666; border-radius:8px;
 #splashdiv { background-image:url("../img/bglogo.png");
   background-repeat:no-repeat; background-size:contain;
   background-position: 10% 84%; }
-#splashdiv p { background-image:url("../img/white60percent.png");
-  padding:5px; margin:5px 0px 18px 0px; }
+#splashdiv p { padding:5px; margin:5px 0px 18px 0px; }
+#splashblockdiv { background-image:url("../img/white60percent.png");
+ padding:0px 0px 10px 0px; text-align:center; margin:0px auto; display:table;
+ border-radius:14px; }
+#fileorstreamchoicediv { text-align:center; word-spacing:6px; }
+.spchspan { font-size:x-large; font-weight:bold; }
 #downloadsdiv { text-align:center; }
 #downloadsdiv a { display:inline-block; padding:10px; }
 
@@ -63,7 +69,7 @@ button, .buttonstyle { border: 2px solid #666666; border-radius:8px;
 #acctmsglinediv { margin:5px 5px 0px 64px; }
 #acctmsglinediv h1 { font-size:medium; }
 #loginb { font-size:small; }
-#loginlinksdiv { padding:8px 0px 0px 0px; text-align:right; }
+#loginlinksdiv { padding:6px 0px 0px 0px; text-align:right; }
 #loginlinksdiv a { padding:0px 10px; font-size:small; }
 #topactiondiv { display:table; margin:0px 10px 0px auto; min-height:53px; }
 .acctactdiv { padding:5px; text-align:center; }

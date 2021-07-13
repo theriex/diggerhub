@@ -6,7 +6,7 @@
 import logging
 import py.util as util
 
-CACHE_BUST_PARAM = "v=210710"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=210713"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -34,15 +34,15 @@ INDEXHTML = """
   <div id="logodiv"><img src="img/appicon.png"/></div>
   <!-- login has to be an actual form to enable remembered passwords -->
   <div id="topactiondiv">
+    <!-- need a real form for password autosave, no onchange submit. -->
     <form id="loginform" method="post" action="redirlogin">
       <div id="loginparaminputs"></div>
       <div id="loginvisualelementsdiv">
         <div class="onelineformdiv">
           <input type="email" class="lifin" name="emailin" id="emailin"
-                 size="20" placeholder="nospam@example.com"/>
-          <!-- no onchange submit for password. breaks autoforms on safari -->
-          <input type="password" class="lifin" name="passin" id="passin"
-                 size="12" placeholder="*password*"/>
+                 size="16" placeholder="nospam@example.com"/><input
+                 type="password" class="lifin" name="passin" id="passin"
+                 size="6" placeholder="*password*"/>
           <input value="LogIn" type="submit" class="buttonstyle" id="loginb"/>
         </div>
         <div id="acctmsglinediv"></div>
@@ -62,12 +62,18 @@ INDEXHTML = """
 <div id="btidiggerdiv">Digger</div>
 <div id="btihubdiv">Hub</div>
 
-<p>If you've ever wanted to access your music through a mixing panel instead
-of searching folders, now you can. </p>
+<div id="splashblockdiv">
+<p>Digger continuously pulls the oldest tracks from your library according to your ratings and playback control settings. Works with:</p>
 
-<p>To install, download the
-<a href="https://github.com/theriex/digger#digger">open source</a> or one
-of these prebuilt executables: </p>
+<div id="fileorstreamchoicediv">
+  <a href="#files"><span class="spchspan">Files</span></a>
+  or
+  <a href="#streaming"><span class="spchspan">Streaming</span></a>
+</div>
+
+<div id="tcgdspchfile" style="display:none;">
+
+<p>Download Digger for your platform: </p>
 
 <div id="downloadsdiv">
 <a href="downloads/digger-linux">digger-linux</a>
@@ -75,16 +81,25 @@ of these prebuilt executables: </p>
 <a href="downloads/digger-win.zip">digger-win.zip</a>
 </div>
 
-<p>Run the Digger music server, then open
-<a href="http://localhost:6980"
-   onclick="window.open('http://localhost:6980');return false;"/>
-localhost:6980</a> </p>
+</div> <!-- diggerfilediv -->
+
+<div id="tcgdspchstrm" style="display:none;">
+
+<p>You <em>must</em> have Spotify Premium account and authorize Digger for
+streaming.  <a href="/digger">Launch Digger</a><p>
+
+</div> <!-- diggerstreamingdiv -->
+</div> <!-- splashblockdiv -->
 
     </div> <!-- splashdiv -->
   </div> <!-- textcontentdiv -->
   <div id="vidcontentdiv">
     <video controls src="img/DiggerDemo540HighBQ.mp4" width="300">
       Video unavailable in this browser.</video>
+  </div>
+
+  <div id="contactdiv">
+    Digger is <a href="https://github.com/theriex/digger#digger">open source</a>
   </div>
 
   <div id="localtestdiv" style="display:none">

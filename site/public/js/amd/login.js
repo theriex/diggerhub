@@ -1,27 +1,24 @@
 /*global app, jt */
-/*jslint browser, white, fudge */
+/*jslint browser, white, unordered */
 
 app.login = (function () {
     "use strict";
 
     var initialTopActionHTML = "";  //initial form html kept for sign out
     var authobj = null;  //basically the DigAcc, but may skip some fields
+    var mgrs = {};  //container for managers. used for dispatch
 
 
     //manager dispatch function string - shorthand for event defs
     function mdfs (mgrfname, ...args) {
-        var pstr = app.paramstr(args);
+        var pstr = app.paramstr(args); var fstr;
         mgrfname = mgrfname.split(".");
-        var fstr = "app.login.dispatch('" + mgrfname[0] + "','" +
+        fstr = "app.login.dispatch('" + mgrfname[0] + "','" +
             mgrfname[1] + "'" + pstr + ")";
         if(pstr !== ",event") {  //don't return false from event hooks
             fstr = jt.fs(fstr); }
         return fstr;
     }
-
-
-    //General container for all managers, used for dispatch
-    var mgrs = {};
 
 
     //The authentication persistence manager handles cookies.  Could use 
@@ -139,11 +136,11 @@ app.login = (function () {
                     errf,
                     jt.semaphore("login.act.updateAccount")); },
         updateAccountInfo: function () {
-            jt.byId("updaccb").disabled = true;
             var data = jt.objdata(
                 {an:authobj.email, at:authobj.token,
                  firstname:jt.byId("firstnamein").value || "NOVAL",
                  hashtag:jt.byId("hashtagin").value || "NOVAL"});
+            jt.byId("updaccb").disabled = true;
             mgrs.act.updateAccount(data, mgrs.act.successfulSignIn,
                 function (code, errtxt) {
                     jt.byId("updaccb").disabled = false;
@@ -167,7 +164,7 @@ app.login = (function () {
             //No need to change email. Just sign out of the local server
             //then sign in with a new account. Data preserved.
             jt.byId("updaccb").disabled = true;
-            var data = jt.objdata(
+            const data = jt.objdata(
                 {an:authobj.email, at:authobj.token, updemail:authobj.email,
                  updpassword:jt.byId("pwdin").value});
             mgrs.act.updateAccount(data, mgrs.act.successfulSignIn,
@@ -183,7 +180,7 @@ app.login = (function () {
                  "Send Activation Code"]); },
         sendActivationCode: function () {
             jt.out("acctactivdiv", "Activation code sent");
-            var data = jt.objdata({an:authobj.email, at:authobj.token});
+            const data = jt.objdata({an:authobj.email, at:authobj.token});
             jt.call("POST", app.dr("/api/mailactcode"), data,
                     function () {
                         jt.log("Activation send completed successfully"); },
@@ -213,7 +210,7 @@ app.login = (function () {
                     "Join"]]]])); },
         createAccount: function () {
             jt.byId("newaccb").disabled = true;
-            var data = jt.objdata(
+            const data = jt.objdata(
                 {email:jt.byId("emailin").value,
                  password:jt.byId("passin").value,
                  firstname:jt.byId("firstin").value});
@@ -230,7 +227,7 @@ app.login = (function () {
             if(!jt.isProbablyEmail(emaddr)) {
                 jt.out("acctmsglinediv", "Need email address to send to"); }
             jt.out("acctactivdiv", "Reset password link sent");
-            var data = jt.objdata({email:emaddr});
+            const data = jt.objdata({email:emaddr});
             jt.call("POST", app.dr("/api/mailpwr"), data,
                     function () {
                         jt.out("acctmsglinediv", "Password reset sent."); },
@@ -246,16 +243,17 @@ app.login = (function () {
         var statmsg = "Authentication information not available";
         jt.out("acctmsglinediv", "");  //clear any previous login error
         contf = contf || function () { jt.log(statmsg); };
-        var sav = mgrs.ap.read() || {};
-        var ps = {an:app.startParams.an || sav.authname || "",
-                  at:app.startParams.at || sav.authtoken || "",
-                  emailin:jt.safeget("emailin", "value") || "",
-                  passin:jt.safeget("passin", "value") || "",
-                  actcode:app.startParams.actcode || ""};
+        const sav = mgrs.ap.read() || {};
+        const ps = {an:app.startParams.an || sav.authname || "",
+                    at:app.startParams.at || sav.authtoken || "",
+                    emailin:jt.safeget("emailin", "value") || "",
+                    passin:jt.safeget("passin", "value") || "",
+                    actcode:app.startParams.actcode || ""};
         if(ps.emailin && !(ps.at || ps.passin)) {
             jt.byId("passin").focus();
             return contf(); }
         if(!((ps.an || ps.emailin) && (ps.at || ps.passin))) {
+            jt.byId("emailin").focus();
             return contf(); }  //not trying to sign in (or activate) yet.
         jt.out("acctmsglinediv", "Signing in...");
         jt.byId("topsectiondiv").style.cursor = "wait";
@@ -282,6 +280,26 @@ app.login = (function () {
     }
 
 
+    function decorateSplashContents () {
+        var oc = "app.togdivdisp({rootids:['spchfile','spchstrm']," +
+                                 "clicked:'CLICK'})";
+        jt.out("fileorstreamchoicediv", jt.tac2html(
+            [["a", {href:"#files", onclick:oc.replace("CLICK", "spchfile")},
+              ["span", {id:"tcgcspchfile", cla:"spchspan"}, "Files"]],
+             "&nbsp",
+             "or",
+             "&nbsp",
+             ["a", {href:"#streaming", onclick:oc.replace("CLICK", "spchstrm")},
+              ["span", {id:"tcgcspchstrm", cla:"spchspan"}, "Streaming"]]]));
+        const projurl = "https://github.com/theriex/digger#digger";
+        jt.out("contactdiv", jt.tac2html(
+            ["Digger is ",
+             ["a", {href:projurl,
+                    onclick:"window.open('" + projurl + "');return false;"},
+              "open source"]]));
+    }
+
+
     //This works in conjunction with the static undecorated form created by
     //start.py, decorating to provide login without page reload.
     function initialize (restore, contf) {
@@ -292,6 +310,7 @@ app.login = (function () {
         if(restore) {
             jt.out("topactiondiv", initialTopActionHTML); }
         //decorate the plain HTML for processing
+        decorateSplashContents();
         jt.out("loginlinksdiv", jt.tac2html(
             [["a", {href:"#newaccount", title:"Create a DiggerHub account",
                     onclick:mdfs("act.createNewAccountDisplay")},
