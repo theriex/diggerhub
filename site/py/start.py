@@ -63,7 +63,7 @@ INDEXHTML = """
 <div id="btihubdiv">Hub</div>
 
 <div id="splashblockdiv">
-<p>Digger continuously pulls the oldest tracks from your library according to your ratings and playback control settings. Works with:</p>
+<p>Digger continuously pulls the oldest tracks from your library matching your ratings and playback control settings. Works with:</p>
 
 <div id="fileorstreamchoicediv">
   <a href="#files"><span class="spchspan">Files</span></a>
