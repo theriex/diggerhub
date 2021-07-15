@@ -85,8 +85,8 @@ INDEXHTML = """
 
 <div id="tcgdspchstrm" style="display:none;">
 
-<p>You <em>must</em> have Spotify Premium account and authorize Digger for
-streaming.  <a href="/digger">Launch Digger</a><p>
+<p>You <em>must</em> use a Spotify Premium account and authorize Digger for
+streaming. <a href="/digger">Launch Digger</a><p>
 
 </div> <!-- diggerstreamingdiv -->
 </div> <!-- splashblockdiv -->

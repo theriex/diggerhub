@@ -249,20 +249,23 @@ def convert_albums_to_tracks(items):
 
 
 def fvs_match_sql_clauses(fvs):
-    where = (" AND el >= " + str(fvs["elmin"]) +
-             " AND el <= " + str(fvs["elmax"]) +
-             " AND al >= " + str(fvs["almin"]) +
-             " AND al <= " + str(fvs["almax"]))
-    if fvs["tagfidx"] == 2:  # Untagged only
-        where += " AND kws IS NULL"
-    elif fvs["tagfidx"] == 1:  # Tagged only
-        where += " AND kws NOT NULL"
-    if fvs["poskws"]:
-        for kw in fvs["poskws"].split(","):
-            where += " AND FIND_IN_SET(\"" + kw + "\", kws)"
-    if fvs["negkws"]:
-        for kw in fvs["negkws"].split(","):
-            where += " AND NOT FIND_IN_SET(\"" + kw + "\", kws)"
+    where = ""
+    if fvs["fpst"] == "on":
+        where += (" AND el >= " + str(fvs["elmin"]) +
+                  " AND el <= " + str(fvs["elmax"]) +
+                  " AND al >= " + str(fvs["almin"]) +
+                  " AND al <= " + str(fvs["almax"]))
+        if fvs["tagfidx"] == 2:  # Untagged only
+            where += " AND kws IS NULL"
+        elif fvs["tagfidx"] == 1:  # Tagged only
+            where += " AND kws NOT NULL"
+        if fvs["poskws"]:
+            for kw in fvs["poskws"].split(","):
+                where += " AND FIND_IN_SET(\"" + kw + "\", kws)"
+        if fvs["negkws"]:
+            for kw in fvs["negkws"].split(","):
+                where += (" AND ((kws IS NULL) OR (NOT FIND_IN_SET(\"" +
+                          kw + "\", kws)))")
     if fvs["srchtxt"]:
         where += (" AND (ti LIKE \"%" + fvs["srchtxt"] + "%\"" +
                   " OR ar LIKE \"%" + fvs["srchtxt"] + "%\"" +
@@ -275,7 +278,7 @@ def fetch_matching_songs(digacc, fvs, limit):
              " AND spid LIKE \"z:%\"" +
              " AND rv >= " + str(fvs["minrat"]))
     where += fvs_match_sql_clauses(fvs)
-    if fvs["fq"] == "on":  # frequency filtering active
+    if (fvs["fpst"] == "on") and (fvs["fq"] == "on"):  # freq filtering active
         now = datetime.datetime.utcnow().replace(microsecond=0)
         pst = dbacc.dt2ISO(now - datetime.timedelta(days=1))
         bst = dbacc.dt2ISO(now - datetime.timedelta(days=90))
