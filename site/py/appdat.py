@@ -248,6 +248,66 @@ def convert_albums_to_tracks(items):
     return ret
 
 
+def fvs_match_sql_clauses(fvs):
+    where = (" AND el >= " + str(fvs["elmin"]) +
+             " AND el <= " + str(fvs["elmax"]) +
+             " AND al >= " + str(fvs["almin"]) +
+             " AND al <= " + str(fvs["almax"]))
+    if fvs["tagfidx"] == 2:  # Untagged only
+        where += " AND kws IS NULL"
+    elif fvs["tagfidx"] == 1:  # Tagged only
+        where += " AND kws NOT NULL"
+    if fvs["poskws"]:
+        for kw in fvs["poskws"].split(","):
+            where += " AND FIND_IN_SET(\"" + kw + "\", kws)"
+    if fvs["negkws"]:
+        for kw in fvs["negkws"].split(","):
+            where += " AND NOT FIND_IN_SET(\"" + kw + "\", kws)"
+    if fvs["srchtxt"]:
+        where += (" AND (ti LIKE \"%" + fvs["srchtxt"] + "%\"" +
+                  " OR ar LIKE \"%" + fvs["srchtxt"] + "%\"" +
+                  " OR ab LIKE \"%" + fvs["srchtxt"] + "%\")")
+    return where
+
+
+def fetch_matching_songs(digacc, fvs, limit):
+    where = ("WHERE aid = " + digacc["dsId"] +
+             " AND spid LIKE \"z:%\"" +
+             " AND rv >= " + str(fvs["minrat"]))
+    where += fvs_match_sql_clauses(fvs)
+    if fvs["fq"] == "on":  # frequency filtering active
+        now = datetime.datetime.utcnow().replace(microsecond=0)
+        pst = dbacc.dt2ISO(now - datetime.timedelta(days=1))
+        bst = dbacc.dt2ISO(now - datetime.timedelta(days=90))
+        zst = dbacc.dt2ISO(now - datetime.timedelta(days=180))
+        where += (" AND ((fq IN (\"N\", \"P\") AND lp < \"" + pst + "\")" +
+                  " OR (fq = \"B\" AND lp < \"" + bst + "\")" +
+                  " OR (fq = \"Z\" AND lp < \"" + zst + "\"))")
+    where += " ORDER BY lp LIMIT " + str(limit)
+    logging.info("songfetch " + where)
+    songs = dbacc.query_entity("Song", where)
+    return songs
+
+
+def fetch_friend_songs(digacc, fvs, limit):
+    where = ("WHERE aid IN (" + fvs["friendidcsv"] + ")" +
+             " AND spid LIKE \"z:%\"" +
+             " AND rv >= 8")  # 4 stars or better
+    where += (" AND spid NOT IN" +
+              " (SELECT spid FROM Song WHERE aid=" + digacc["dsId"] + ")")
+    where += fvs_match_sql_clauses(fvs)
+    where += " ORDER BY rv DESC modified DESC LIMIT " + str(limit)
+    songs = dbacc.query_entity("Song", where)
+    # mark the dsIds so new song instances can be created on update
+    for song in songs:
+        song["dsId"] = "fr" + song["dsId"]
+    # two or more friends may have recommended the same song. De-dupe
+    ddd = {}
+    for song in songs:
+        ddd[song["spid"]] = song
+    return ddd.values()
+
+
 
 ############################################################
 ## API endpoints:
@@ -279,48 +339,25 @@ def songfetch():
     try:
         digacc, _ = util.authenticate()
         fvs = json.loads(dbacc.reqarg("fvs", "json", required=True))
-        where = ("WHERE aid = " + digacc["dsId"] +
-                 " AND spid LIKE \"z:%\"" +
-                 " AND el >= " + str(fvs["elmin"]) +
-                 " AND el <= " + str(fvs["elmax"]) +
-                 " AND al >= " + str(fvs["almin"]) +
-                 " AND al <= " + str(fvs["almax"]) +
-                 " AND rv >= " + str(fvs["minrat"]))
-        if fvs["tagfidx"] == 2:  # Untagged only
-            where += " AND kws IS NULL"
-        elif fvs["tagfidx"] == 1:  # Tagged only
-            where += " AND kws NOT NULL"
-        if fvs["poskws"]:
-            for kw in fvs["poskws"].split(","):
-                where += " AND FIND_IN_SET(\"" + kw + "\", kws)"
-        if fvs["negkws"]:
-            for kw in fvs["negkws"].split(","):
-                where += " AND NOT FIND_IN_SET(\"" + kw + "\", kws)"
-        if fvs["srchtxt"]:
-            where += (" AND (ti LIKE \"%" + fvs["srchtxt"] + "%\"" +
-                      " OR ar LIKE \"%" + fvs["srchtxt"] + "%\"" +
-                      " OR ab LIKE \"%" + fvs["srchtxt"] + "%\")")
-        if fvs["fq"] == "on":  # frequency filtering active
-            now = datetime.datetime.utcnow().replace(microsecond=0)
-            pst = dbacc.dt2ISO(now - datetime.timedelta(days=1))
-            bst = dbacc.dt2ISO(now - datetime.timedelta(days=90))
-            zst = dbacc.dt2ISO(now - datetime.timedelta(days=180))
-            where += (" AND ((fq IN (\"N\", \"P\") AND lp < \"" + pst + "\")" +
-                      " OR (fq = \"B\" AND lp < \"" + bst + "\")" +
-                      " OR (fq = \"Z\" AND lp < \"" + zst + "\"))")
-        where += " ORDER BY lp LIMIT 400"
-        logging.info("songfetch " + where)
-        songs = dbacc.query_entity("Song", where)
+        songs = fetch_matching_songs(digacc, fvs, 400)
+        friendsongs = []
+        if fvs.get("friendidcsv"):
+            friendsongs = fetch_friend_songs(digacc, fvs, 100)
     except ValueError as e:
         return util.serve_value_error(e)
-    return util.respJSON(songs)
+    return util.respJSON(songs + friendsongs)
 
 
 def songupd():
     try:
         digacc, _ = util.authenticate()
         dsId = dbacc.reqarg("dsId", "dbid", required=True)
-        song = dbacc.cfbk("Song", "dsId", dsId, required=True)
+        if dsId.startswith("fr"):  # copy song suggested from music friend
+            song = dbacc.cfbk("Song", "dsId", dsId[2:], required=True)
+            song.dsId = ""
+            song.aid = digacc["dsId"]
+        else:
+            song = dbacc.cfbk("Song", "dsId", dsId, required=True)
         if song["aid"] != digacc["dsId"]:
             raise ValueError("Song author id mismatch")
         util.set_fields_from_reqargs(["ti", "ar", "ab", "kws", "fq", "lp",
