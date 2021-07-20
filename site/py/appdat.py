@@ -7,6 +7,7 @@
 import logging
 import json
 import datetime
+import numbers
 import py.dbacc as dbacc
 import py.util as util
 
@@ -389,20 +390,26 @@ def multiupd():
     return util.respJSON(songs)
 
 
-# gmaddr: musical friend mail address required for lookup. Stay personal.
+# mfaddr: musical friend mail address required for lookup. Stay personal.
+# Sorting of friends and changing their status is handled client side.  This
+# adds the new musical friend at the beginning of the list after verifying
+# the account exists.  Existing intances are checked and minimally modified
+# to reflect the ordering and status updates implied by adding a new friend.
 def addmusf():
     try:
         digacc, _ = util.authenticate()
-        gmaddr = dbacc.reqarg("gmaddr", "json", required=True)
-        gacct = dbacc.cfbk("DigAcc", "email", gmaddr, required=True)
+        mfaddr = dbacc.reqarg("mfaddr", "json", required=True)
+        gacct = dbacc.cfbk("DigAcc", "email", mfaddr, required=True)
         musfs = json.loads(digacc.get("musfs") or "[]")
-        # A subsequent invite after musf status was set to "Removed" is
-        # more likely helpful than spam, so always recreate with latest info
+        for mf in musfs:  # verify and update existing data
+            fstat = mf.get("status")
+            if (not fstat) or (fstat not in ["Active", "Inactive", "Removed"]):
+                mf["status"] = "Inactive"
         musfs = ([{"dsId": gacct["dsId"],
                    "email": gacct["email"],
                    "firstname": gacct["firstname"],
                    "hashtag": (gacct.get("hashtag") or ""),
-                   "status": "New"}] +
+                   "status": "Active"}] +
                  [mf for mf in musfs if mf["dsId"] != gacct["dsId"]])
         digacc["musfs"] = json.dumps(musfs)
         digacc = dbacc.write_entity(digacc, digacc["modified"])

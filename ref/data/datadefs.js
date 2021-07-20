@@ -50,7 +50,7 @@ module.exports = (function () {
         {f:"kwdefs", d:"json", c:"keyword definitions for this account (*1)"},
         {f:"igfolds", d:"json", c:"ignore folders used by this account"},
         {f:"settings", d:"json", c:"ctrl vals, general options (*2)"},
-        {f:"musfs", d:"json", c:"music friends in prio order (*3)"}],
+        {f:"musfs", d:"jsarr", c:"sorted music friends, max 4 active (*3)"}],
      //*1 kwdefs: At least 4 keyword definitions by keyword, each with
      //    pos: position of keyword in selection/filters
      //    sc: song count, how many songs have this keyword
@@ -68,7 +68,6 @@ module.exports = (function () {
      //    firstname: for display purposes
      //    hashtag: for playlist page (not currently available)
      //    status: Active|Inactive|Removed  (preserve refs for default ratings)
-     //    actord: Ordering index for Active friends (one-based)
      //    lastrating: timestamp of friend's most recent rating
      //    lastcheck: timestamp when friend's rating data was fetched
      //    lastimport: timestamp when rating data was last imported

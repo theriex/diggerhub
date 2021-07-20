@@ -51,7 +51,7 @@ app.refmgr = (function () {
             reconstituteFieldJSONObject("kwdefs", obj);
             reconstituteFieldJSONObject("igfolds", obj);
             reconstituteFieldJSONObject("settings", obj);
-            reconstituteFieldJSONObject("musfs", obj);
+            reconstituteFieldJSONArray("musfs", obj);
             break;
         case "Song":
             break;

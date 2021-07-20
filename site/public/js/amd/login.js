@@ -271,15 +271,6 @@ app.login = (function () {
     }
 
 
-    //Return obj as post data, with an/at values added
-    function authdata (obj) {
-        var authdat = jt.objdata({an:authobj.email, at:authobj.token});
-        if(obj) {
-            authdat += "&" + jt.objdata(obj); }
-        return authdat;
-    }
-
-
     function decorateSplashContents () {
         var oc = "app.togdivdisp({rootids:['spchfile','spchstrm']," +
                                  "clicked:'CLICK'})";
@@ -328,7 +319,6 @@ return {
     formSubmit: function (event) { jt.evtend(event); signIn(); },
     signIn: function () { signIn(); },
     getAuth: function () { return authobj; },
-    authdata: function (obj) { return authdata(obj); },
     dispatch: function (mgrname, fname, ...args) {
         return mgrs[mgrname][fname].apply(app.login, args); }
 };  //end of returned functions
