@@ -7,7 +7,6 @@
 import logging
 import json
 import datetime
-import numbers
 import py.dbacc as dbacc
 import py.util as util
 
@@ -300,7 +299,8 @@ def fetch_friend_songs(digacc, fvs, limit):
     where += (" AND spid NOT IN" +
               " (SELECT spid FROM Song WHERE aid=" + digacc["dsId"] + ")")
     where += fvs_match_sql_clauses(fvs)
-    where += " ORDER BY rv DESC modified DESC LIMIT " + str(limit)
+    where += " ORDER BY rv DESC, modified DESC LIMIT " + str(limit)
+    logging.info("fetch_friend_songs " + where)
     songs = dbacc.query_entity("Song", where)
     # mark the dsIds so new song instances can be created on update
     for song in songs:
@@ -309,7 +309,7 @@ def fetch_friend_songs(digacc, fvs, limit):
     ddd = {}
     for song in songs:
         ddd[song["spid"]] = song
-    return ddd.values()
+    return list(ddd.values())
 
 
 
@@ -358,9 +358,16 @@ def songupd():
         dsId = dbacc.reqarg("dsId", "dbid", required=True)
         if dsId.startswith("fr"):  # copy song suggested from music friend
             song = dbacc.cfbk("Song", "dsId", dsId[2:], required=True)
-            song.dsId = ""
-            song.aid = digacc["dsId"]
+            exsg = find_song({"aid":digacc["dsId"], "ti":song["ti"],
+                              "ar":song["ar"], "ab":song["ab"]})
+            if exsg:  # use existing song
+                song = exsg
+            else:  # create a new song by copying the existing one
+                song["dsId"] = ""
+                song["aid"] = digacc["dsId"]
         else:
+            # updating, so existing song must already exist.  Lookup by
+            # dsId to get the instance, then verify author.
             song = dbacc.cfbk("Song", "dsId", dsId, required=True)
         if song["aid"] != digacc["dsId"]:
             raise ValueError("Song author id mismatch")
