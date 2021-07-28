@@ -312,6 +312,24 @@ def fetch_friend_songs(digacc, fvs, limit):
     return list(ddd.values())
 
 
+def add_music_friend(digacc, mfacct):
+    musfs = json.loads(digacc.get("musfs") or "[]")
+    for mf in musfs:  # verify and update existing data
+        fstat = mf.get("status")
+        if (not fstat) or (fstat not in ["Active", "Inactive", "Removed"]):
+            mf["status"] = "Inactive"
+    musfs = ([{"dsId": mfacct["dsId"],
+               "email": mfacct["email"],
+               "firstname": mfacct["firstname"],
+               "hashtag": (mfacct.get("hashtag") or ""),
+               "status": "Active"}] +
+             [mf for mf in musfs if mf["dsId"] != mfacct["dsId"]])
+    digacc["musfs"] = json.dumps(musfs)
+    digacc = dbacc.write_entity(digacc, digacc["modified"])
+    logging.info(digacc["email"] + " added friend: " + mfacct["email"])
+    return digacc
+
+
 
 ############################################################
 ## API endpoints:
@@ -406,21 +424,33 @@ def addmusf():
     try:
         digacc, _ = util.authenticate()
         mfaddr = dbacc.reqarg("mfaddr", "json", required=True)
-        gacct = dbacc.cfbk("DigAcc", "email", mfaddr, required=True)
-        musfs = json.loads(digacc.get("musfs") or "[]")
-        for mf in musfs:  # verify and update existing data
-            fstat = mf.get("status")
-            if (not fstat) or (fstat not in ["Active", "Inactive", "Removed"]):
-                mf["status"] = "Inactive"
-        musfs = ([{"dsId": gacct["dsId"],
-                   "email": gacct["email"],
-                   "firstname": gacct["firstname"],
-                   "hashtag": (gacct.get("hashtag") or ""),
-                   "status": "Active"}] +
-                 [mf for mf in musfs if mf["dsId"] != gacct["dsId"]])
-        digacc["musfs"] = json.dumps(musfs)
-        digacc = dbacc.write_entity(digacc, digacc["modified"])
-        logging.info(digacc["email"] + " added music friend: " + gacct["email"])
+        mfaddr = util.normalize_email(mfaddr)
+        mfacct = dbacc.cfbk("DigAcc", "email", mfaddr)
+        if not mfacct:
+            return util.srverr(mfaddr + " not found", code=404)
+        digacc = add_music_friend(digacc, mfacct)
+    except ValueError as e:
+        return util.serve_value_error(e)
+    return util.respJSON([digacc], audience="private")
+
+
+# emaddr, firstname used to create new account with auth digacc as friend.
+def createmusf():
+    try:
+        digacc, _ = util.authenticate()
+        emaddr = dbacc.reqarg("emaddr", "json", required=True)
+        emaddr = util.normalize_email(emaddr)
+        util.verify_new_email_valid(emaddr)  # not already used
+        firstname = dbacc.reqarg("firstname", "string", required=True)
+        mfacc = {"dsType":"DigAcc", "created":dbacc.nowISO(),
+                 "email":"placeholder", "phash":"whatever",
+                 "firstname":firstname}
+        util.update_email_and_password(mfacc, emaddr,
+                                       util.make_activation_code(),  #temp pwd
+                                       friend=digacc)
+        mfacc = dbacc.write_entity(mfacc)
+        mfacc = add_music_friend(mfacc, digacc)
+        digacc = add_music_friend(digacc, mfacc)
     except ValueError as e:
         return util.serve_value_error(e)
     return util.respJSON([digacc], audience="private")

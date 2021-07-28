@@ -6,7 +6,7 @@
 import logging
 import py.util as util
 
-CACHE_BUST_PARAM = "v=210722"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=210728"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -63,7 +63,7 @@ INDEXHTML = """
 <div id="btihubdiv">Hub</div>
 
 <div id="splashblockdiv">
-<p>Digger continuously pulls the oldest tracks from your library matching your ratings and playback control settings. Works with:</p>
+<p>Digger spins neglected tracks from your library that match your control settings. Works with:</p>
 
 <div id="fileorstreamchoicediv">
   <a href="#files"><span class="spchspan">Files</span></a>

@@ -273,19 +273,27 @@ def url_for_mail_message():
     return returl
 
 
-def send_activation_email(digacc):
-    subj = "DiggerHub account activation link"
-    emaddr = digacc["email"]
-    returl = url_for_mail_message()
-    body = "Use this link to activate your DiggerHub account:\n\n"
-    body += (returl + "?actcode=" + digacc["actcode"] + "&an=" +
-             urllib.parse.quote(digacc["email"]) + "&at=" +
-             token_for_user(digacc) + "\n\n")
-    body += "Welcome to DiggerHub!\n"
-    send_mail(emaddr, subj, body)
+def send_activation_email(digacc, friend=None):
+    acturl = (url_for_mail_message() + "?actcode=" + digacc["actcode"] +
+              "&an=" + urllib.parse.quote(digacc["email"]) +
+              "&at=" + token_for_user(digacc))
+    if friend:
+        subj = friend["firstname"] + " has invited you to join DiggerHub"
+        body = ("Hello " + digacc["firstname"] + ",\n\n" +
+                friend["firstname"] + " (" + friend["email"] +
+                ") has invited you to join DiggerHub!\n\n" +
+                "Use this link to access your account:\n\n" +
+                acturl + "\n\n" +
+                "Welcome to DiggerHub!\n")
+    else:
+        subj = "DiggerHub account activation link"
+        body = ("Use this link to activate your DiggerHub account:\n\n" +
+                acturl + "\n\n" +
+                "Welcome to DiggerHub!\n")
+    send_mail(digacc["email"], subj, body)
 
 
-def update_email_and_password(digacc, emaddr, pwd):
+def update_email_and_password(digacc, emaddr, pwd, friend=None):
     emaddr = normalize_email(emaddr)
     if pwd and pwd.lower() == "noval":
         pwd = ""
@@ -308,7 +316,7 @@ def update_email_and_password(digacc, emaddr, pwd):
     digacc["phash"] = make_password_hash(digacc["email"], pwd,
                                          digacc["created"])
     if digacc["status"] == "Pending":
-        send_activation_email(digacc)
+        send_activation_email(digacc, friend)
     return change
 
 

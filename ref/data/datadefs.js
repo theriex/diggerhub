@@ -62,7 +62,7 @@ module.exports = (function () {
      //    songcounts: fetched, posschg, totals
      //    xps: playlist exports by platform, then by playlist name
      //    spimport: counts of imported library tracks and when
-     //*3 Music friend instance:
+     //*3 musfs: Music friend instance:
      //    dsId: id of music friend's account
      //    email: email address at the time friend was added
      //    firstname: for display purposes
