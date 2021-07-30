@@ -29,6 +29,12 @@ svcdef = util.get_connection_service("spotify")
 svckey = svcdef["ckey"] + ":" + svcdef["csec"]
 ainf = {"basic": base64.b64encode(svckey.encode("UTF-8")).decode("UTF-8"),
         "tok": ""}
+# Dashes (e.g. "B-52") match ok and are needed.  Quoting can't be escaped
+# with backslashes and they don't match. ':" is used as a query key delimiter.
+# Python string.punctuation: '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
+probpunc = "\"'`:"
+fluffpunc = "!#$%&()*+,./;<=>?@[\\]^`{|}"
+
 
 def verify_token():
     if not ainf["tok"]:
@@ -44,27 +50,29 @@ def verify_token():
         ainf["tok"] = resp.json()["access_token"]
 
 
-def has_contained_punctuation(word):
+def has_contained_probpunc(word):
     for c in word:
-        if c in string.punctuation:
+        if c in probpunc:
             return True
     return False
 
 
 def prepare_query_term(value):
     words = value.split()  # trim/strip and split on whitespace
-    for idx, word in enumerate(words):  # remove all surrounding punctuation
-        words[idx] = word.strip(string.punctuation)
+    for idx, word in enumerate(words):  # trim surrounding punctuation
+        word = word.strip("'s")
+        word = word.strip(probpunc + fluffpunc)
+        words[idx] = word
     # 15apr21 search will NOT match embedded ' or " even if encoded, so
     # remove any preceding or trailing words with contained punctuation
-    while len(words) > 0 and has_contained_punctuation(words[0]):
+    while len(words) > 0 and has_contained_probpunc(words[0]):
         words = words[1:]
-    while len(words) > 0 and has_contained_punctuation(words[len(words) - 1]):
+    while len(words) > 0 and has_contained_probpunc(words[len(words) - 1]):
         words = words[0:(len(words) - 1)]
     # If any of the middle words contain punctuation then they have to be
     # removed, which means a quoted match will fail due to the ordering.
     quotable = True
-    filtered = [w for w in words if not has_contained_punctuation(w)]
+    filtered = [w for w in words if not has_contained_probpunc(w)]
     if len(filtered) != len(words):
         quotable = False
     value = urllib.parse.quote(" ".join(filtered))
@@ -86,7 +94,7 @@ def make_query_string(ti, ar, ab):
     return query
 
 
-def fetch_spid(query):
+def query_spotify(query):
     resp = requests.get(
         "https://api.spotify.com/v1/search?q=" + query,
         headers={"Authorization": "Bearer " + ainf["tok"]})
@@ -95,6 +103,11 @@ def fetch_spid(query):
                          ": " + resp.text)
     logging.info(resp.text)
     rob = resp.json()
+    return rob
+
+
+def fetch_spid(query):
+    rob = query_spotify(query)
     spid = ""
     items = rob["tracks"]["items"]
     if len(items) > 0:
@@ -248,11 +261,25 @@ def reduce_collaborative_name(artist):
     return artist
 
 
+def is_reasonable_query_text(qtxt):
+    mob = re.match(r"track:(.*?)(?=%20artist:)%20artist:(.*)", qtxt)
+    title = mob.group(1)
+    artist = mob.group(2).split("%20album:")[0]
+    for val in [title, artist]:
+        if not val.lower().strip("\"").strip("the"):
+            return False
+    return True
+
+
 # e.g. find_spid("I'm Every Woman", "Chaka Khan", "Epiphany - The Best Of Chaka Khan Vol 1")
 def find_spid(ti, ar, ab):
-    verify_token()
     ti, ar, ab = fix_known_bad_values(ti, ar, ab)
     skm = {"qtxt":make_query_string(ti, ar, ab), "qtype":"tiarab"}
+    if not is_reasonable_query_text(skm["qtxt"]):
+        skm["qtype"] = "badquery"
+        skm["spid"] = "q:" + dbacc.nowISO()
+        return skm
+    verify_token()
     spid = fetch_spid(skm["qtxt"])
     # ti: "whatever song (2015 Digital Remaster) is not how Spotify lists it.
     if not spid:  # check for ignorable title suffix
@@ -394,13 +421,12 @@ def is_known_unavailable_artist_work(song):
                "No Man": ["Whammon Express"],
                "Arthur Loves Plastic": ["The Zero State"],
                "Jon Hassel": [r"The Surgeon of the Nightsky.*"],
-               "小沢健二": [r"Ecology Of Everyday Life.*"],
+               "小沢健二": [r"Ecology Of Everyday Life.*", "Eclectic"],
                "Ini Kamoze": ["Lyrical Gangsta"],
                "Curve": ["Doppelgänger"],
                "Birdsongs Of The Mesozoic": ["Sonic Geology"],
                "Franco Battiato": ["Shadow, Light"],
                "King Tubby": [r"Meets Scientist In A World Of.*"],
-               "小沢健二": ["Eclectic"],
                "Omoide Hatoba": ["Mantako"],
                "World's End Girlfriend": ["Xmas Song"],
                "Mussolini Headkick": ["Blood on the Flag"]}
@@ -424,7 +450,7 @@ def manual_verification_needed(song):
         return False
     if is_known_unavailable_artist_work(song):
         return False
-    return True  # spid set to x:timestamp
+    return True  # spid set to x:timestamp or u:timestamp
 
 
 def notice_body(song):
@@ -473,6 +499,15 @@ def interactive_lookup(title, artist, album):
         print(json.dumps(find_spid(title, artist, album)))
 
 
+def raw_qtxt_lookup(qtxt):
+    verify_token()
+    rob = query_spotify(qtxt)
+    print(json.dumps(rob))
+    items = rob["tracks"]["items"]
+    if len(items) > 0:
+        print("found spid: " + items[0]["id"])
+
+
 def recheck_or_sweep():
     if len(sys.argv) > 1:
         if sys.argv[1] == "batch":
@@ -480,6 +515,9 @@ def recheck_or_sweep():
             return
         if sys.argv[1] == "lookup":
             interactive_lookup(sys.argv[2], sys.argv[3], sys.argv[4])
+            return
+        if sys.argv[1] == "qtxt":
+            raw_qtxt_lookup(sys.argv[2])
             return
         song = dbacc.cfbk("Song", "dsId", sys.argv[1], required=True)
         ovrti = ""

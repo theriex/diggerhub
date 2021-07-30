@@ -93,6 +93,7 @@ module.exports = (function () {
      //         "z:" + spotify track id - successfully mapped.
      //         "x:" + ISO time - no spotify mapping found.
      //         "m:" + ISO time - unmappable due to bad metadata.
+     //         "q:" + ISO time - not queryable
      //         "k:" + ISO time - known unmappable (previously verified)
      //   bcid, ytid, azid, apid etc. can be additional fields as needed.
      cache:{minutes:0},
