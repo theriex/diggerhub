@@ -83,7 +83,8 @@ app.login = (function () {
             mgrs.ap.save(); }
     return {
         successfulSignIn: function (result, contf) {
-            updateAuthObj(result);
+            if(result) {
+                updateAuthObj(result); }
             jt.out("acctmsglinediv", "");
             if(authflds.some((f) => app.startParams[f])) {
                 //clear auth app params to avoid conflicts with auth changes
