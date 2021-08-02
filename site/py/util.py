@@ -447,10 +447,9 @@ def mailpwr():
 def updacc():
     try:
         digacc, token = authenticate()
-        chg = update_email_and_password(
-            digacc,
-            dbacc.reqarg("updemail", "DigAcc.email"),
-            dbacc.reqarg("updpassword", "string"))
+        emaddr = dbacc.reqarg("updemail", "DigAcc.email") or digacc["email"]
+        chg = update_email_and_password(digacc, emaddr,
+                                        dbacc.reqarg("updpassword", "string"))
         if chg != "nochange":
             logging.info("Changing " + chg + " for " + digacc["email"])
         update_account_fields(digacc)
