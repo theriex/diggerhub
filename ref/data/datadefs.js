@@ -68,10 +68,13 @@ module.exports = (function () {
      //    firstname: for display purposes
      //    hashtag: for playlist page (not currently available)
      //    status: Active|Inactive|Removed  (preserve refs for default ratings)
-     //    lastrating: timestamp of friend's most recent rating
-     //    lastcheck: timestamp when friend's rating data was fetched
-     //    lastimport: timestamp when rating data was last imported
-     //    filled: how many songs ratings were filled out from this friend
+     //    contribution fields:
+     //      dhcheck: timestamp when DiggerHub last checked for contributions
+     //      dhcontrib: how many songs this friend has contributed
+     //      lastrating: timestamp of friend's most recent rating
+     //      lastcheck: timestamp when friend's rating data was fetched
+     //      lastimport: timestamp when rating data was last imported
+     //      filled: how many songs ratings were filled out from this friend
      cache:{minutes:2*60}, //fast auth after initial load
      logflds:["email", "firstname"]},
 
@@ -81,21 +84,26 @@ module.exports = (function () {
         {f:"ti", d:"req string", c:"title of song"},
         {f:"ar", d:"string", c:"artist for song"},
         {f:"ab", d:"string", c:"album for song"},
-        {f:"el", d:"int", i:49, c:"energy level for this song"},
-        {f:"al", d:"int", i:49, c:"approachability level for this song"},
-        {f:"kws", d:"string", c:"keywords associated with this song"},
+        {f:"el", d:"int", i:49, c:"energy level Chill/Amped 0-99"},
+        {f:"al", d:"int", i:49, c:"approachability level Easy/Hard 0-99"},
+        {f:"kws", d:"string", c:"keywords CSV associated with this song"},
         {f:"rv", d:"int", i:5, c:"rating value (stars) 1-10"},
         {f:"fq", d:"string", c:"play frequency code (see player)"},
         {f:"lp", d:"isodate", c:"last played timestamp"},
         {f:"nt", d:"text", c:"note text (whatever the user wrote)"},
-        {f:"spid", d:"string", c:"z:trackID, code:val or null/empty (*1)"}],
-     //*1 spid: null if not searched.
+        {f:"pc", d:"int", c:"how many times song was loaded into player"},
+        {f:"srcid", d:"dbid", c:"music friend id or source id (*1)"},
+        {f:"srcrat", d:"string", c:"src el:al:rv:kwscsv values"},
+        {f:"spid", d:"string", c:"z:trackID, code:val or null/empty (*2)"}],
+     //*1 srcid: null or zero if no source noted.
+     //          1: spotify playback (Digger reacted to song on spotify player)
+     //*2 spid: null if not searched.
      //         "z:" + spotify track id - successfully mapped.
      //         "x:" + ISO time - no spotify mapping found.
      //         "m:" + ISO time - unmappable due to bad metadata.
      //         "q:" + ISO time - not queryable
      //         "k:" + ISO time - known unmappable (previously verified)
-     //   bcid, ytid, azid, apid etc. can be additional fields as needed.
+     //   bcid, ytid, azid, apid etc. will be additional fields when supported
      cache:{minutes:0},
      logflds:["aid", "ti", "ar"]},
 

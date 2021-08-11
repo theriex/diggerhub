@@ -74,6 +74,10 @@ def multipupd(): #params: auth, songs
 def addmusf(): # params auth, mfaddr
     return util.secure(appdat.addmusf)
 
+@app.route('/api/mfcontrib', methods=['GET', 'POST'])
+def mfcontrib(): # params auth
+    return util.secure(appdat.mfcontrib)
+
 @app.route('/api/createmusf', methods=['GET', 'POST'])
 def createmusf(): #params auth, emaddr, firstname
     return util.secure(appdat.createmusf)

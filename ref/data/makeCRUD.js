@@ -1,4 +1,4 @@
-/*jslint node, white, fudge, long */
+/*jslint node, white, long, unordered */
 
 var ddefs = require("./datadefs");
 var srcdir = "../../site/py";
@@ -127,8 +127,8 @@ function pyboolstr (val) {
 
 function entityDefinitions () {
     var pyc = "";
-    pyc += "entdefs = {\n";
     var definitions = ddefs.dataDefinitions();
+    pyc += "entdefs = {\n";
     definitions.forEach(function (edef, eidx) {
         var ecomma = "";
         if(eidx < definitions.length - 1) {
@@ -140,9 +140,9 @@ function entityDefinitions () {
         pyc += "        \"batchconv\": {\"pt\": \"string\", \"un\": False, \"dv\": \"\"},\n";
         edef.fields.forEach(function (fd, fidx) {
             var fcomma = "";
+            var pytype = pyTypeForField(fd);
             if(fidx < edef.fields.length - 1) {
                 fcomma = ","; }
-            var pytype = pyTypeForField(fd);
             pyc += "        \"" + fd.f + "\": {" +
                 "\"pt\": \"" + pytype + "\", " +
                 "\"un\": " + pyboolstr(ddefs.fieldIs(fd.d, "unique")) + ", " +
@@ -156,14 +156,13 @@ function entityDefinitions () {
 
 function entityKeyFields () {
     var pyc = "";
-    pyc += "entkeys = {\n";
     var definitions = ddefs.dataDefinitions();
+    pyc += "entkeys = {\n";
     definitions.forEach(function (edef, eidx) {
-        var ecomma = "";
+        var ecomma = ""; var keyflds = "";
         if(eidx < definitions.length - 1) {
             ecomma = ","; }
         pyc += "    \"" + edef.entity + "\": [";
-        var keyflds = "";
         edef.fields.forEach(function (fd) {
             if(ddefs.fieldIs(fd.d, "unique")) {
                 if(keyflds) {
@@ -530,9 +529,9 @@ function app2dbConversions () {
 
 function dblogMessager () {
     var pyc = "";
-    pyc += "def dblogmsg(op, entity, res):\n";
     var lfs = "";
     var definitions = ddefs.dataDefinitions();
+    pyc += "def dblogmsg(op, entity, res):\n";
     definitions.forEach(function (edef) {
         if(edef.logflds) {
             if(lfs) {
@@ -695,10 +694,9 @@ function entityDeleteFunction () {
 
 
 function writeQueryFunction (edef) {
-    var pyc = "";
+    var pyc = ""; var fcsv = ""; var oes = "";
     pyc += "def query_" + edef.entity + "(cnx, cursor, where):\n";
     pyc += "    query = \"SELECT dsId, created, modified, \"\n";
-    var fcsv = "";
     edef.fields.forEach(function (fd) {
         if(fcsv) {
             fcsv += ", "; }
@@ -708,7 +706,6 @@ function writeQueryFunction (edef) {
     pyc += "    cursor.execute(query)\n";
     pyc += "    res = []\n";
     pyc += "    for (dsId, created, modified, " + fcsv + ") in cursor:\n";
-    var oes = "";
     edef.fields.forEach(function (fd) {
         if(oes) {
             oes += ", "; }
@@ -798,7 +795,7 @@ function fieldVisibilityFunction () {
 function appSpecificFunctions () {
     var pyc = "";
     pyc += "# For a given user, count their total songs and how many are streaming\n";
-    pyc += "def fetch_song_counts(daid):\n";
+    pyc += "def fetch_song_counts(uid):\n";
     pyc += "    cnx = get_mysql_connector()\n";
     pyc += "    if not cnx:\n";
     pyc += "        raise ValueError(\"Database connection failed.\")\n";
@@ -807,12 +804,36 @@ function appSpecificFunctions () {
     pyc += "        try:\n";
     pyc += "            query = (\"SELECT COUNT(dsId) AS hubdb\" +\n";
     pyc += "                     \", COUNT(IF(spid LIKE \\\"z:%\\\", 1, NULL)) AS spotify\" +\n";
-    pyc += "                     \" FROM (SELECT dsId, spid FROM Song WHERE aid=2020)\" +\n";
-    pyc += "                     \" AS usersongs;\")\n";
+    pyc += "                     \" FROM (SELECT dsId, spid FROM Song WHERE aid=\" +\n";
+    pyc += "                     str(uid) + \" AS usersongs;\")\n";
     pyc += "            cursor.execute(query)\n";
     pyc += "            res = []\n";
     pyc += "            for (hubdb, spotify) in cursor:\n";
     pyc += "                res.append({\"hubdb\":hubdb, \"spotify\":spotify})\n";
+    pyc += "            return res\n";
+    pyc += "        except mysql.connector.Error as e:\n";
+    pyc += "            raise ValueError(str(e) or \"No song fetch error details\")\n";
+    pyc += "        finally:\n";
+    pyc += "            cursor.close()\n";
+    pyc += "    finally:\n";
+    pyc += "        cnx.close()\n";
+    pyc += "\n";
+    pyc += "\n";
+    pyc += "# Count the songs for the given user from the given music friend\n";
+    pyc += "def count_contributions(uid, mfid):\n";
+    pyc += "    cnx = get_mysql_connector()\n";
+    pyc += "    if not cnx:\n";
+    pyc += "        raise ValueError(\"Database connection failed.\")\n";
+    pyc += "    try:\n";
+    pyc += "        cursor = cnx.cursor()\n";
+    pyc += "        try:\n";
+    pyc += "            query = (\"SELECT COUNT(dsId) AS ccnt\" +\n";
+    pyc += "                     \" FROM Song WHERE aid=\" + str(uid) +\n";
+    pyc += "                     \" AND srcid=\" + str(mfid))\n";
+    pyc += "            cursor.execute(query)\n";
+    pyc += "            res = []\n";
+    pyc += "            for ccnt in cursor:\n";
+    pyc += "                res.append({\"mfid\":mfid, \"ccnt\":ccnt})\n";
     pyc += "            return res\n";
     pyc += "        except mysql.connector.Error as e:\n";
     pyc += "            raise ValueError(str(e) or \"No song fetch error details\")\n";
@@ -909,6 +930,7 @@ function writePersistentTypes () {
 
 
 function writeDeserializeFunction () {
+    var definitions = ddefs.dataDefinitions();
     var jsc = "";
     jsc += "    //All json fields are initialized to {} so they can be accessed directly.\n";
     jsc += "    function reconstituteFieldJSONObject (field, obj) {\n";
@@ -936,7 +958,6 @@ function writeDeserializeFunction () {
     jsc += "\n";
     jsc += "    function deserialize (obj) {\n";
     jsc += "        switch(obj.dsType) {\n";
-    var definitions = ddefs.dataDefinitions();
     definitions.forEach(function (edef) {
         jsc += "        case \"" + edef.entity + "\":\n";
         edef.fields.forEach(function (fd) {
@@ -969,10 +990,10 @@ function writeDeserializeFunction () {
 
 
 function writeClearPrivilegedFunction () {
+    var definitions = ddefs.dataDefinitions();
     var jsc = "";
     jsc += "    function clearPrivilegedFields (obj) {\n";
     jsc += "        switch(obj.dsType) {\n";
-    var definitions = ddefs.dataDefinitions();
     definitions.forEach(function (edef) {
         jsc += "        case \"" + edef.entity + "\":\n";
         edef.fields.forEach(function (fd) {

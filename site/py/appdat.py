@@ -91,7 +91,10 @@ def write_song(updsong, digacc):
         "rv": {"pt": "int", "un": False, "dv": 0},
         "fq": {"pt": "string", "un": False, "dv": ""},
         "lp": {"pt": "string", "un": False, "dv": ""},
-        "nt": {"pt": "string", "un": False, "dv": ""}}
+        "nt": {"pt": "string", "un": False, "dv": ""},
+        "pc": {"pt": "int", "un": False, "dv": 0},
+        "srcid": {"pt": "string", "un": False, "dv": ""},
+        "srcrat": {"pt": "string", "un": False, "dv": ""}}
     for field, fdesc in flds.items():
         song[field] = updsong.get(field, fdesc["dv"])
     updsong = dbacc.write_entity(song, song.get("modified") or "")
@@ -390,8 +393,9 @@ def songupd():
         if song["aid"] != digacc["dsId"]:
             raise ValueError("Song author id mismatch")
         util.set_fields_from_reqargs(["ti", "ar", "ab", "kws", "fq", "lp",
-                                      "nt", "spid"], song)
-        util.set_fields_from_reqargs(["el", "al", "rv"], song, "int")
+                                      "nt", "srcrat", "spid"], song)
+        util.set_fields_from_reqargs(["el", "al", "rv", "pc"], song, "int")
+        util.set_fields_from_reqargs(["srcid"], song, "dbid")
         song = dbacc.write_entity(song, song["modified"])
     except ValueError as e:
         return util.serve_value_error(e)
@@ -425,6 +429,7 @@ def addmusf():
         digacc, _ = util.authenticate()
         mfaddr = dbacc.reqarg("mfaddr", "json", required=True)
         mfaddr = util.normalize_email(mfaddr)
+        logging.info("addmusf " + digacc["email"] + " searching for " + mfaddr)
         mfacct = dbacc.cfbk("DigAcc", "email", mfaddr)
         if not mfacct:
             return util.srverr(mfaddr + " not found", code=404)
@@ -451,6 +456,22 @@ def createmusf():
         mfacc = dbacc.write_entity(mfacc)
         mfacc = add_music_friend(mfacc, digacc)
         digacc = add_music_friend(digacc, mfacc)
+    except ValueError as e:
+        return util.serve_value_error(e)
+    return util.respJSON([digacc], audience="private")
+
+
+def mfcontrib():
+    try:
+        digacc, _ = util.authenticate()
+        musfs = json.loads(digacc.get("musfs") or "[]")
+        for mf in musfs:
+            if mf["status"] == "Active":
+                ctb = dbacc.count_contributions(digacc["dsId"], mf["dsId"])[0]
+                mf["dhcheck"] = dbacc.nowISO()
+                mf["dhcontrib"] = ctb["ccnt"][0]
+        digacc["musfs"] = json.dumps(musfs)
+        digacc = dbacc.write_entity(digacc, digacc["modified"])
     except ValueError as e:
         return util.serve_value_error(e)
     return util.respJSON([digacc], audience="private")

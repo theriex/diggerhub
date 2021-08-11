@@ -89,6 +89,9 @@ entdefs = {
         "fq": {"pt": "string", "un": False, "dv": ""},
         "lp": {"pt": "string", "un": False, "dv": ""},
         "nt": {"pt": "string", "un": False, "dv": ""},
+        "pc": {"pt": "int", "un": False, "dv": 0},
+        "srcid": {"pt": "dbid", "un": False, "dv": 0},
+        "srcrat": {"pt": "string", "un": False, "dv": ""},
         "spid": {"pt": "string", "un": False, "dv": ""}
     },
     "Collab": {  # Initial ratings, suggestions and such
@@ -523,6 +526,12 @@ def app2db_Song(inst, fill=True):
         cnv["lp"] = app2db_fieldval("Song", "lp", inst)
     if fill or "nt" in inst:
         cnv["nt"] = app2db_fieldval("Song", "nt", inst)
+    if fill or "pc" in inst:
+        cnv["pc"] = app2db_fieldval("Song", "pc", inst)
+    if fill or "srcid" in inst:
+        cnv["srcid"] = app2db_fieldval("Song", "srcid", inst)
+    if fill or "srcrat" in inst:
+        cnv["srcrat"] = app2db_fieldval("Song", "srcrat", inst)
     if fill or "spid" in inst:
         cnv["spid"] = app2db_fieldval("Song", "spid", inst)
     return cnv
@@ -549,6 +558,9 @@ def db2app_Song(inst):
     cnv["fq"] = db2app_fieldval("Song", "fq", inst)
     cnv["lp"] = db2app_fieldval("Song", "lp", inst)
     cnv["nt"] = db2app_fieldval("Song", "nt", inst)
+    cnv["pc"] = db2app_fieldval("Song", "pc", inst)
+    cnv["srcid"] = db2app_fieldval("Song", "srcid", inst)
+    cnv["srcrat"] = db2app_fieldval("Song", "srcrat", inst)
     cnv["spid"] = db2app_fieldval("Song", "spid", inst)
     return cnv
 
@@ -751,8 +763,8 @@ def update_existing_DigAcc(context, fields):
 def insert_new_Song(cnx, cursor, fields):
     fields = app2db_Song(fields)
     stmt = (
-        "INSERT INTO Song (created, modified, aid, path, ti, ar, ab, el, al, kws, rv, fq, lp, nt, spid) "
-        "VALUES (%(created)s, %(modified)s, %(aid)s, %(path)s, %(ti)s, %(ar)s, %(ab)s, %(el)s, %(al)s, %(kws)s, %(rv)s, %(fq)s, %(lp)s, %(nt)s, %(spid)s)")
+        "INSERT INTO Song (created, modified, aid, path, ti, ar, ab, el, al, kws, rv, fq, lp, nt, pc, srcid, srcrat, spid) "
+        "VALUES (%(created)s, %(modified)s, %(aid)s, %(path)s, %(ti)s, %(ar)s, %(ab)s, %(el)s, %(al)s, %(kws)s, %(rv)s, %(fq)s, %(lp)s, %(nt)s, %(pc)s, %(srcid)s, %(srcrat)s, %(spid)s)")
     data = {
         'created': fields.get("created"),
         'modified': fields.get("modified"),
@@ -768,6 +780,9 @@ def insert_new_Song(cnx, cursor, fields):
         'fq': fields.get("fq", entdefs["Song"]["fq"]["dv"]),
         'lp': fields.get("lp", entdefs["Song"]["lp"]["dv"]),
         'nt': fields.get("nt", entdefs["Song"]["nt"]["dv"]),
+        'pc': fields.get("pc", entdefs["Song"]["pc"]["dv"]),
+        'srcid': fields.get("srcid", entdefs["Song"]["srcid"]["dv"]),
+        'srcrat': fields.get("srcrat", entdefs["Song"]["srcrat"]["dv"]),
         'spid': fields.get("spid", entdefs["Song"]["spid"]["dv"])}
     cursor.execute(stmt, data)
     fields["dsId"] = cursor.lastrowid
@@ -1038,12 +1053,12 @@ def query_DigAcc(cnx, cursor, where):
 
 def query_Song(cnx, cursor, where):
     query = "SELECT dsId, created, modified, "
-    query += "aid, path, ti, ar, ab, el, al, kws, rv, fq, lp, nt, spid"
+    query += "aid, path, ti, ar, ab, el, al, kws, rv, fq, lp, nt, pc, srcid, srcrat, spid"
     query += " FROM Song " + where
     cursor.execute(query)
     res = []
-    for (dsId, created, modified, aid, path, ti, ar, ab, el, al, kws, rv, fq, lp, nt, spid) in cursor:
-        inst = {"dsType": "Song", "dsId": dsId, "created": created, "modified": modified, "aid": aid, "path": path, "ti": ti, "ar": ar, "ab": ab, "el": el, "al": al, "kws": kws, "rv": rv, "fq": fq, "lp": lp, "nt": nt, "spid": spid}
+    for (dsId, created, modified, aid, path, ti, ar, ab, el, al, kws, rv, fq, lp, nt, pc, srcid, srcrat, spid) in cursor:
+        inst = {"dsType": "Song", "dsId": dsId, "created": created, "modified": modified, "aid": aid, "path": path, "ti": ti, "ar": ar, "ab": ab, "el": el, "al": al, "kws": kws, "rv": rv, "fq": fq, "lp": lp, "nt": nt, "pc": pc, "srcid": srcid, "srcrat": srcrat, "spid": spid}
         inst = db2app_Song(inst)
         res.append(inst)
     dblogmsg("QRY", "Song", res)
@@ -1187,7 +1202,7 @@ def visible_fields(obj, audience="public"):
 
 
 # For a given user, count their total songs and how many are streaming
-def fetch_song_counts(daid):
+def fetch_song_counts(uid):
     cnx = get_mysql_connector()
     if not cnx:
         raise ValueError("Database connection failed.")
@@ -1196,12 +1211,36 @@ def fetch_song_counts(daid):
         try:
             query = ("SELECT COUNT(dsId) AS hubdb" +
                      ", COUNT(IF(spid LIKE \"z:%\", 1, NULL)) AS spotify" +
-                     " FROM (SELECT dsId, spid FROM Song WHERE aid=2020)" +
-                     " AS usersongs;")
+                     " FROM (SELECT dsId, spid FROM Song WHERE aid=" +
+                     str(uid) + " AS usersongs;")
             cursor.execute(query)
             res = []
             for (hubdb, spotify) in cursor:
                 res.append({"hubdb":hubdb, "spotify":spotify})
+            return res
+        except mysql.connector.Error as e:
+            raise ValueError(str(e) or "No song fetch error details")
+        finally:
+            cursor.close()
+    finally:
+        cnx.close()
+
+
+# Count the songs for the given user from the given music friend
+def count_contributions(uid, mfid):
+    cnx = get_mysql_connector()
+    if not cnx:
+        raise ValueError("Database connection failed.")
+    try:
+        cursor = cnx.cursor()
+        try:
+            query = ("SELECT COUNT(dsId) AS ccnt" +
+                     " FROM Song WHERE aid=" + str(uid) +
+                     " AND srcid=" + str(mfid))
+            cursor.execute(query)
+            res = []
+            for ccnt in cursor:
+                res.append({"mfid":mfid, "ccnt":ccnt})
             return res
         except mysql.connector.Error as e:
             raise ValueError(str(e) or "No song fetch error details")

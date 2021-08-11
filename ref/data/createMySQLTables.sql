@@ -36,6 +36,9 @@ CREATE TABLE Song (  -- Rating and play information
   fq VARCHAR(256),
   lp VARCHAR(256),
   nt LONGTEXT,
+  pc INT,
+  srcid BIGINT,
+  srcrat VARCHAR(256),
   spid VARCHAR(256),
   PRIMARY KEY (dsId)
 );
