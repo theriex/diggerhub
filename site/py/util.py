@@ -21,7 +21,7 @@ import py.dbacc as dbacc
 import py.mconf as mconf
 
 def version():
-    return "v0.8"
+    return "v0.8.1"
 
 
 def srverr(msg, code=400):
@@ -278,6 +278,7 @@ def send_activation_email(digacc, friend=None):
               "&an=" + urllib.parse.quote(digacc["email"]) +
               "&at=" + token_for_user(digacc))
     if friend:
+        logging.info("Invitation mail -> " + digacc["email"])
         subj = friend["firstname"] + " has invited you to join DiggerHub"
         body = ("Hello " + digacc["firstname"] + ",\n\n" +
                 friend["firstname"] + " (" + friend["email"] +
@@ -286,6 +287,7 @@ def send_activation_email(digacc, friend=None):
                 acturl + "\n\n" +
                 "Welcome to DiggerHub!\n")
     else:
+        logging.info("Activation mail -> " + digacc["email"])
         subj = "DiggerHub account activation link"
         body = ("Use this link to activate your DiggerHub account:\n\n" +
                 acturl + "\n\n" +
