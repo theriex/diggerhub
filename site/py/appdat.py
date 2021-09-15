@@ -7,6 +7,7 @@
 import logging
 import json
 import datetime
+import re
 import py.dbacc as dbacc
 import py.util as util
 
@@ -30,7 +31,7 @@ def strl2inexp(strl):
 # possible to avoid that by tracking the aid and path, in reality paths
 # change more frequently than metadata and are not reliable. Not worth the
 # overhead and complexity from trying.  Always look up by logical key.
-def find_song(spec):
+def find_song(spec, ovrs=None):
     """ Lookup by aid/title/artist/album, return song instance or None """
     where = ("WHERE aid = " + spec["aid"] +
              " AND ti = \"" + dqe(spec["ti"]) + "\"" +
@@ -40,13 +41,18 @@ def find_song(spec):
              " ORDER BY modified DESC LIMIT 1")
     songs = dbacc.query_entity("Song", where)
     if len(songs) > 0:
-        return songs[0]
+        ret = songs[0]
+        if ovrs:
+            for key, val in ovrs.items():
+                ret[key] = val
+        return ret
     return None
 
 
-def normalize_song_fields(updsong):
+def normalize_song_fields(updsong, digacc):
     """ Verify needed fields are defined and not padded. """
     updsong["dsType"] = "Song"
+    updsong["aid"] = digacc["dsId"]
     for matchfield in ["ti", "ar", "ab"]:
         updsong[matchfield] = updsong.get(matchfield, "")
         updsong[matchfield] = updsong[matchfield].strip()
@@ -65,20 +71,48 @@ def is_unrated_song(song):
     return unrated
 
 
-def write_song(updsong, digacc):
+# The default mySQL isolation level of repeatable read means it is possible
+# to read an older instance from the database query cache despite the
+# instance having been updated and committed.
+def max_modified_value(sa, sb):
+    sam = sa.get("modified", "")
+    sbm = sb.get("modified", "")
+    if sam > sbm:
+        return sam
+    return sbm
+
+
+def standarized_colloquial_match(txt):
+    scm = txt
+    scm = re.sub(r"\(.*", "", scm)  # remove trailing parentheticals
+    scm = re.sub(r"\[.*", "", scm)  # remove trailing bracket text
+    scm = re.sub(r"featuring.*", "", scm, flags=re.IGNORECASE)
+    scm = scm.strip()
+    return scm
+
+
+def rebuild_derived_song_fields(song):
+    song["smti"] = standarized_colloquial_match(song["ti"])
+    song["smar"] = standarized_colloquial_match(song["ar"])
+    song["smab"] = standarized_colloquial_match(song["ab"])
+
+
+def write_song(updsong, digacc, forcenew=False):
     """ Write the given update song. """
-    updsong["aid"] = digacc["dsId"]
-    normalize_song_fields(updsong)
+    normalize_song_fields(updsong, digacc)
     # logging.info("appdat.write_song " + str(updsong))
-    song = find_song(updsong)
+    song = None
+    if not forcenew:
+        song = find_song(updsong)
     if not song:  # create new
         song = {"dsType":"Song", "aid":digacc["dsId"]}
-    else: #updating existing song instance
+    else: # updating existing song instance
         if is_unrated_song(updsong) and not is_unrated_song(song):
             # should never happen due to hub push before hub receive, but
             # leaving in place as a general protective measure.
             updsong = song  # ignore updsong to avoid information loss
             logging.info("write_song not unrating " + song_string(song))
+        song["modified"] = max_modified_value(updsong, song)
     flds = {  # do NOT copy general db fields from client data. only these:
         # field defs copied from dbacc.py
         "path": {"pt": "string", "un": False, "dv": ""},
@@ -97,6 +131,7 @@ def write_song(updsong, digacc):
         "srcrat": {"pt": "string", "un": False, "dv": ""}}
     for field, fdesc in flds.items():
         song[field] = updsong.get(field, fdesc["dv"])
+    rebuild_derived_song_fields(song)
     updsong = dbacc.write_entity(song, song.get("modified") or "")
     return updsong
 
@@ -298,9 +333,9 @@ def fetch_matching_songs(digacc, fvs, limit):
 def fetch_friend_songs(digacc, fvs, limit):
     where = ("WHERE aid IN (" + fvs["friendidcsv"] + ")" +
              " AND spid LIKE \"z:%\"" +
-             " AND rv >= 8")  # 4 stars or better
-    where += (" AND spid NOT IN" +
-              " (SELECT spid FROM Song WHERE aid=" + digacc["dsId"] + ")")
+             " AND rv >= 8" +  # 4 stars or better
+             " AND spid NOT IN" +
+             " (SELECT spid FROM Song WHERE aid=" + digacc["dsId"] + ")")
     where += fvs_match_sql_clauses(fvs)
     where += " ORDER BY rv DESC, modified DESC LIMIT " + str(limit)
     logging.info("fetch_friend_songs " + where)
@@ -333,6 +368,82 @@ def add_music_friend(digacc, mfacct):
     return digacc
 
 
+# Returns a list of saved songs corresponging to the uploaded songs, or
+# raises an error.  The uplds list may contain multiple songs (with
+# different paths) that save to the same Song dsId, so avoid writing
+# multiple times to keep the "modified" value consistent.  Reset the
+# checksince value for all music friends.
+def save_uploaded_songs(digacc, uplds, maxret):
+    if len(uplds) > maxret:
+        raise ValueError("Max song uplds: " + maxret +
+                         ", received " + str(len(uplds)))
+    prevsaved = {}
+    prcsongs = []
+    for song in uplds:
+        if not song.get("ti"):
+            raise ValueError("Missing ti (title) value " + song.get("path"))
+        if not song.get("ar"):
+            raise ValueError("Missing ar (artist) value " + song.get("ti"))
+        if not song.get("path"):
+            raise ValueError("Missing path value " + song.get("ti", "") +
+                             " - " + song.get("ar", ""))
+        normalize_song_fields(song, digacc)
+        skey = dbacc.get_song_key(song)
+        if not prevsaved.get(skey):
+            prevsaved[skey] = find_song(song, ovrs={"path":song["path"]})
+        if not prevsaved.get(skey):
+            prevsaved[skey] = write_song(song, digacc, forcenew=True)
+        prcsongs.append(prevsaved.get(skey))
+    if len(prcsongs) > 0:
+        musfs = json.loads(digacc.get("musfs") or "[]")
+        for mf in musfs:
+            mf["checksince"] = "1970-01-01T00:00:00Z"
+        digacc["musfs"] = json.dumps(musfs)
+        digacc = dbacc.write_entity(digacc, digacc["modified"])
+    return [digacc] + prcsongs
+
+
+def append_default_ratings_from_friend(digacc, mf, prcsongs, maxret):
+    if len(prcsongs) >= maxret:
+        return False # have enough songs already
+    checksince = mf.get("checksince", "1970-01-01T00:00.00Z")
+    chkthresh = dbacc.ISO2dt(checksince) + datetime.timedelta(days=1)
+    chkthresh = dbacc.dt2ISO(chkthresh)
+    if chkthresh > dbacc.nowISO():
+        return False # already checked today
+    sflim = maxret - len(prcsongs)
+    cds = dbacc.collaborate_default_ratings(digacc["dsId"], mf["dsId"],
+                                            since=checksince, limit=sflim)
+    if len(cds) > 0:
+        rfs = ["el", "al", "rv", "kws"]  # rating fields
+        for song in cds:
+            mf["checksince"] = song["mfcreated"]
+            mf["dhcontrib"] = mf.get("dhcontrib", 0) + 1
+            song["srcid"] = song["mfid"]
+            song["srcrat"] = ":".join([str(song[v]) for v in rfs])
+            # cds may contain duplicate songs due to join expansion. 14sep21
+            # No need for overhead of querying for version before writing.
+            prcsongs.append(dbacc.write_entity(song, vck="override"))
+    else:
+        mf["checksince"] = dbacc.nowISO()
+    logging.info(mf.get("firstname") + " " + mf["dsId"] + " contributed " +
+                 str(len(cds)) + " default ratings for " +
+                 digacc.get("firstname") + " " + digacc["dsId"])
+    return True
+
+
+def fill_default_ratings_from_friends(digacc, maxret):
+    prcsongs = []
+    accmod = False
+    musfs = json.loads(digacc.get("musfs") or "[]")
+    for mf in (mf for mf in musfs if mf.get("status") == "Active"):
+        if append_default_ratings_from_friend(digacc, mf, prcsongs, maxret):
+            accmod = True
+    if accmod:  # write updated checksince times for musfs
+        digacc["musfs"] = json.dumps(musfs)
+        digacc = dbacc.write_entity(digacc, digacc["modified"])
+    return [digacc] + prcsongs
+
 
 ############################################################
 ## API endpoints:
@@ -345,6 +456,8 @@ def hubsync():
         syncdata = json.loads(dbacc.reqarg("syncdata", "json", required=True))
         updacc = syncdata[0]
         prevsync = updacc.get("syncsince") or updacc["modified"]
+        # provide context for subsequent log messages
+        logging.info("hubsync -> " + digacc["email"] + "prevsync: " + prevsync)
         if prevsync < digacc["modified"]:  # hub push
             racc, rsongs = find_hub_push_songs(digacc, prevsync)
             msg = "hub push"
@@ -419,9 +532,9 @@ def multiupd():
     return util.respJSON(songs)
 
 
-# mfaddr: musical friend mail address required for lookup. Stay personal.
+# mfaddr: music friend mail address required for lookup. Stay personal.
 # Sorting of friends and changing their status is handled client side.  This
-# adds the new musical friend at the beginning of the list after verifying
+# adds the new music friend at the beginning of the list after verifying
 # the account exists.  Existing intances are checked and minimally modified
 # to reflect the ordering and status updates implied by adding a new friend.
 def addmusf():
@@ -461,20 +574,26 @@ def createmusf():
     return util.respJSON([digacc], audience="private")
 
 
+# If uplds are given, save those and return them.  Otherwise walk the DigAcc
+# music friends whose checksince is more than 24hrs ago and update default
+# ratings for the DigAcc.  Fill in checksince for the music friend with the
+# creation time of the most recent contributed song, or the current time if
+# none found.  The dhcontrib count is incremented but not recalculated.
+# Songs with contributed default ratings have
 def mfcontrib():
     try:
         digacc, _ = util.authenticate()
-        musfs = json.loads(digacc.get("musfs") or "[]")
-        for mf in musfs:
-            if mf["status"] == "Active":
-                ctb = dbacc.count_contributions(digacc["dsId"], mf["dsId"])[0]
-                mf["dhcheck"] = dbacc.nowISO()
-                mf["dhcontrib"] = ctb["ccnt"][0]
-        digacc["musfs"] = json.dumps(musfs)
-        digacc = dbacc.write_entity(digacc, digacc["modified"])
+        maxret = 200
+        uplds = dbacc.reqarg("uplds", "jsarr")
+        if uplds:
+            logging.info("mfcontrib urs: " + uplds[0:512])
+            uplds = json.loads(uplds)
+            res = save_uploaded_songs(digacc, uplds, maxret)
+        else:
+            res = fill_default_ratings_from_friends(digacc, maxret)
     except ValueError as e:
         return util.serve_value_error(e)
-    return util.respJSON([digacc], audience="private")
+    return util.respJSON(res, audience="private")
 
 
 # gid, since (timestamp). Auth required, need to know who is asking.

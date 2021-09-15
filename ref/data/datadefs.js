@@ -68,13 +68,8 @@ module.exports = (function () {
      //    firstname: for display purposes
      //    hashtag: for playlist page (not currently available)
      //    status: Active|Inactive|Removed  (preserve refs for default ratings)
-     //    contribution fields:
-     //      dhcheck: timestamp when DiggerHub last checked for contributions
-     //      dhcontrib: how many songs this friend has contributed
-     //      lastrating: timestamp of friend's most recent rating
-     //      lastcheck: timestamp when friend's rating data was fetched
-     //      lastimport: timestamp when rating data was last imported
-     //      filled: how many songs ratings were filled out from this friend
+     //    dhcontrib: how many default song ratings this friend has contributed
+     //    checksince: last contributed song time stamp or last check time
      cache:{minutes:2*60}, //fast auth after initial load
      logflds:["email", "firstname"]},
 
@@ -84,6 +79,9 @@ module.exports = (function () {
         {f:"ti", d:"req string", c:"title of song"},
         {f:"ar", d:"string", c:"artist for song"},
         {f:"ab", d:"string", c:"album for song"},
+        {f:"smti", d:"string", c:"standardized match title"},
+        {f:"smar", d:"string", c:"standardized match artist"},
+        {f:"smab", d:"string", c:"standardized match album"},
         {f:"el", d:"int", i:49, c:"energy level Chill/Amped 0-99"},
         {f:"al", d:"int", i:49, c:"approachability level Easy/Hard 0-99"},
         {f:"kws", d:"string", c:"keywords CSV associated with this song"},
@@ -95,7 +93,8 @@ module.exports = (function () {
         {f:"srcid", d:"dbid", c:"music friend id or source id (*1)"},
         {f:"srcrat", d:"string", c:"src el:al:rv:kwscsv values"},
         {f:"spid", d:"string", c:"z:trackID, code:val or null/empty (*2)"}],
-     //*1 srcid: null or zero if no source noted.
+     //SHOW TABLE STATUS WHERE NAME="Song"\G
+     //*1 srcid: null or zero if not music friend contributed.  Special ids:
      //          1: spotify playback (Digger reacted to song on spotify player)
      //*2 spid: null if not searched.
      //         "z:" + spotify track id - successfully mapped.

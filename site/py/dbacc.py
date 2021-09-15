@@ -82,6 +82,9 @@ entdefs = {
         "ti": {"pt": "string", "un": False, "dv": ""},
         "ar": {"pt": "string", "un": False, "dv": ""},
         "ab": {"pt": "string", "un": False, "dv": ""},
+        "smti": {"pt": "string", "un": False, "dv": ""},
+        "smar": {"pt": "string", "un": False, "dv": ""},
+        "smab": {"pt": "string", "un": False, "dv": ""},
         "el": {"pt": "int", "un": False, "dv": 0},
         "al": {"pt": "int", "un": False, "dv": 0},
         "kws": {"pt": "string", "un": False, "dv": ""},
@@ -412,6 +415,9 @@ def verify_timestamp_fields(entity, dsId, fields, vck):
     if not existing:
         raise ValueError("Existing " + entity + " " + str(dsId) + " not found.")
     if vck != "override" and existing["modified"] != vck:
+        logging.error("verify_timestamp_fields rejecting mod of " + entity +
+                      " " + str(dsId) + ". existing: " + existing["modified"] +
+                      ", received: " + vck + ".")
         raise ValueError("Update error. Outdated data given for " + entity +
                          " " + str(dsId) + ".")
     if "created" not in fields or not fields["created"] or vck != "override":
@@ -512,6 +518,12 @@ def app2db_Song(inst, fill=True):
         cnv["ar"] = app2db_fieldval("Song", "ar", inst)
     if fill or "ab" in inst:
         cnv["ab"] = app2db_fieldval("Song", "ab", inst)
+    if fill or "smti" in inst:
+        cnv["smti"] = app2db_fieldval("Song", "smti", inst)
+    if fill or "smar" in inst:
+        cnv["smar"] = app2db_fieldval("Song", "smar", inst)
+    if fill or "smab" in inst:
+        cnv["smab"] = app2db_fieldval("Song", "smab", inst)
     if fill or "el" in inst:
         cnv["el"] = app2db_fieldval("Song", "el", inst)
     if fill or "al" in inst:
@@ -551,6 +563,9 @@ def db2app_Song(inst):
     cnv["ti"] = db2app_fieldval("Song", "ti", inst)
     cnv["ar"] = db2app_fieldval("Song", "ar", inst)
     cnv["ab"] = db2app_fieldval("Song", "ab", inst)
+    cnv["smti"] = db2app_fieldval("Song", "smti", inst)
+    cnv["smar"] = db2app_fieldval("Song", "smar", inst)
+    cnv["smab"] = db2app_fieldval("Song", "smab", inst)
     cnv["el"] = db2app_fieldval("Song", "el", inst)
     cnv["al"] = db2app_fieldval("Song", "al", inst)
     cnv["kws"] = db2app_fieldval("Song", "kws", inst)
@@ -763,8 +778,8 @@ def update_existing_DigAcc(context, fields):
 def insert_new_Song(cnx, cursor, fields):
     fields = app2db_Song(fields)
     stmt = (
-        "INSERT INTO Song (created, modified, aid, path, ti, ar, ab, el, al, kws, rv, fq, lp, nt, pc, srcid, srcrat, spid) "
-        "VALUES (%(created)s, %(modified)s, %(aid)s, %(path)s, %(ti)s, %(ar)s, %(ab)s, %(el)s, %(al)s, %(kws)s, %(rv)s, %(fq)s, %(lp)s, %(nt)s, %(pc)s, %(srcid)s, %(srcrat)s, %(spid)s)")
+        "INSERT INTO Song (created, modified, aid, path, ti, ar, ab, smti, smar, smab, el, al, kws, rv, fq, lp, nt, pc, srcid, srcrat, spid) "
+        "VALUES (%(created)s, %(modified)s, %(aid)s, %(path)s, %(ti)s, %(ar)s, %(ab)s, %(smti)s, %(smar)s, %(smab)s, %(el)s, %(al)s, %(kws)s, %(rv)s, %(fq)s, %(lp)s, %(nt)s, %(pc)s, %(srcid)s, %(srcrat)s, %(spid)s)")
     data = {
         'created': fields.get("created"),
         'modified': fields.get("modified"),
@@ -773,6 +788,9 @@ def insert_new_Song(cnx, cursor, fields):
         'ti': fields.get("ti", entdefs["Song"]["ti"]["dv"]),
         'ar': fields.get("ar", entdefs["Song"]["ar"]["dv"]),
         'ab': fields.get("ab", entdefs["Song"]["ab"]["dv"]),
+        'smti': fields.get("smti", entdefs["Song"]["smti"]["dv"]),
+        'smar': fields.get("smar", entdefs["Song"]["smar"]["dv"]),
+        'smab': fields.get("smab", entdefs["Song"]["smab"]["dv"]),
         'el': fields.get("el", entdefs["Song"]["el"]["dv"]),
         'al': fields.get("al", entdefs["Song"]["al"]["dv"]),
         'kws': fields.get("kws", entdefs["Song"]["kws"]["dv"]),
@@ -1053,12 +1071,12 @@ def query_DigAcc(cnx, cursor, where):
 
 def query_Song(cnx, cursor, where):
     query = "SELECT dsId, created, modified, "
-    query += "aid, path, ti, ar, ab, el, al, kws, rv, fq, lp, nt, pc, srcid, srcrat, spid"
+    query += "aid, path, ti, ar, ab, smti, smar, smab, el, al, kws, rv, fq, lp, nt, pc, srcid, srcrat, spid"
     query += " FROM Song " + where
     cursor.execute(query)
     res = []
-    for (dsId, created, modified, aid, path, ti, ar, ab, el, al, kws, rv, fq, lp, nt, pc, srcid, srcrat, spid) in cursor:
-        inst = {"dsType": "Song", "dsId": dsId, "created": created, "modified": modified, "aid": aid, "path": path, "ti": ti, "ar": ar, "ab": ab, "el": el, "al": al, "kws": kws, "rv": rv, "fq": fq, "lp": lp, "nt": nt, "pc": pc, "srcid": srcid, "srcrat": srcrat, "spid": spid}
+    for (dsId, created, modified, aid, path, ti, ar, ab, smti, smar, smab, el, al, kws, rv, fq, lp, nt, pc, srcid, srcrat, spid) in cursor:
+        inst = {"dsType": "Song", "dsId": dsId, "created": created, "modified": modified, "aid": aid, "path": path, "ti": ti, "ar": ar, "ab": ab, "smti": smti, "smar": smar, "smab": smab, "el": el, "al": al, "kws": kws, "rv": rv, "fq": fq, "lp": lp, "nt": nt, "pc": pc, "srcid": srcid, "srcrat": srcrat, "spid": spid}
         inst = db2app_Song(inst)
         res.append(inst)
     dblogmsg("QRY", "Song", res)
@@ -1201,6 +1219,17 @@ def visible_fields(obj, audience="public"):
     raise ValueError("Unknown object dsType: " + obj["dsType"])
 
 
+# Make a unique key from the ti/ar/ab song fields
+def get_song_key(song):
+    ti = song["ti"]
+    ar = song.get("ar", "")
+    ab = song.get("ab", "")
+    srx = re.compile(r"[s'\"]")
+    skey = re.sub(srx, "", ti) + re.sub(srx, "", ar) + re.sub(srx, "", ab)
+    skey = skey.lower()
+    return skey
+
+
 # For a given user, count their total songs and how many are streaming
 def fetch_song_counts(uid):
     cnx = get_mysql_connector()
@@ -1220,6 +1249,46 @@ def fetch_song_counts(uid):
             return res
         except mysql.connector.Error as e:
             raise ValueError(str(e) or "No song fetch error details")
+        finally:
+            cursor.close()
+    finally:
+        cnx.close()
+
+
+def collaborate_default_ratings(uid, fid, since="1970-01-01T00:00:00Z",
+                                limit=200):
+    cnx = get_mysql_connector()
+    if not cnx:
+        raise ValueError("Database connection failed.")
+    try:
+        cursor = cnx.cursor()
+        try:
+            query = ("SELECT us.dsId as dsId" +
+                     ", us.created as created, us.modified as modified" +
+                     ", us.ti as ti, us.ar as ar, us.ab as ab" +
+                     ", fs.aid as mfid, fs.created as mfcreated" +
+                     ", fs.el as el, fs.al as al, fs.kws as kws, fs.rv as rv" +
+                     " FROM Song AS us, Song AS fs" +
+                     " WHERE us.aid=" + uid + " AND fs.aid=" + fid +
+                     " AND fs.created > \"" + since + "\""
+                     " AND us.smti=fs.smti AND us.smar=fs.smar" +
+                     " AND us.el = 49 AND us.al = 49 AND us.kws IS NULL" +
+                     " AND (fs.el != 49 OR fs.al != 49 OR fs.kws IS NOT NULL)" +
+                     " ORDER BY fs.created LIMIT " + str(limit))
+            logging.info("collab query: " + query)
+            cursor.execute(query)
+            res = []
+            for (dsId, created, modified, ti, ar, ab, mfid, mfcreated,
+                 el, al, kws, rv) in cursor:
+                res.append({"dsType":"Song", "dsId":str(dsId),
+                            "created":created, "modified":modified,
+                            "ti":ti, "ar":ar, "ab":ab,
+                            "mfid":str(mfid), "mfcreated":mfcreated,
+                            "el":el, "al":al, "kws":kws, "rv":rv})
+            logging.info("collab res " + str(len(res)) + " Songs")
+            return res
+        except mysql.connector.Error as e:
+            raise ValueError(str(e) or "No collab error details")
         finally:
             cursor.close()
     finally:

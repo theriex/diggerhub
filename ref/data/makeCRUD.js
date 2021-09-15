@@ -462,6 +462,9 @@ function helperFunctions () {
     pyc += "    if not existing:\n";
     pyc += "        raise ValueError(\"Existing \" + entity + \" \" + str(dsId) + \" not found.\")\n";
     pyc += "    if vck != \"override\" and existing[\"modified\"] != vck:\n";
+    pyc += "        logging.error(\"verify_timestamp_fields rejecting mod of \" + entity +\n"
+    pyc += "                      \" \" + str(dsId) + \". existing: \" + existing[\"modified\"] +\n"
+    pyc += "                      \", received: \" + vck + \".\")\n"
     pyc += "        raise ValueError(\"Update error. Outdated data given for \" + entity +\n";
     pyc += "                         \" \" + str(dsId) + \".\")\n";
     pyc += "    if \"created\" not in fields or not fields[\"created\"] or vck != \"override\":\n";
@@ -794,6 +797,17 @@ function fieldVisibilityFunction () {
 
 function appSpecificFunctions () {
     var pyc = "";
+    pyc += "# Make a unique key from the ti/ar/ab song fields\n"
+    pyc += "def get_song_key(song):\n"
+    pyc += "    ti = song[\"ti\"]\n"
+    pyc += "    ar = song.get(\"ar\", \"\")\n"
+    pyc += "    ab = song.get(\"ab\", \"\")\n"
+    pyc += "    srx = re.compile(r\"[\s\'\\\"]\")\n"
+    pyc += "    skey = re.sub(srx, \"\", ti) + re.sub(srx, \"\", ar) + re.sub(srx, \"\", ab)\n"
+    pyc += "    skey = skey.lower()\n"
+    pyc += "    return skey\n"
+    pyc += "\n"
+    pyc += "\n"
     pyc += "# For a given user, count their total songs and how many are streaming\n";
     pyc += "def fetch_song_counts(uid):\n";
     pyc += "    cnx = get_mysql_connector()\n";
@@ -813,6 +827,46 @@ function appSpecificFunctions () {
     pyc += "            return res\n";
     pyc += "        except mysql.connector.Error as e:\n";
     pyc += "            raise ValueError(str(e) or \"No song fetch error details\")\n";
+    pyc += "        finally:\n";
+    pyc += "            cursor.close()\n";
+    pyc += "    finally:\n";
+    pyc += "        cnx.close()\n";
+    pyc += "\n";
+    pyc += "\n";
+    pyc += "def collaborate_default_ratings(uid, fid, since=\"1970-01-01T00:00:00Z\",\n";
+    pyc += "                                limit=200):\n";
+    pyc += "    cnx = get_mysql_connector()\n";
+    pyc += "    if not cnx:\n";
+    pyc += "        raise ValueError(\"Database connection failed.\")\n";
+    pyc += "    try:\n";
+    pyc += "        cursor = cnx.cursor()\n";
+    pyc += "        try:\n";
+    pyc += "            query = (\"SELECT us.dsId as dsId\" +\n";
+    pyc += "                     \", us.created as created, us.modified as modified\" +\n";
+    pyc += "                     \", us.ti as ti, us.ar as ar, us.ab as ab\" +\n";
+    pyc += "                     \", fs.aid as mfid, fs.created as mfcreated\" +\n";
+    pyc += "                     \", fs.el as el, fs.al as al, fs.kws as kws, fs.rv as rv\" +\n";
+    pyc += "                     \" FROM Song AS us, Song AS fs\" +\n";
+    pyc += "                     \" WHERE us.aid=\" + uid + \" AND fs.aid=\" + fid +\n";
+    pyc += "                     \" AND fs.created > \\\"\" + since + \"\\\"\"\n";
+    pyc += "                     \" AND us.smti=fs.smti AND us.smar=fs.smar\" +\n";
+    pyc += "                     \" AND us.el = 49 AND us.al = 49 AND us.kws IS NULL\" +\n";
+    pyc += "                     \" AND (fs.el != 49 OR fs.al != 49 OR fs.kws IS NOT NULL)\" +\n";
+    pyc += "                     \" ORDER BY fs.created LIMIT \" + str(limit))\n";
+    pyc += "            logging.info(\"collab query: \" + query)\n";
+    pyc += "            cursor.execute(query)\n";
+    pyc += "            res = []\n";
+    pyc += "            for (dsId, created, modified, ti, ar, ab, mfid, mfcreated,\n";
+    pyc += "                 el, al, kws, rv) in cursor:\n";
+    pyc += "                res.append({\"dsType\":\"Song\", \"dsId\":str(dsId),\n";
+    pyc += "                            \"created\":created, \"modified\":modified,\n";
+    pyc += "                            \"ti\":ti, \"ar\":ar, \"ab\":ab,\n";
+    pyc += "                            \"mfid\":str(mfid), \"mfcreated\":mfcreated,\n";
+    pyc += "                            \"el\":el, \"al\":al, \"kws\":kws, \"rv\":rv})\n";
+    pyc += "            logging.info(\"collab res \" + str(len(res)) + \" Songs\")\n";
+    pyc += "            return res\n";
+    pyc += "        except mysql.connector.Error as e:\n";
+    pyc += "            raise ValueError(str(e) or \"No collab error details\")\n";
     pyc += "        finally:\n";
     pyc += "            cursor.close()\n";
     pyc += "    finally:\n";

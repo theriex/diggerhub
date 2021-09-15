@@ -19,7 +19,6 @@ import base64
 import re
 import requests
 import urllib.parse     # to be able to use urllib.parse.quote
-import string
 import json
 import sys
 from string import Template
@@ -335,9 +334,7 @@ def get_song_key_map(song):
     ar = song.get("ar", "")
     ab = song.get("ab", "")
     logging.info(song["dsId"] + " " + ti + " - " + ar + " - " + ab)
-    srx = re.compile(r"[\s\'\"]")
-    skey = re.sub(srx, "", ti) + re.sub(srx, "", ar) + re.sub(srx, "", ab)
-    skey = skey.lower()
+    skey = dbacc.get_song_key(song)
     skmap = dbacc.cfbk("SKeyMap", "skey", skey)
     if not skmap:  # no mapping for key yet, make one
         skmap = {"dsType":"SKeyMap", "modified":"", "skey":skey,
