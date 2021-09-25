@@ -132,7 +132,8 @@ def fix_album_name(album):
 
 
 def fix_artist_album_name(artist, album):
-    sxps = [{"arx":"Oceania", "abx":"CD", "use":"Oceania"}]
+    sxps = [{"arx":"Oceania", "abx":"CD", "use":"Oceania"},
+            {"arx":"The Doors", "abx":"American Prayer", "use":"An American Prayer"}]
     for sxp in sxps:
         if re.match(sxp["arx"], artist, flags=re.I):
             if re.match(sxp["abx"], album, flags=re.I):
@@ -145,7 +146,8 @@ def unpack_general_compilation(ti, ar, ab):
     cxps = [{"abx":r"^God Save the Queen: 76-96.*", "spo":"arti", "sep":" / "},
             {"abx":r"Racer Radio, Vol 1", "spo":"arti", "sep":" / "},
             {"abx":r"Great 70's Dance Grooves", "spo":"arti", "sep":" / "},
-            {"abx":r"The Breakfast Club", "spo":"arti", "sep":" / "}]
+            {"abx":r"The Breakfast Club", "spo":"arti", "sep":" / "},
+            {"abx":r"Happy Anniversary.*Charlie Brown.*", "spo":"arti", "sep":" / "}]
     for cxp in cxps:
         if re.match(cxp["abx"], ab, flags=re.I):
             tes = ti.split(cxp["sep"])
@@ -252,7 +254,8 @@ def reduce_collaborative_name(artist):
             {"exp":r"M.I.A.\sfeat.*", "use":"M.I.A."},
             {"exp":r"Geri Allen\s.*", "use":"Geri Allen"},
             {"exp":"Gus Gus", "use":"GusGus"},
-            {"exp":"くるり", "use":"Quruli"}]
+            {"exp":"くるり", "use":"Quruli"},
+            {"exp":"Hassan Hakmoun.*Zahar", "use":"Hassan Hakmoun"}]
     for sxp in sxps:
         artfix = re.sub(sxp["exp"], sxp["use"], artist, flags=re.I)
         if artfix != artist:
@@ -426,7 +429,8 @@ def is_known_unavailable_artist_work(song):
                "King Tubby": [r"Meets Scientist In A World Of.*"],
                "Omoide Hatoba": ["Mantako"],
                "World's End Girlfriend": ["Xmas Song"],
-               "Mussolini Headkick": ["Blood on the Flag"]}
+               "Mussolini Headkick": ["Blood on the Flag"],
+               "Huun Huur Tu": ["60 Horses in My Herd"]}
     albums = [v for k, v in artalbs.items() if re.match(k, art, flags=re.I)]
     if not albums or len(albums) < 1:
         return False

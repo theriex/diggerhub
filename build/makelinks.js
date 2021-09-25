@@ -1,5 +1,10 @@
 /*jslint node, white, fudge */
 
+//Create/verify diggerhub links to the digger source files.
+//node makelinks.js
+//node makelinks.js delete
+//Assumes the digger project is a sibling project of this diggerhub project
+
 var linker = (function () {
     "use strict";
 

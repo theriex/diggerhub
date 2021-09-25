@@ -350,6 +350,8 @@ def update_account_fields(digacc):
         ["hubdat", "firstname", "hashtag", "kwdefs", "igfolds", "settings",
          "musfs"],
         digacc)
+    if not digacc.get("kwdefs") or digacc["kwdefs"] == "{}":
+        digacc["kwdefs"] = json.dumps(dbacc.initial_keywords())
 
 
 def checkActivationCode(digacc, save=False):
