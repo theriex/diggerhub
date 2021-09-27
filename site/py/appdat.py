@@ -445,6 +445,37 @@ def fill_default_ratings_from_friends(digacc, maxret):
     return [digacc] + prcsongs
 
 
+# For each friend rated song, if the srcrat is the same as the current
+# settings, revert the song to unrated.  Clear srcid and srcrat.  Return a
+# list of all updated Songs.
+# This does not change the dhcontrib count of the music friend.  That's left
+# up to the caller who is presumably clearing all their ratings in
+# preparation for removing the friend.
+def clear_default_ratings_from_friend(digacc, mfid, maxret):
+    where = ("WHERE aid=" + digacc["dsId"] + " AND srcid=" + mfid +
+             " LIMIT " + str(maxret))
+    songs = dbacc.query_entity("Song", where)
+    logging.info("clearing " + str(len(songs)) + " default ratings from " +
+                 mfid + " for " + digacc["dsId"])
+    res = []
+    rfs = ["el", "al", "rv", "kws"]  # rating fields
+    for song in songs:
+        rats = dict(zip(rfs, song["srcrat"].split(":")))
+        changed = False
+        for fld in rfs:
+            if str(song[fld]) != rats[fld]:
+                changed = True
+        if not changed:  # reset to default unrated (remove mf values)
+            song["el"] = 49
+            song["al"] = 49
+            song["rv"] = 5
+            song["kws"] = ""
+        song["srcid"] = ""
+        song["srcrat"] = ""
+        res.append(dbacc.write_entity(song, song["modified"]))
+    return res
+
+
 ############################################################
 ## API endpoints:
 
@@ -591,6 +622,17 @@ def mfcontrib():
             res = save_uploaded_songs(digacc, uplds, maxret)
         else:
             res = fill_default_ratings_from_friends(digacc, maxret)
+    except ValueError as e:
+        return util.serve_value_error(e)
+    return util.respJSON(res, audience="private")
+
+
+def mfclear():
+    try:
+        digacc, _ = util.authenticate()
+        maxret = 200
+        mfid = dbacc.reqarg("mfid", "dbid", required=True)
+        res = clear_default_ratings_from_friend(digacc, mfid, maxret)
     except ValueError as e:
         return util.serve_value_error(e)
     return util.respJSON(res, audience="private")

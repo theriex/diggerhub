@@ -35,71 +35,75 @@ def appversion():
     return util.version()
 
 @app.route('/api/newacct', methods=['GET', 'POST'])
-def newacct(): # params: firstname, email, password
+def newacct():  # params: firstname, email, password
     return util.secure(util.newacct)
 
 @app.route('/api/updacc', methods=['GET', 'POST'])
-def updacc(): # params: auth, DigAcc
+def updacc():  # params: auth, DigAcc
     return util.secure(util.updacc)
 
 @app.route('/api/acctok', methods=['GET', 'POST'])
-def acctok(): # params: email, password
+def acctok():  # params: email, password
     return util.secure(util.acctok)
 
 @app.route('/api/mailactcode', methods=['GET', 'POST'])
-def mailactcode(): # params: email, returl
+def mailactcode():  # params: email, returl
     return util.secure(util.mailactcode)
 
 @app.route('/api/mailpwr', methods=['GET', 'POST'])
-def mailpwr(): # params: email, returl
+def mailpwr():  # params: email, returl
     return util.secure(util.mailpwr)
 
 @app.route('/api/hubsync', methods=['GET', 'POST'])
-def hubsync(): # params: auth, acct + zero or more songs
+def hubsync():  # params: auth, acct + zero or more songs
     return util.secure(appdat.hubsync)
 
 @app.route('/api/songfetch')
-def songfetch(): #params: auth, fvs
+def songfetch():  # params: auth, fvs
     return util.secure(appdat.songfetch)
 
 @app.route('/api/songupd', methods=['GET', 'POST'])
-def songupd(): #params: auth, song
+def songupd():  # params: auth, song
     return util.secure(appdat.songupd)
 
 @app.route('/api/multiupd', methods=['GET', 'POST'])
-def multipupd(): #params: auth, songs
+def multipupd():  # params: auth, songs
     return util.secure(appdat.multiupd)
 
 @app.route('/api/addmusf', methods=['GET', 'POST'])
-def addmusf(): # params auth, mfaddr
+def addmusf():  # params: auth, mfaddr
     return util.secure(appdat.addmusf)
 
 @app.route('/api/mfcontrib', methods=['GET', 'POST'])
-def mfcontrib(): # params auth
+def mfcontrib():  # params: auth
     return util.secure(appdat.mfcontrib)
 
+@app.route('/api/mfclear', methods=['GET', 'POST'])
+def mfclear():  # params: auth, mfid
+    return util.secure(appdat.mfclear)
+
 @app.route('/api/createmusf', methods=['GET', 'POST'])
-def createmusf(): #params auth, emaddr, firstname
+def createmusf():  # params: auth, emaddr, firstname
     return util.secure(appdat.createmusf)
 
 @app.route('/api/musfdat')
-def musfdat(): # params auth, gid, since
+def musfdat():  # params: auth, gid, since
     return util.secure(appdat.musfdat)
 
 @app.route('/api/songttls', methods=['GET', 'POST'])
-def songttls(): # params auth
+def songttls():  # params: auth
     return util.secure(appdat.songttls)
 
 @app.route('/api/collabs', methods=['GET', 'POST'])
-def collabs(): # params auth, cacts
+def collabs():  # params: auth, cacts
     return util.secure(appdat.collabs)
 
 @app.route('/api/impsptracks', methods=['GET', 'POST'])
-def impsptracks(): # params: auth, items
+def impsptracks():  # params: auth, items
     return util.secure(appdat.impsptracks)
 
 @app.route('/api/spabimp', methods=['GET', 'POST'])
-def spabimp(): # params auth, abinf
+def spabimp():  # params: auth, abinf
     return util.secure(appdat.spabimp)
 
 @app.route('/', defaults={'path': ''})
