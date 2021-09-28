@@ -406,7 +406,7 @@ def save_uploaded_songs(digacc, uplds, maxret):
 def append_default_ratings_from_friend(digacc, mf, prcsongs, maxret):
     if len(prcsongs) >= maxret:
         return False # have enough songs already
-    checksince = mf.get("checksince", "1970-01-01T00:00.00Z")
+    checksince = mf.get("checksince", "1970-01-01T00:00:00Z")
     chkthresh = dbacc.ISO2dt(checksince) + datetime.timedelta(days=1)
     chkthresh = dbacc.dt2ISO(chkthresh)
     if chkthresh > dbacc.nowISO():
