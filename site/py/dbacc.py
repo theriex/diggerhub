@@ -709,6 +709,8 @@ def dblogmsg(op, entity, res):
             res = [res]
         for obj in res:
             msg = "db" + op + " " + entity + " " + obj["dsId"]
+            if op in ["UPD", "CAC"]:
+                msg += " ;" + obj["modified"].split(";")[1]
             if entity in log_summary_flds:
                 for field in log_summary_flds[entity]:
                     msg += " " + str(obj[field])[0:60]

@@ -552,6 +552,8 @@ function dblogMessager () {
     pyc += "            res = [res]\n";
     pyc += "        for obj in res:\n";
     pyc += "            msg = \"db\" + op + \" \" + entity + \" \" + obj[\"dsId\"]\n";
+    pyc += "            if op in [\"UPD\", \"CAC\"]:\n";
+    pyc += "                msg += \" ;\" + obj[\"modified\"].split(\";\")[1]\n";
     pyc += "            if entity in log_summary_flds:\n";
     pyc += "                for field in log_summary_flds[entity]:\n";
     pyc += "                    msg += \" \" + str(obj[field])[0:60]\n";

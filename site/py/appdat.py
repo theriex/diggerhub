@@ -727,6 +727,7 @@ def impsptracks():
             if updt in ["updated", "created"]:
                 spi["imported"] += 1
             songs.append(song)
+        logging.info("impsptracks " + json.dumps(spi))
         settings["spimport"] = spi
         digacc["settings"] = json.dumps(settings)
         digacc = dbacc.write_entity(digacc, digacc["modified"])
