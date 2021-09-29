@@ -614,6 +614,8 @@ function writeUpdateFunction (edef) {
     pyc += "        data[field] = fields[field]\n";
     pyc += "    context[\"cursor\"].execute(stmt, data)\n";
     pyc += "    if context[\"cursor\"].rowcount < 1 and context[\"vck\"] != \"override\":\n";
+    pyc += "        logging.error(stmt + \" \" + json.dumps(data))\n";
+    pyc += "        entcache.cache_clean()  # out of sync, clear it all\n";
     pyc += "        raise ValueError(\"" + edef.entity + "\" + str(dsId) + \" update received outdated version check value \" + context[\"vck\"] + \".\")\n";
     pyc += "    context[\"cnx\"].commit()\n";
     pyc += "    result = context[\"existing\"]\n";
@@ -983,6 +985,7 @@ function createPythonDBAcc () {
     pyc += "import re\n";
     pyc += "import datetime\n";
     pyc += "import pickle\n";
+    pyc += "import json\n";
     pyc += "import mysql.connector\n";
     pyc += "import py.mconf as mconf\n";
     pyc += "\n";

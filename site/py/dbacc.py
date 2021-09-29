@@ -26,6 +26,7 @@ import flask
 import re
 import datetime
 import pickle
+import json
 import mysql.connector
 import py.mconf as mconf
 
@@ -765,6 +766,8 @@ def update_existing_DigAcc(context, fields):
         data[field] = fields[field]
     context["cursor"].execute(stmt, data)
     if context["cursor"].rowcount < 1 and context["vck"] != "override":
+        logging.error(stmt + " " + json.dumps(data))
+        entcache.cache_clean()  # out of sync, clear it all
         raise ValueError("DigAcc" + str(dsId) + " update received outdated version check value " + context["vck"] + ".")
     context["cnx"].commit()
     result = context["existing"]
@@ -829,6 +832,8 @@ def update_existing_Song(context, fields):
         data[field] = fields[field]
     context["cursor"].execute(stmt, data)
     if context["cursor"].rowcount < 1 and context["vck"] != "override":
+        logging.error(stmt + " " + json.dumps(data))
+        entcache.cache_clean()  # out of sync, clear it all
         raise ValueError("Song" + str(dsId) + " update received outdated version check value " + context["vck"] + ".")
     context["cnx"].commit()
     result = context["existing"]
@@ -878,6 +883,8 @@ def update_existing_Collab(context, fields):
         data[field] = fields[field]
     context["cursor"].execute(stmt, data)
     if context["cursor"].rowcount < 1 and context["vck"] != "override":
+        logging.error(stmt + " " + json.dumps(data))
+        entcache.cache_clean()  # out of sync, clear it all
         raise ValueError("Collab" + str(dsId) + " update received outdated version check value " + context["vck"] + ".")
     context["cnx"].commit()
     result = context["existing"]
@@ -926,6 +933,8 @@ def update_existing_SKeyMap(context, fields):
         data[field] = fields[field]
     context["cursor"].execute(stmt, data)
     if context["cursor"].rowcount < 1 and context["vck"] != "override":
+        logging.error(stmt + " " + json.dumps(data))
+        entcache.cache_clean()  # out of sync, clear it all
         raise ValueError("SKeyMap" + str(dsId) + " update received outdated version check value " + context["vck"] + ".")
     context["cnx"].commit()
     result = context["existing"]
@@ -975,6 +984,8 @@ def update_existing_AppService(context, fields):
         data[field] = fields[field]
     context["cursor"].execute(stmt, data)
     if context["cursor"].rowcount < 1 and context["vck"] != "override":
+        logging.error(stmt + " " + json.dumps(data))
+        entcache.cache_clean()  # out of sync, clear it all
         raise ValueError("AppService" + str(dsId) + " update received outdated version check value " + context["vck"] + ".")
     context["cnx"].commit()
     result = context["existing"]
