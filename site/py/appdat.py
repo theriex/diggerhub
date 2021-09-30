@@ -234,6 +234,7 @@ def merge_spotify_track(digacc, track):
             "fq": "P",  # playable rather than newly added since filling in lp
             "lp": dbacc.timestamp(-1 * 60 * 24),  # yesterday, so ok to play now
             "nt": "", "spid": spid}
+    rebuild_derived_song_fields(song)
     song = dbacc.write_entity(song)
     return song, "created"
 
@@ -540,6 +541,7 @@ def songupd():
                                       "nt", "srcrat", "spid"], song)
         util.set_fields_from_reqargs(["el", "al", "rv", "pc"], song, "int")
         util.set_fields_from_reqargs(["srcid"], song, "dbid")
+        rebuild_derived_song_fields(song)
         song = dbacc.write_entity(song, song["modified"])
     except ValueError as e:
         return util.serve_value_error(e)
@@ -775,6 +777,7 @@ def spabimp():
                         "lp": "",
                         "nt": "", "spid": spid}
                 logging.info("spabimp adding " + song["path"])
+                rebuild_derived_song_fields(song)
                 song = dbacc.write_entity(song)
             elif not song["spid"].startswith("z:"):
                 song["spid"] = spid
