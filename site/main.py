@@ -94,10 +94,6 @@ def musfdat():  # params: auth, gid, since
 def songttls():  # params: auth
     return util.secure(appdat.songttls)
 
-@app.route('/api/collabs', methods=['GET', 'POST'])
-def collabs():  # params: auth, cacts
-    return util.secure(appdat.collabs)
-
 @app.route('/api/impsptracks', methods=['GET', 'POST'])
 def impsptracks():  # params: auth, items
     return util.secure(appdat.impsptracks)

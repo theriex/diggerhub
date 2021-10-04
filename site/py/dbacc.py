@@ -98,16 +98,6 @@ entdefs = {
         "srcrat": {"pt": "string", "un": False, "dv": ""},
         "spid": {"pt": "string", "un": False, "dv": ""}
     },
-    "Collab": {  # Initial ratings, suggestions and such
-        "dsId": {"pt": "dbid", "un": True, "dv": 0},
-        "created": {"pt": "string", "un": False, "dv": ""},
-        "modified": {"pt": "string", "un": False, "dv": ""},
-        "batchconv": {"pt": "string", "un": False, "dv": ""},
-        "ctype": {"pt": "string", "un": False, "dv": ""},
-        "rec": {"pt": "dbid", "un": False, "dv": 0},
-        "src": {"pt": "dbid", "un": False, "dv": 0},
-        "ssid": {"pt": "dbid", "un": False, "dv": 0}
-    },
     "SKeyMap": {  # Song Title/Artist/Album key mappings
         "dsId": {"pt": "dbid", "un": True, "dv": 0},
         "created": {"pt": "string", "un": False, "dv": ""},
@@ -133,7 +123,6 @@ entdefs = {
 entkeys = {
     "DigAcc": ["email", "hashtag"],
     "Song": [],
-    "Collab": [],
     "SKeyMap": ["skey"],
     "AppService": ["name"]
 }
@@ -142,7 +131,6 @@ entkeys = {
 cachedefs = {
     "DigAcc": {"minutes": 120, "manualadd": False},
     "Song": {"minutes": 0, "manualadd": False},
-    "Collab": {"minutes": 0, "manualadd": False},
     "SKeyMap": {"minutes": 0, "manualadd": False},
     "AppService": {"minutes": 240, "manualadd": False}
 }
@@ -581,46 +569,6 @@ def db2app_Song(inst):
     return cnv
 
 
-# Convert the given Collab inst dict from app values to db values.  Removes
-# the dsType field to avoid trying to write it to the db.
-def app2db_Collab(inst, fill=True):
-    cnv = {}
-    cnv["dsId"] = None
-    if "dsId" in inst:
-        cnv["dsId"] = app2db_fieldval(None, "dsId", inst)
-    if fill or "created" in inst:
-        cnv["created"] = app2db_fieldval(None, "created", inst)
-    if fill or "modified" in inst:
-        cnv["modified"] = app2db_fieldval(None, "modified", inst)
-    if fill or "batchconv" in inst:
-        cnv["batchconv"] = app2db_fieldval(None, "batchconv", inst)
-    if fill or "ctype" in inst:
-        cnv["ctype"] = app2db_fieldval("Collab", "ctype", inst)
-    if fill or "rec" in inst:
-        cnv["rec"] = app2db_fieldval("Collab", "rec", inst)
-    if fill or "src" in inst:
-        cnv["src"] = app2db_fieldval("Collab", "src", inst)
-    if fill or "ssid" in inst:
-        cnv["ssid"] = app2db_fieldval("Collab", "ssid", inst)
-    return cnv
-
-
-# Convert the given Collab inst dict from db values to app values.  Adds the
-# dsType field for general app processing.
-def db2app_Collab(inst):
-    cnv = {}
-    cnv["dsType"] = "Collab"
-    cnv["dsId"] = db2app_fieldval(None, "dsId", inst)
-    cnv["created"] = db2app_fieldval(None, "created", inst)
-    cnv["modified"] = db2app_fieldval(None, "modified", inst)
-    cnv["batchconv"] = db2app_fieldval(None, "batchconv", inst)
-    cnv["ctype"] = db2app_fieldval("Collab", "ctype", inst)
-    cnv["rec"] = db2app_fieldval("Collab", "rec", inst)
-    cnv["src"] = db2app_fieldval("Collab", "src", inst)
-    cnv["ssid"] = db2app_fieldval("Collab", "ssid", inst)
-    return cnv
-
-
 # Convert the given SKeyMap inst dict from app values to db values.  Removes
 # the dsType field to avoid trying to write it to the db.
 def app2db_SKeyMap(inst, fill=True):
@@ -702,7 +650,6 @@ def dblogmsg(op, entity, res):
     log_summary_flds = {
         "DigAcc": ["email", "firstname"],
         "Song": ["aid", "ti", "ar"],
-        "Collab": ["ctype", "rec", "src", "ssid"],
         "SKeyMap": ["skey", "spid"],
         "AppService": ["name"]}
     if res:
@@ -845,57 +792,6 @@ def update_existing_Song(context, fields):
     return result
 
 
-# Write a new Collab row, using the given field values or defaults.
-def insert_new_Collab(cnx, cursor, fields):
-    fields = app2db_Collab(fields)
-    stmt = (
-        "INSERT INTO Collab (created, modified, ctype, rec, src, ssid) "
-        "VALUES (%(created)s, %(modified)s, %(ctype)s, %(rec)s, %(src)s, %(ssid)s)")
-    data = {
-        'created': fields.get("created"),
-        'modified': fields.get("modified"),
-        'ctype': fields.get("ctype", entdefs["Collab"]["ctype"]["dv"]),
-        'rec': fields.get("rec", entdefs["Collab"]["rec"]["dv"]),
-        'src': fields.get("src", entdefs["Collab"]["src"]["dv"]),
-        'ssid': fields.get("ssid", entdefs["Collab"]["ssid"]["dv"])}
-    cursor.execute(stmt, data)
-    fields["dsId"] = cursor.lastrowid
-    cnx.commit()
-    fields = db2app_Collab(fields)
-    dblogmsg("ADD", "Collab", fields)
-    return fields
-
-
-# Update the specified Collab row with the given field values.
-def update_existing_Collab(context, fields):
-    fields = app2db_Collab(fields, fill=False)
-    dsId = int(fields["dsId"])  # Verify int value
-    stmt = ""
-    for field in fields:  # only updating the fields passed in
-        if stmt:
-            stmt += ", "
-        stmt += field + "=(%(" + field + ")s)"
-    stmt = "UPDATE Collab SET " + stmt + " WHERE dsId=" + str(dsId)
-    if context["vck"] != "override":
-        stmt += " AND modified=\"" + context["vck"] + "\""
-    data = {}
-    for field in fields:
-        data[field] = fields[field]
-    context["cursor"].execute(stmt, data)
-    if context["cursor"].rowcount < 1 and context["vck"] != "override":
-        logging.error(stmt + " " + json.dumps(data))
-        entcache.cache_clean()  # out of sync, clear it all
-        raise ValueError("Collab" + str(dsId) + " update received outdated version check value " + context["vck"] + ".")
-    context["cnx"].commit()
-    result = context["existing"]
-    for field in fields:
-        result[field] = fields[field]
-    result = db2app_Collab(result)
-    dblogmsg("UPD", "Collab", result)
-    entcache.cache_remove(result)
-    return result
-
-
 # Write a new SKeyMap row, using the given field values or defaults.
 def insert_new_SKeyMap(cnx, cursor, fields):
     fields = app2db_SKeyMap(fields)
@@ -1018,8 +914,6 @@ def write_entity(inst, vck="1234-12-12T00:00:00Z"):
                     return update_existing_DigAcc(context, inst)
                 if entity == "Song":
                     return update_existing_Song(context, inst)
-                if entity == "Collab":
-                    return update_existing_Collab(context, inst)
                 if entity == "SKeyMap":
                     return update_existing_SKeyMap(context, inst)
                 if entity == "AppService":
@@ -1032,8 +926,6 @@ def write_entity(inst, vck="1234-12-12T00:00:00Z"):
                 return insert_new_DigAcc(cnx, cursor, inst)
             if entity == "Song":
                 return insert_new_Song(cnx, cursor, inst)
-            if entity == "Collab":
-                return insert_new_Collab(cnx, cursor, inst)
             if entity == "SKeyMap":
                 return insert_new_SKeyMap(cnx, cursor, inst)
             if entity == "AppService":
@@ -1096,20 +988,6 @@ def query_Song(cnx, cursor, where):
     return res
 
 
-def query_Collab(cnx, cursor, where):
-    query = "SELECT dsId, created, modified, "
-    query += "ctype, rec, src, ssid"
-    query += " FROM Collab " + where
-    cursor.execute(query)
-    res = []
-    for (dsId, created, modified, ctype, rec, src, ssid) in cursor:
-        inst = {"dsType": "Collab", "dsId": dsId, "created": created, "modified": modified, "ctype": ctype, "rec": rec, "src": src, "ssid": ssid}
-        inst = db2app_Collab(inst)
-        res.append(inst)
-    dblogmsg("QRY", "Collab", res)
-    return res
-
-
 def query_SKeyMap(cnx, cursor, where):
     query = "SELECT dsId, created, modified, "
     query += "skey, spid, notes"
@@ -1153,8 +1031,6 @@ def query_entity(entity, where):
                 return query_DigAcc(cnx, cursor, where)
             if entity == "Song":
                 return query_Song(cnx, cursor, where)
-            if entity == "Collab":
-                return query_Collab(cnx, cursor, where)
             if entity == "SKeyMap":
                 return query_SKeyMap(cnx, cursor, where)
             if entity == "AppService":
@@ -1193,13 +1069,6 @@ def visible_Song_fields(obj, audience):
     return filtobj
 
 
-def visible_Collab_fields(obj, audience):
-    filtobj = {}
-    for fld, val in obj.items():
-        filtobj[fld] = val
-    return filtobj
-
-
 def visible_SKeyMap_fields(obj, audience):
     filtobj = {}
     for fld, val in obj.items():
@@ -1223,8 +1092,6 @@ def visible_fields(obj, audience="public"):
         return visible_DigAcc_fields(obj, audience)
     if obj["dsType"] == "Song":
         return visible_Song_fields(obj, audience)
-    if obj["dsType"] == "Collab":
-        return visible_Collab_fields(obj, audience)
     if obj["dsType"] == "SKeyMap":
         return visible_SKeyMap_fields(obj, audience)
     if obj["dsType"] == "AppService":

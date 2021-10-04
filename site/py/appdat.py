@@ -675,26 +675,6 @@ def songttls():
     return util.respJSON([digacc], audience="private")
 
 
-# Collab actions are logged by the recipient.
-def collabs():
-    try:
-        digacc, _ = util.authenticate()
-        cacts = dbacc.reqarg("cacts", "string", required=True)
-        cacts = json.loads(cacts)
-        for cact in cacts:
-            if cact["rec"] != digacc["dsId"]:
-                raise ValueError("rec " + cact["rec"] + " != " + digacc["dsId"])
-            if cact["ctype"] != "inrat":
-                raise ValueError("Unknown ctype: " + cact["ctype"])
-            cact["dsType"] = "Collab"
-        resacts = []
-        for cact in cacts:
-            resacts.append(dbacc.write_entity(cact))
-    except ValueError as e:
-        return util.serve_value_error(e)
-    return util.respJSON(resacts)
-
-
 # Read the given items in the given dataformat (albums or tracks), and
 # create or update corresponding Songs.  Update DigAcc.settings.spimport
 # after successful import of all tracks to record progress.
