@@ -59,7 +59,8 @@ def has_contained_probpunc(word):
 def prepare_query_term(value):
     words = value.split()  # trim/strip and split on whitespace
     for idx, word in enumerate(words):  # trim surrounding punctuation
-        word = word.strip("'s")
+        if word.endswith("'s"):
+            word = word[0:-2]
         word = word.strip(probpunc + fluffpunc)
         words[idx] = word
     # 15apr21 search will NOT match embedded ' or " even if encoded, so
@@ -273,6 +274,12 @@ def is_reasonable_query_text(qtxt):
     return True
 
 
+def push_skm_try(phase, skm):
+    skm["tries"] = skm.get("tries", [])
+    skm["tries"].append({"phase":phase, "qtxt":skm["qtxt"],
+                         "qtype":skm["qtype"]})
+
+
 # e.g. find_spid("I'm Every Woman", "Chaka Khan", "Epiphany - The Best Of Chaka Khan Vol 1")
 def find_spid(ti, ar, ab):
     ti, ar, ab = fix_known_bad_values(ti, ar, ab)
@@ -282,26 +289,32 @@ def find_spid(ti, ar, ab):
         skm["spid"] = "q:" + dbacc.nowISO()
         return skm
     verify_token()
+    push_skm_try("original", skm)
     spid = fetch_spid(skm["qtxt"])
     # ti: "whatever song (2015 Digital Remaster) is not how Spotify lists it.
     if not spid:  # check for ignorable title suffix
         tifix = remove_ignorable_suffix(ti, ab)
         if tifix != ti:  # retry without ignorable suffix
             ti = tifix
-            skm = {"qtxt":make_query_string(ti, ar, ab), "qtype":"tiarab"}
+            skm["qtxt"] = make_query_string(ti, ar, ab)
+            skm["qtype"] = "tiarab"
+            push_skm_try("remove_ignorable_suffix", skm)
             spid = fetch_spid(skm["qtxt"])
     # Spotify reduces collaborative names to individual artists
     if not spid:  # check if known collaborative name
         artfix = reduce_collaborative_name(ar)
         if artfix != ar:  # retry with individual name
             ar = artfix
-            skm = {"qtxt":make_query_string(ti, ar, ab), "qtype":"tiarab"}
+            skm["qtxt"] = make_query_string(ti, ar, ab)
+            skm["qtype"] = "tiarab"
+            push_skm_try("reduce_collaborative_name", skm)
             spid = fetch_spid(skm["qtxt"])
     # Common for an artist to release a track on more than one album, and
     # equally common for Spotify to only carry one of them, so generalize.
     if not spid:  # retry with just title and artist
         skm["qtxt"] = make_query_string(ti, ar, "")
         skm["qtype"] = "tiar"
+        push_skm_try("just_title_artist", skm)
         spid = fetch_spid(skm["qtxt"])
     # Pretenders, KLF, Buzzcocks etc have inconsistent metadata "The" naming
     if not spid:  # retry with alternate "The" prefix
@@ -309,8 +322,10 @@ def find_spid(ti, ar, ab):
             ar = ar[4:]
         else:
             ar = "The " + ar
-        skm["altq"] = make_query_string(ti, ar, "")
-        spid = fetch_spid(skm["altq"])
+        skm["qtxt"] = make_query_string(ti, ar, "")
+        skm["qtype"] = "tiar"
+        push_skm_try("swapped_the_prefix", skm)
+        spid = fetch_spid(skm["qtxt"])
     # Done with attempts, return found or not
     if spid:  # found a mapping
         skm["spid"] = "z:" + spid
@@ -340,10 +355,10 @@ def get_song_key_map(song):
     skey = dbacc.get_song_key(song)
     skmap = dbacc.cfbk("SKeyMap", "skey", skey)
     if not skmap:  # no mapping for key yet, make one
-        skmap = {"dsType":"SKeyMap", "modified":"", "skey":skey,
-                 "notes":json.dumps({
-                     "orgsong":{"dsId":song["dsId"],
-                                "ti":ti, "ar":ar, "ab":ab}})}
+        skmap = {"dsType":"SKeyMap", "modified":"", "skey":skey}
+    if not skmap.get("notes"):
+        skmap["notes"] = json.dumps({
+            "orgsong":{"dsId":song["dsId"], "ti":ti, "ar":ar, "ab":ab}})
     return skmap
 
 

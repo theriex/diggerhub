@@ -1104,7 +1104,7 @@ def get_song_key(song):
     ti = song["ti"]
     ar = song.get("ar", "")
     ab = song.get("ab", "")
-    srx = re.compile(r"[s'\"]")
+    srx = re.compile(r"[\s'\"]")
     skey = re.sub(srx, "", ti) + re.sub(srx, "", ar) + re.sub(srx, "", ab)
     skey = skey.lower()
     return skey

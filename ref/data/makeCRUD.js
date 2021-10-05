@@ -807,7 +807,7 @@ function appSpecificFunctions () {
     pyc += "    ti = song[\"ti\"]\n"
     pyc += "    ar = song.get(\"ar\", \"\")\n"
     pyc += "    ab = song.get(\"ab\", \"\")\n"
-    pyc += "    srx = re.compile(r\"[\s\'\\\"]\")\n"
+    pyc += "    srx = re.compile(r\"[\\\s\'\\\"]\")\n"
     pyc += "    skey = re.sub(srx, \"\", ti) + re.sub(srx, \"\", ar) + re.sub(srx, \"\", ab)\n"
     pyc += "    skey = skey.lower()\n"
     pyc += "    return skey\n"
