@@ -197,6 +197,7 @@ def remove_general_suffix(title):
            r"\s*[\(\[]Remastered\s+Version.*[\)\]]",
            r"\s*[\(\[]Remastered\s+LP\s+Version.*[\)\]]",
            r"\s*[\(\[]Remixed\s+Album\s+Version.*[\)\]]",
+           r"\s*[\(\[]Remixed\s+And\s+.*[\)\]]",
            r"\s*[\(\[]Explicit[\)\]]",
            r"\s[\(\[]\d\d?\-\d\d?\-\d\d[\)\]]$",  # recording date
            r"^\d\d?\s",  # title starts with track number
@@ -256,7 +257,8 @@ def reduce_collaborative_name(artist):
             {"exp":r"Geri Allen\s.*", "use":"Geri Allen"},
             {"exp":"Gus Gus", "use":"GusGus"},
             {"exp":"くるり", "use":"Quruli"},
-            {"exp":"Hassan Hakmoun.*Zahar", "use":"Hassan Hakmoun"}]
+            {"exp":"Hassan Hakmoun.*Zahar", "use":"Hassan Hakmoun"},
+            {"exp":"The Doors", "use":"Jim Morrison"}]
     for sxp in sxps:
         artfix = re.sub(sxp["exp"], sxp["use"], artist, flags=re.I)
         if artfix != artist:
