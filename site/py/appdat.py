@@ -477,6 +477,37 @@ def clear_default_ratings_from_friend(digacc, mfid, maxret):
     return res
 
 
+def fetchcreate_song_from_friend(digacc, dsId):
+    song = dbacc.cfbk("Song", "dsId", dsId[2:], required=True)
+    exsg = find_song({"aid":digacc["dsId"], "ti":song["ti"],
+                      "ar":song["ar"], "ab":song["ab"]})
+    if exsg:  # use existing song
+        song = exsg
+    else:  # create a new song by copying the existing one
+        song["dsId"] = ""
+        song["aid"] = digacc["dsId"]
+    return song
+
+
+def fetchcreate_song_from_spid(digacc, dsId):
+    spid = dsId[len("spotify"):]
+    if not spid.startswith("z:"):  # z:tid indicates successful mapping
+        raise ValueError("Invalid spid " + str(spid))
+    where = ("WHERE aid = " + digacc["dsId"] +
+             " AND spid = \"" + spid + "\"" +
+             " ORDER BY MODIFIED DESC LIMIT 1")
+    songs = dbacc.query_entity("Song", where)
+    if len(songs) > 0:  # do not overwrite existing data with defaults
+        util.set_fields_from_reqargs(["lp"], songs[0])
+        songs[0]["pc"] = songs[0].get("pc", 0) + 1
+        return songs[0], False
+    song = {"dsType":"Song", "aid":digacc["dsId"], "spid":spid, "modified":""}
+    song["path"] = make_song_path(dbacc.reqarg("spdn"), dbacc.reqarg("sptn"),
+                                  dbacc.reqarg("ar"), dbacc.reqarg("ab"),
+                                  dbacc.reqarg("ti"))
+    return song, True
+
+
 ############################################################
 ## API endpoints:
 
@@ -522,26 +553,24 @@ def songupd():
     try:
         digacc, _ = util.authenticate()
         dsId = dbacc.reqarg("dsId", "dbid", required=True)
+        updflds = True
         if dsId.startswith("fr"):  # copy song suggested from music friend
-            song = dbacc.cfbk("Song", "dsId", dsId[2:], required=True)
-            exsg = find_song({"aid":digacc["dsId"], "ti":song["ti"],
-                              "ar":song["ar"], "ab":song["ab"]})
-            if exsg:  # use existing song
-                song = exsg
-            else:  # create a new song by copying the existing one
-                song["dsId"] = ""
-                song["aid"] = digacc["dsId"]
+            song = fetchcreate_song_from_friend(digacc, dsId)
+        elif dsId.startswith("spotify"):
+            song, updflds = fetchcreate_song_from_spid(digacc, dsId)
         else:
             # updating, so existing song must already exist.  Lookup by
             # dsId to get the instance, then verify author.
             song = dbacc.cfbk("Song", "dsId", dsId, required=True)
         if song["aid"] != digacc["dsId"]:
             raise ValueError("Song author id mismatch")
-        util.set_fields_from_reqargs(["ti", "ar", "ab", "kws", "fq", "lp",
-                                      "nt", "srcrat", "spid"], song)
-        util.set_fields_from_reqargs(["el", "al", "rv", "pc"], song, "int")
-        util.set_fields_from_reqargs(["srcid"], song, "dbid")
-        rebuild_derived_song_fields(song)
+        if updflds:
+            util.set_fields_from_reqargs(["ti", "ar", "ab", "kws", "fq", "lp",
+                                          "nt", "srcrat", "spid"], song)
+            util.set_fields_from_reqargs(["el", "al", "rv", "pc"], song, "int")
+            util.set_fields_from_reqargs(["srcid"], song, "dbid")
+            rebuild_derived_song_fields(song)
+        # always write song to reflect the modified time and any mod fields
         song = dbacc.write_entity(song, song["modified"])
     except ValueError as e:
         return util.serve_value_error(e)
