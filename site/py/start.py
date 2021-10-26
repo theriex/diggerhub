@@ -6,7 +6,7 @@
 import logging
 import py.util as util
 
-CACHE_BUST_PARAM = "v=211022"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=211026"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -63,7 +63,7 @@ INDEXHTML = """
 <div id="btihubdiv">Hub</div>
 
 <div id="splashblockdiv">
-<p>Digger spins tracks from your library that match your control settings. Works with:</p>
+<p>Digger spins tracks from your library matching your control settings. Works with:</p>
 
 <div id="fileorstreamchoicediv">
   <a href="#files"><span class="spchspan">Files</span></a>
@@ -100,6 +100,10 @@ streaming. <a href="/digger">Launch Digger</a><p>
 
   <div id="contactdiv">
     Digger is <a href="https://github.com/theriex/digger#digger">open source</a>
+  </div>
+
+  <div id="taglinediv">
+    Get back into your music collection. Bring your friends.
   </div>
 
   <div id="localtestdiv" style="display:none">

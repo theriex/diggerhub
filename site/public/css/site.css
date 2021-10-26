@@ -39,6 +39,8 @@ button, .buttonstyle { border: 2px solid #666666; border-radius:8px;
 .formbuttonsdiv { text-align:center; margin:5px 0px 0px 0px; }
 .tcgcinactive { opacity:0.5; }
 #contactdiv { text-align:center; margin:10px 0px 0px 0px; }
+#taglinediv { text-align:center; margin:10px 0px; font-style:italic;
+  font-weight:bold; }
 
 /* -------------------- */
 /* splash */
