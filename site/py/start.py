@@ -103,7 +103,7 @@ streaming. <a href="/digger">Launch Digger</a><p>
   </div>
 
   <div id="taglinediv">
-    Get back into your music collection. Bring your friends.
+    Dig into your music collection. Bring your friends.
   </div>
 
   <div id="localtestdiv" style="display:none">
