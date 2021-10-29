@@ -20,11 +20,22 @@ TIMEWINDOW = datetime.timedelta(minutes=-60)
 
 
 def mail_error_notice(txt):
-    util.send_mail("support@diggerhub.com", "DiggerHub logcheck summary", txt,
+    util.send_mail(None, "DiggerHub logcheck summary", txt,
                    domain=mconf.domain)
 
 
-def search_log_file(lfp, srchts, markers):
+def check_line_for_errs(summary, line, markers, skips):
+    for marker in markers:
+        if marker in line:
+            iserr = True
+            for skip in skips:
+                if skip in line:
+                    iserr = False
+            if iserr:
+                summary[marker] += " " + line
+
+
+def search_log_file(lfp, srchts, markers, skips):
     """ search the log file path filtering by the search timestamp prefix """
     if not os.path.isfile(lfp):
         txt = "Log file " + lfp + " not found.\n"
@@ -37,9 +48,7 @@ def search_log_file(lfp, srchts, markers):
             for line in f.readlines():
                 if srchts in line:  # relevant log line
                     lc += 1
-                    for marker in markers:
-                        if marker in line:
-                            summary[marker] += " " + line
+                    check_line_for_errs(summary, line, markers, skips)
         txt = "Checked " + str(lc) + " lines from " + lfp + "\n"
         notify = False
         for marker in markers:
@@ -52,7 +61,7 @@ def search_log_file(lfp, srchts, markers):
     return txt
 
 
-def check_log_file(lfp, tfmt, markers):
+def check_log_file(lfp, tfmt, markers, skips):
     """ figure out log file path and timestamp search prefix, return search """
     toth = datetime.datetime.now().replace(microsecond=0, second=0, minute=0)
     if not toth.hour:  # hour zero, switch to rollover log file if it exists
@@ -61,15 +70,19 @@ def check_log_file(lfp, tfmt, markers):
             lfp = lfp + "." + rls  # rolled over log file path
     toth = toth + TIMEWINDOW  # now top of the previous hour
     srchts = toth.strftime(tfmt)
-    result = search_log_file(lfp, srchts, markers)
+    result = search_log_file(lfp, srchts, markers, skips)
     return result
 
 
 def check_log_files():
     appsrch = check_log_file(mconf.logsdir + "plg_application.log",
-                             "%Y-%m-%d %H:", ["ERROR", "WARNING"])
+                             "%Y-%m-%d %H:",
+                             ["ERROR", "WARNING"],
+                             [])
     errsrch = check_log_file(mconf.errsdir + "error.log",
-                             " %b %d %H:", [" [:error] "])
+                             " %b %d %H:",
+                             [" [:error] "],
+                             ["PCRE limits exceeded"])
     return appsrch + "\n" + errsrch + "\n"
 
 
