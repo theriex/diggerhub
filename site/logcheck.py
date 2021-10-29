@@ -24,41 +24,53 @@ def mail_error_notice(txt):
                    domain=mconf.domain)
 
 
-def search_log_file(lfp, srchts):
+def search_log_file(lfp, srchts, markers):
     """ search the log file path filtering by the search timestamp prefix """
     if not os.path.isfile(lfp):
         txt = "Log file " + lfp + " not found.\n"
     else: # log file exists
-        errors = ""
-        warnings = ""
+        summary = {}
+        for marker in markers:
+            summary[marker] = ""
         lc = 0
         with open(lfp) as f:
             for line in f.readlines():
                 if srchts in line:  # relevant log line
                     lc += 1
-                    if "ERROR" in line:
-                        errors += "  " + line
-                    elif "WARNING" in line:
-                        warnings += "  " + line
-        firstline = "Checked " + str(lc) + " lines from " + lfp + "\n"
-        txt = firstline + errors + warnings
-        if errors or warnings:
+                    for marker in markers:
+                        if marker in line:
+                            summary[marker] += " " + line
+        txt = "Checked " + str(lc) + " lines from " + lfp + "\n"
+        notify = False
+        for marker in markers:
+            if summary[marker]:
+                notify = True
+                txt += summary[marker]
+        if notify:
             mail_error_notice(txt)
     logging.info(txt)
     return txt
 
 
-def check_log_file():
-    """ figure out which log file and what the search timestamp prefix is """
-    lfp = mconf.logsdir + "plg_application.log"   # main log file path
+def check_log_file(lfp, tfmt, markers):
+    """ figure out log file path and timestamp search prefix, return search """
     toth = datetime.datetime.now().replace(microsecond=0, second=0, minute=0)
     if not toth.hour:  # hour zero, switch to rollover log file if it exists
         rls = (toth + datetime.timedelta(hours=-24)).strftime("%Y-%m-%d")
         if os.path.isfile(lfp + "." + rls):
             lfp = lfp + "." + rls  # rolled over log file path
     toth = toth + TIMEWINDOW  # now top of the previous hour
-    srchts = toth.strftime("%Y-%m-%d %H:")
-    return search_log_file(lfp, srchts)
+    srchts = toth.strftime(tfmt)
+    result = search_log_file(lfp, srchts, markers)
+    return result
 
 
-check_log_file()
+def check_log_files():
+    appsrch = check_log_file(mconf.logsdir + "plg_application.log",
+                             "%Y-%m-%d %H:", ["ERROR", "WARNING"])
+    errsrch = check_log_file(mconf.errsdir + "error.log",
+                             " %b %d %H:", [" [:error] "])
+    return appsrch + "\n" + errsrch + "\n"
+
+
+check_log_files()
