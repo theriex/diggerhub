@@ -97,6 +97,28 @@ def rebuild_derived_song_fields(song):
     song["smab"] = standarized_colloquial_match(song["ab"])
 
 
+def update_song_fields(updsong, dbsong):
+    flds = {  # do NOT copy general db fields from client data. only these:
+        # see dbacc.py for field defs
+        "path": {"pt": "string", "un": False, "dv": ""},
+        "ti": {"pt": "string", "un": False, "dv": ""},
+        "ar": {"pt": "string", "un": False, "dv": ""},
+        "ab": {"pt": "string", "un": False, "dv": ""},
+        "el": {"pt": "int", "un": False, "dv": 0},
+        "al": {"pt": "int", "un": False, "dv": 0},
+        "kws": {"pt": "string", "un": False, "dv": ""},
+        "rv": {"pt": "int", "un": False, "dv": 0},
+        "fq": {"pt": "string", "un": False, "dv": ""},
+        "lp": {"pt": "string", "un": False, "dv": ""},
+        "nt": {"pt": "string", "un": False, "dv": ""},
+        "pc": {"pt": "int", "un": False, "dv": 0},
+        "srcid": {"pt": "string", "un": False, "dv": ""},
+        "srcrat": {"pt": "string", "un": False, "dv": ""}}
+    for field, fdesc in flds.items():
+        dbsong[field] = updsong.get(field, fdesc["dv"])
+    rebuild_derived_song_fields(dbsong)
+
+
 def write_song(updsong, digacc, forcenew=False):
     """ Write the given update song. """
     normalize_song_fields(updsong, digacc)
@@ -113,25 +135,7 @@ def write_song(updsong, digacc, forcenew=False):
             updsong = song  # ignore updsong to avoid information loss
             logging.info("write_song not unrating " + song_string(song))
         song["modified"] = max_modified_value(updsong, song)
-    flds = {  # do NOT copy general db fields from client data. only these:
-        # field defs copied from dbacc.py
-        "path": {"pt": "string", "un": False, "dv": ""},
-        "ti": {"pt": "string", "un": False, "dv": ""},
-        "ar": {"pt": "string", "un": False, "dv": ""},
-        "ab": {"pt": "string", "un": False, "dv": ""},
-        "el": {"pt": "int", "un": False, "dv": 0},
-        "al": {"pt": "int", "un": False, "dv": 0},
-        "kws": {"pt": "string", "un": False, "dv": ""},
-        "rv": {"pt": "int", "un": False, "dv": 0},
-        "fq": {"pt": "string", "un": False, "dv": ""},
-        "lp": {"pt": "string", "un": False, "dv": ""},
-        "nt": {"pt": "string", "un": False, "dv": ""},
-        "pc": {"pt": "int", "un": False, "dv": 0},
-        "srcid": {"pt": "string", "un": False, "dv": ""},
-        "srcrat": {"pt": "string", "un": False, "dv": ""}}
-    for field, fdesc in flds.items():
-        song[field] = updsong.get(field, fdesc["dv"])
-    rebuild_derived_song_fields(song)
+    update_song_fields(updsong, song)
     updsong = dbacc.write_entity(song, song.get("modified") or "")
     return updsong
 
@@ -297,7 +301,7 @@ def fvs_match_sql_clauses(fvs):
         if fvs["tagfidx"] == 2:  # Untagged only
             where += " AND kws IS NULL"
         elif fvs["tagfidx"] == 1:  # Tagged only
-            where += " AND kws NOT NULL"
+            where += " AND kws IS NOT NULL"
         if fvs["poskws"]:
             for kw in fvs["poskws"].split(","):
                 where += " AND FIND_IN_SET(\"" + kw + "\", kws)"
@@ -477,19 +481,25 @@ def clear_default_ratings_from_friend(digacc, mfid, maxret):
     return res
 
 
-def fetchcreate_song_from_friend(digacc, dsId):
-    song = dbacc.cfbk("Song", "dsId", dsId[2:], required=True)
-    exsg = find_song({"aid":digacc["dsId"], "ti":song["ti"],
-                      "ar":song["ar"], "ab":song["ab"]})
-    if exsg:  # use existing song
-        song = exsg
-    else:  # create a new song by copying the existing one
-        song["dsId"] = ""
-        song["aid"] = digacc["dsId"]
-    return song
+def fetchcreate_song_from_friend(digacc, updsong):
+    dsId = updsong["dsId"]
+    logging.info("fetchcreate_song_from_friend updsong " + dsId)
+    frsong = dbacc.cfbk("Song", "dsId", dsId[2:], required=True)
+    dbsong = find_song({"aid":digacc["dsId"], "ti":updsong["ti"],
+                        "ar":updsong["ar"], "ab":updsong["ab"]})
+    if not dbsong:  # copy friend song data into new instance
+        dbsong = frsong
+        dbsong["dsId"] = ""
+        dbsong["aid"] = digacc["dsId"]
+    update_song_fields(updsong, dbsong)
+    if updsong.get("spid"):
+        dbsong["spid"] = updsong["spid"]
+    return dbsong
 
 
-def fetchcreate_song_from_spid(digacc, dsId):
+def fetchcreate_song_from_spid(digacc, updsong):
+    dsId = updsong["dsId"]
+    logging.info("fetchcreate_song_from_spid updsong " + dsId)
     spid = dsId[len("spotify"):]
     if not spid.startswith("z:"):  # z:tid indicates successful mapping
         raise ValueError("Invalid spid " + str(spid))
@@ -497,15 +507,29 @@ def fetchcreate_song_from_spid(digacc, dsId):
              " AND spid = \"" + spid + "\"" +
              " ORDER BY MODIFIED DESC LIMIT 1")
     songs = dbacc.query_entity("Song", where)
-    if len(songs) > 0:  # do not overwrite existing data with defaults
-        util.set_fields_from_reqargs(["lp"], songs[0])
-        songs[0]["pc"] = songs[0].get("pc", 0) + 1
-        return songs[0], False
-    song = {"dsType":"Song", "aid":digacc["dsId"], "spid":spid, "modified":""}
-    song["path"] = make_song_path(dbacc.reqarg("spdn"), dbacc.reqarg("sptn"),
-                                  dbacc.reqarg("ar"), dbacc.reqarg("ab"),
-                                  dbacc.reqarg("ti"))
-    return song, True
+    if len(songs) > 0:     # song already exists. Do not overwrite existing
+        dbsong = songs[0]  # field values with given default values.
+        dbsong["lp"] = updsong["lp"]  # Update last played and play count
+        dbsong["pc"] = updsong.get("pc", 0) + 1
+        return dbsong
+    # Spotify disc number and track number must be included in updsong
+    updsong["path"] = make_song_path(updsong["spdn"], updsong["sptn"],
+                                     updsong["ar"], updsong["ab"],
+                                     updsong["ti"])
+    dbsong = {"dsType":"Song", "aid":digacc["dsId"], "spid":spid, "modified":""}
+    update_song_fields(updsong, dbsong)
+    return dbsong
+
+
+def update_song_by_id(digacc, updsong):
+    logging.info("update_song_by_id updsong " + updsong["dsId"])
+    if updsong["aid"] != digacc["dsId"]:
+        raise ValueError("Song author id mismatch")
+    dbsong = dbacc.cfbk("Song", "dsId", updsong["dsId"], required=True)
+    update_song_fields(updsong, dbsong)
+    if updsong.get("spid"):
+        dbsong["spid"] = updsong["spid"]
+    return dbsong
 
 
 ############################################################
@@ -549,27 +573,22 @@ def songfetch():
     return util.respJSON(songs + friendsongs)
 
 
+# The song is passed in JSON format because string fields like the title can
+# trigger modsec rules if unencoded. 30oct21-ep
 def songupd():
     try:
         digacc, _ = util.authenticate()
-        dsId = dbacc.reqarg("dsId", "dbid", required=True)
-        updflds = True
-        if dsId.startswith("fr"):  # copy song suggested from music friend
-            song = fetchcreate_song_from_friend(digacc, dsId)
-        elif dsId.startswith("spotify"):
-            song, updflds = fetchcreate_song_from_spid(digacc, dsId)
-        else:
-            # updating, so existing song must already exist.  Lookup by
-            # dsId to get the instance, then verify author.
-            song = dbacc.cfbk("Song", "dsId", dsId, required=True)
-        if song["aid"] != digacc["dsId"]:
-            raise ValueError("Song author id mismatch")
-        if updflds:
-            util.set_fields_from_reqargs(["ti", "ar", "ab", "kws", "fq", "lp",
-                                          "nt", "srcrat", "spid"], song)
-            util.set_fields_from_reqargs(["el", "al", "rv", "pc"], song, "int")
-            util.set_fields_from_reqargs(["srcid"], song, "dbid")
-            rebuild_derived_song_fields(song)
+        songdat = dbacc.reqarg("songdat", "json", required=True)
+        song = json.loads(songdat)
+        dsId = song.get("dsId")
+        if not dsId:
+            raise ValueError("dsId required")
+        if dsId.startswith("fr"):  # song suggested from music friend
+            song = fetchcreate_song_from_friend(digacc, song)
+        elif dsId.startswith("spotify"):  # song direct play from Spotify
+            song = fetchcreate_song_from_spid(digacc, song)
+        else: # standard update from web player
+            song = update_song_by_id(digacc, song)
         # always write song to reflect the modified time and any mod fields
         song = dbacc.write_entity(song, song["modified"])
     except ValueError as e:
