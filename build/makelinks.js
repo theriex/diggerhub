@@ -9,7 +9,7 @@ var linker = (function () {
     "use strict";
 
     var fs = require("fs");
-    var ws = {linkdirs:["img", "js", "js/amd"]};
+    var ws = {linkdirs:["img", "js", "js/amd", "docs"]};
 
 
     function makeWorkingSetRoots () {
