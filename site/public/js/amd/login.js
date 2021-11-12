@@ -289,6 +289,12 @@ app.login = (function () {
              ["a", {href:projurl,
                     onclick:"window.open('" + projurl + "');return false;"},
               "open source"]]));
+        if(window.location.href.endsWith("#files")) {
+            app.togdivdisp({rootids:['spchfile','spchstrm'],
+                            clicked:"spchfile"}); }
+        if(window.location.href.endsWith("#streaming")) {
+            app.togdivdisp({rootids:['spchfile','spchstrm'],
+                            clicked:"spchstrm"}); }
     }
 
 
