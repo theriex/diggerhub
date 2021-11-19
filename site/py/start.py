@@ -6,7 +6,7 @@
 import logging
 import py.util as util
 
-CACHE_BUST_PARAM = "v=211118"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=211119"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -76,9 +76,10 @@ INDEXHTML = """
 <p>Download Digger for your platform: </p>
 
 <div id="downloadsdiv">
-<a href="downloads/digger-linux">digger-linux</a>
-<a href="downloads/Digger.dmg">Digger.dmg</a>
-<a href="downloads/digger-win.zip">digger-win.zip</a>
+<div><a href="downloads/digger-linux">digger-linux</a></div>
+<div><a href="downloads/Digger.dmg">Digger.dmg</a></div>
+<div><a href="downloads/digger-win.zip">digger-win.zip</a><br/>
+     <span>(win8.1+)</span></div>
 </div>
 
 <div id="wsadiv">

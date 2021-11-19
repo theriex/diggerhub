@@ -61,7 +61,9 @@ button, .buttonstyle { border: 2px solid #666666; border-radius:8px;
 #fileorstreamchoicediv { text-align:center; word-spacing:6px; }
 .spchspan { font-size:x-large; font-weight:bold; }
 #downloadsdiv { text-align:center; margin-bottom:20px; }
-#downloadsdiv a { display:inline-block; padding:10px; }
+#downloadsdiv div { display:inline-block; padding:10px; text-align:center;
+  vertical-align:top; }
+#downloadsdiv div span { font-size:small; color:#999; }
 #wsadiv { font-size:small; margin-bottom:20px; }
 
 /* -------------------- */
