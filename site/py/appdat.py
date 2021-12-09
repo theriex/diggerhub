@@ -82,6 +82,18 @@ def max_modified_value(sa, sb):
     return sbm
 
 
+# If the song spid was previously mapped successfully, then leave it to
+# avoid undoing any manual support effort involved finding the correct
+# track.  If a song has the wrong spid, that can be reported through the
+# tuning options.
+def reset_dead_spid_if_metadata_changed(updsong, dbsong):
+    if (dbsong.get("spid", "").startswith("z:") and (
+            (updsong.get("ti", "") != dbsong.get("ti", "")) or
+            (updsong.get("ar", "") != dbsong.get("ar", "")) or
+            (updsong.get("ab", "") != dbsong.get("ab", "")))):
+        dbsong["spid"] = ""
+
+
 def standarized_colloquial_match(txt):
     scm = txt
     scm = re.sub(r"\(.*", "", scm)  # remove trailing parentheticals
@@ -98,6 +110,7 @@ def rebuild_derived_song_fields(song):
 
 
 def update_song_fields(updsong, dbsong):
+    reset_dead_spid_if_metadata_changed(updsong, dbsong)
     flds = {  # do NOT copy general db fields from client data. only these:
         # see dbacc.py for field defs
         "path": {"pt": "string", "un": False, "dv": ""},
@@ -151,12 +164,20 @@ def find_hub_push_songs(digacc, prevsync):
     return digacc, retsongs
 
 
+# undo client top.js txSgFmt
+def unescape_song_fields(song):
+    for fld in ["ti", "ar", "ab", "path"]:
+        song[fld] = song[fld].replace("&#40;", "(")
+        song[fld] = song[fld].replace("&#41;", ")")
+
+
 def receive_updated_songs(digacc, updacc, songs):
     maxsongs = 200
     if len(songs) > maxsongs:
         raise ValueError("Request exceeded max " + str(maxsongs) + " songs")
     retsongs = []
     for song in songs:
+        unescape_song_fields(song)
         # if any given song write fails, continue so the client doesn't
         # just retry forever.  Leave for general log monitoring.
         try:
@@ -669,6 +690,8 @@ def mfcontrib():
         if uplds:
             logging.info("mfcontrib urs: " + uplds[0:512])
             uplds = json.loads(uplds)
+            for song in uplds:
+                unescape_song_fields(song)
             res = save_uploaded_songs(digacc, uplds, maxret)
         else:
             res = fill_default_ratings_from_friends(digacc, maxret)
