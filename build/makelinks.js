@@ -29,6 +29,7 @@ var linker = (function () {
     function checkLink (cmd, relpath, fname) {
         var hfp = ws.hubr + relpath + "/" + fname;
         var dfp = ws.digr + relpath + "/" + fname;
+        if(fname.endsWith("~")) { return; }
         if(!jslf(fs, "existsSync", hfp)) {
             if(cmd === "create") {
                 fs.symlink(dfp, hfp, function (err) {
