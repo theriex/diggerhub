@@ -1146,23 +1146,25 @@ def collaborate_default_ratings(uid, fid, since="1970-01-01T00:00:00Z",
             query = ("SELECT us.dsId as dsId" +
                      ", us.created as created, us.modified as modified" +
                      ", us.ti as ti, us.ar as ar, us.ab as ab" +
+                     ", us.path as path" +
                      ", fs.aid as mfid, fs.created as mfcreated" +
                      ", fs.el as el, fs.al as al, fs.kws as kws, fs.rv as rv" +
                      " FROM Song AS us, Song AS fs" +
                      " WHERE us.aid=" + uid + " AND fs.aid=" + fid +
                      " AND fs.created > \"" + since + "\""
-                     " AND us.smti=fs.smti AND us.smar=fs.smar" +
+                     " AND ((us.smti=fs.smti AND us.smar=fs.smar) OR " +
+                     "      (us.spid=fs.spid))" +
                      " AND us.el = 49 AND us.al = 49 AND us.kws IS NULL" +
                      " AND (fs.el != 49 OR fs.al != 49 OR fs.kws IS NOT NULL)" +
                      " ORDER BY fs.created LIMIT " + str(limit))
             logging.info("collab query: " + query)
             cursor.execute(query)
             res = []
-            for (dsId, created, modified, ti, ar, ab, mfid, mfcreated,
+            for (dsId, created, modified, ti, ar, ab, path, mfid, mfcreated,
                  el, al, kws, rv) in cursor:
                 res.append({"dsType":"Song", "dsId":str(dsId),
                             "created":created, "modified":modified,
-                            "ti":ti, "ar":ar, "ab":ab,
+                            "ti":ti, "ar":ar, "ab":ab, "path":path,
                             "mfid":str(mfid), "mfcreated":mfcreated,
                             "el":el, "al":al, "kws":kws, "rv":rv})
             logging.info("collab res " + str(len(res)) + " Songs")
