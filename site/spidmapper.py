@@ -344,7 +344,7 @@ def has_bad_metadata(song):
     # a reasonable mapping to the appropriate track is basically zero.
     # Fixing bad metadata is a local storage issue, not a mapping issue.
     ar = song.get("ar", "")
-    if not ar:
+    if not ar or ar == "Unknown":
         return True
     return False
 
@@ -497,6 +497,7 @@ If not remapped, subsequent lookups will assume the track is unavailable.
 # could remove or ignore any "x:" mappings older than 3 weeks.
 def sweep_songs(batch=False):
     songs = dbacc.query_entity("Song", "WHERE spid IS NULL LIMIT 50")
+    count = 0
     for song in songs:
         updsong = map_song_spid(song)
         if manual_verification_needed(updsong):
@@ -505,6 +506,9 @@ def sweep_songs(batch=False):
                 util.send_mail(None, "spidmapper sweep", notice_body(updsong),
                                domain="diggerhub.com")
             break
+        count += 1
+    if batch:
+        logging.info("batch processing completed. " + str(count) + " songs.")
 
 
 def interactive_lookup(title, artist, album):
