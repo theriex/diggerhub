@@ -166,7 +166,7 @@ def find_hub_push_songs(digacc, prevsync):
 
 # undo client top.js txSgFmt
 def unescape_song_fields(song):
-    for fld in ["ti", "ar", "ab", "path"]:
+    for fld in ["path", "ti", "ar", "ab", "nt"]:
         song[fld] = song[fld].replace("&#40;", "(")
         song[fld] = song[fld].replace("&#41;", ")")
 
@@ -601,6 +601,7 @@ def songupd():
         digacc, _ = util.authenticate()
         songdat = dbacc.reqarg("songdat", "json", required=True)
         song = json.loads(songdat)
+        unescape_song_fields(song)
         dsId = song.get("dsId")
         if not dsId:
             raise ValueError("dsId required")
