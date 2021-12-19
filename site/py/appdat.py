@@ -159,6 +159,11 @@ def find_hub_push_songs(digacc, prevsync):
              " AND modified > \"" + prevsync + "\""
              " ORDER BY modified LIMIT " + str(maxsongs))
     retsongs = dbacc.query_entity("Song", where)
+    for song in retsongs:
+        if not song["path"]:  # bad previous lib handling, fill default
+            song["path"] = make_song_path(0, 0, song.get("ar", "Unknown"),
+                                          song.get("ab", "Singles"),
+                                          song["ti"])
     if len(retsongs) >= maxsongs:  # let client know more to download
         digacc["syncsince"] = retsongs[-1]["modified"]
     return digacc, retsongs
@@ -167,8 +172,9 @@ def find_hub_push_songs(digacc, prevsync):
 # undo client top.js txSgFmt
 def unescape_song_fields(song):
     for fld in ["path", "ti", "ar", "ab", "nt"]:
-        song[fld] = song[fld].replace("&#40;", "(")
-        song[fld] = song[fld].replace("&#41;", ")")
+        if song.get(fld):
+            song[fld] = song[fld].replace("&#40;", "(")
+            song[fld] = song[fld].replace("&#41;", ")")
 
 
 def receive_updated_songs(digacc, updacc, songs):
