@@ -190,12 +190,14 @@ app.login = (function () {
                                errtxt); },
                     jt.semaphore("login.act.sendActivationCode")); },
         createNewAccountDisplay: function () {
+            var emv = jt.byId("emailin") || "";
+            if(emv) { emv = emv.value || ""; }
             jt.out("topactiondiv", jt.tac2html(
                 ["div", {id:"tactdiv"},
                  [["div", {cla:"forminline"},
                    [["label", {cla:"forminlab", fo:"emailin"}, "Email"],
                     ["input", {type:"email", cla:"formin", id:"emailin",
-                               placeholder:"nospam@example.com"}]]],
+                               value:emv, placeholder:"nospam@example.com"}]]],
                   ["div", {cla:"forminline"},
                    [["label", {cla:"forminlab", fo:"passin"}, "Password"],
                     ["input", {type:"password", cla:"formin", id:"passin",
@@ -290,10 +292,10 @@ app.login = (function () {
                     onclick:"window.open('" + projurl + "');return false;"},
               "open source"]]));
         if(window.location.href.endsWith("#files")) {
-            app.togdivdisp({rootids:['spchfile','spchstrm'],
+            app.togdivdisp({rootids:["spchfile","spchstrm"],
                             clicked:"spchfile"}); }
         if(window.location.href.endsWith("#streaming")) {
-            app.togdivdisp({rootids:['spchfile','spchstrm'],
+            app.togdivdisp({rootids:["spchfile","spchstrm"],
                             clicked:"spchstrm"}); }
     }
 
