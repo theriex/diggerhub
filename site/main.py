@@ -54,6 +54,10 @@ def mailactcode():  # params: email, returl
 def mailpwr():  # params: email, returl
     return util.secure(util.mailpwr)
 
+@app.route('/api/emsupp', methods=['GET', 'POST'])
+def emsupp():  #params; auth subj body
+    return util.secure(util.emsupp)
+
 @app.route('/api/hubsync', methods=['GET', 'POST'])
 def hubsync():  # params: auth, acct + zero or more songs
     return util.secure(appdat.hubsync)

@@ -9,7 +9,6 @@ import hmac
 import json
 from json.decoder import JSONDecodeError
 import re
-import os
 import ssl
 import smtplib
 from email.mime.text import MIMEText
@@ -442,6 +441,23 @@ def mailpwr():
             body += "visit " + returl + "\n\n"
         send_mail(emaddr, subj, body)
     except ValueError as e:
+        return serve_value_error(e)
+    return respJSON("[]")
+
+
+def emsupp():
+    try:
+        digacc, _ = authenticate()
+        subj = dbacc.reqarg("subj", "string", required=True)
+        subj = urllib.parse.unquote(subj)
+        body = dbacc.reqarg("body", "string", required=True)
+        body = urllib.parse.unquote(body)
+        sendhdr = "From " + digacc["firstname"] + " " + digacc["email"] + "\n"
+        sendhdr += "Sent " + dbacc.nowISO()
+        body = sendhdr + "\n" + body
+        send_mail("support@diggerhub.com", subj, body)
+    except ValueError as e:
+        logging.info("emsupp failed: " + str(e))
         return serve_value_error(e)
     return respJSON("[]")
 
