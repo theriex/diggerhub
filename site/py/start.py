@@ -6,7 +6,7 @@
 import logging
 import py.util as util
 
-CACHE_BUST_PARAM = "v=211224"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=211225"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -93,8 +93,17 @@ Digger is a
 
 <div id="tcgdspchstrm" style="display:none;">
 
-<p>You <em>must</em> use a Spotify Premium account and authorize Digger for
-streaming. <a href="/digger">Launch Digger</a><p>
+<a href="/digger">Launch Digger for Spotify Premium</a>
+<span style="font-size:small;">
+<a href="#spotauth" onclick="app.togdivdisp('spotauthdiv');return false">
+authorization</a>
+</span>
+<div id="spotauthdiv" style="display:none;text-align:left;max-width:600px">
+Digger will read songs and albums in your library, it will not retain other
+information from your Spotify account.  Digger will not write to Spotify
+except to export a playlist if you choose to.  All privileges requested are
+necessary.
+</div>
 
 </div> <!-- diggerstreamingdiv -->
 </div> <!-- splashblockdiv -->
@@ -107,7 +116,33 @@ streaming. <a href="/digger">Launch Digger</a><p>
   </div>
 
   <div id="contactdiv">
-    Digger is <a href="https://github.com/theriex/digger#digger">open source</a>
+    <a href="#principles" onclick="app.togdivdisp('principdiv');return false">Digger Project Principles</a>
+    <div id="principdiv" style="display:none;text-align:left;max-width:600px;margin:auto">
+
+<ul>
+<li><b>Trustable</b>: <a href="https://github.com/theriex/digger#digger" onclick="window.open('https://github.com/theriex/digger#digger');return false">Open source</a>, verifiable principles.
+
+<li><b>Transparent</b>: You rate songs and Digger makes your library fun.
+Sponsorship and <a href="https://epinova.com"
+onclick="window.open('https://epinova.com';return false">donations</a>
+welcome.  If added later, reports, ads, and anything else using community
+data will be by and for the community, available to all.
+
+<li><b>All about the music</b>: Keep only minimum personal information needed
+for independent login and app comms.  Conversations are outside the app.  No
+spam or selling of email addresses.
+
+<li><b>Respect for music</b>: Enhance library access for local files,
+streaming, or both.  Don't modify music files.  Support and add value to
+vendors and streaming services.
+
+<li><b>Opt-in hub</b>: Run standalone without a network connection.
+DiggerHub account helpful but not required.
+
+<li><b>Stop hate</b>: Lead, follow, or get out of the way.
+
+</ul>
+    </div>
   </div>
 
   <div id="taglinediv">

@@ -286,11 +286,6 @@ app.login = (function () {
              ["a", {href:"#streaming", onclick:oc.replace("CLICK", "spchstrm")},
               ["span", {id:"tcgcspchstrm", cla:"spchspan"}, "Streaming"]]]));
         const projurl = "https://github.com/theriex/digger#digger";
-        jt.out("contactdiv", jt.tac2html(
-            ["Digger is ",
-             ["a", {href:projurl,
-                    onclick:"window.open('" + projurl + "');return false;"},
-              "open source"]]));
         if(window.location.href.endsWith("#files")) {
             app.togdivdisp({rootids:["spchfile","spchstrm"],
                             clicked:"spchfile"}); }
