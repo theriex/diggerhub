@@ -6,7 +6,7 @@
 import logging
 import py.util as util
 
-CACHE_BUST_PARAM = "v=211225"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=211228"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -93,16 +93,16 @@ Digger is a
 
 <div id="tcgdspchstrm" style="display:none;">
 
-<a href="/digger">Launch Digger for Spotify Premium</a>
+<span class="streamtypespan"><a href="/digger">Spotify Premium</a></span>
 <span style="font-size:small;">
 <a href="#spotauth" onclick="app.togdivdisp('spotauthdiv');return false">
-authorization</a>
+(authorization)</a>
 </span>
 <div id="spotauthdiv" style="display:none;text-align:left;max-width:600px">
 Digger will read songs and albums in your library, it will not retain other
 information from your Spotify account.  Digger will not write to Spotify
 except to export a playlist if you choose to.  All privileges requested are
-necessary.
+necessary.  Premium account required.
 </div>
 
 </div> <!-- diggerstreamingdiv -->

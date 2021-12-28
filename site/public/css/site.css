@@ -67,6 +67,7 @@ button, .buttonstyle { border: 2px solid #666666; border-radius:8px;
   vertical-align:top; }
 #downloadsdiv div span { font-size:small; color:#999; }
 #wsadiv { font-size:small; margin-bottom:20px; }
+.streamtypespan { font-size:large; font-weight:bold; }
 
 /* -------------------- */
 /* actions */
