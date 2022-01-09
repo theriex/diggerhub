@@ -262,15 +262,15 @@ app.login = (function () {
                 slides.map((ignore /*millis*/, i) =>
                     ["a", {href:"#slide" + i, onclick:mdfs("sld.nextSlide", i)},
                      ((i === idx)? "&#x2b24;" : "&#x25ef;")])));
-            jt.out("slidedispdiv", jt.tac2html(
-                ["img", {src:srcp.replace(/\$I/g, idx)}]));
+            jt.byId("currslide").src = srcp.replace(/\$I/g, idx);
             tmo = setTimeout(mgrs.sld.nextSlide, waitms); },
         runSlideshow: function () {
             if(!jt.byId("slidesdiv")) { return; }
             jt.out("slidesdiv", jt.tac2html(
                 [["div", {id:"slidepgdiv"}],
-                 ["div", {id:"slidedispdiv"}]]));
-            mgrs.sld.nextSlide(); }
+                 ["div", {id:"slidedispdiv"},
+                  ["img", {id:"currslide", src:srcp.replace(/\$I/g, 0)}]]]));
+            mgrs.sld.nextSlide(0); }
     };  //end mgrs.sld returned functions
     }());
 
