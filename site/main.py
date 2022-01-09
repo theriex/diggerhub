@@ -106,6 +106,10 @@ def impsptracks():  # params: auth, items
 def spabimp():  # params: auth, abinf
     return util.secure(appdat.spabimp)
 
+@app.route('/api/playerr', methods=['GET', 'POST'])
+def playerr():  # params: auth, type, spid, error
+    return util.secure(appdat.playerr)
+
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def startpage(path):

@@ -171,7 +171,7 @@ def find_hub_push_songs(digacc, prevsync):
 
 def unWSRW(matchobj):
     rval = matchobj.group(0)[4:]  # remove "WSRW"
-    return rval[::-1]             # unreverse original mixed case value 
+    return rval[::-1]             # unreverse original mixed case value
 
 # undo client svc.js txSong modifications
 def unescape_song_fields(song):
@@ -851,3 +851,29 @@ def spabimp():
     except ValueError as e:
         return util.serve_value_error(e)
     return util.respJSON(songs)
+
+
+# General web streaming playback error recorder. Currently just deals with
+# unavailable spids, factor out different types later.
+def playerr():
+    try:
+        digacc, _ = util.authenticate()
+        errt = dbacc.reqarg("type", "string", required=True)
+        if errt != "spid":
+            raise ValueError("Unknown playerr type " + errt)
+        spid = dbacc.reqarg("spid", "string", required=True)
+        error = dbacc.reqarg("type", "string", required=True)
+        skmap = dbacc.cfbk("SKeyMap", "spid", spid, required=True)
+        notes = json.loads(skmap["notes"])
+        if not notes.get("playerr"):
+            notes["playerr"] = {"first":dbacc.nowISO(),
+                                "fuser":digacc["dsId"]}
+        notes["playerr"]["latest"] = dbacc.nowISO()
+        notes["playerr"]["lauser"] = digacc["dsId"]
+        notes["playerr"]["errtxt"] = error
+        skmap["notes"] = json.dumps(notes)
+        skmap = dbacc.write_entity(skmap, vck=skmap["modified"])
+        logging.info(skmap["notes"])
+    except ValueError as e:
+        return util.serve_value_error(e)
+    return util.respJSON([skmap])

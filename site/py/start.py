@@ -6,7 +6,7 @@
 import logging
 import py.util as util
 
-CACHE_BUST_PARAM = "v=211230"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=220109"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -110,9 +110,16 @@ necessary.  Premium account required.
 
     </div> <!-- splashdiv -->
   </div> <!-- textcontentdiv -->
+  <div id="slidesdiv"></div>
+<!--
   <div id="vidcontentdiv">
     <video controls src="img/DiggerDemo540HighBQ.mp4" width="300">
       Video unavailable in this browser.</video>
+  </div>
+-->
+
+  <div id="taglinediv">
+    Dig into your music collection. Bring your friends.
   </div>
 
   <div id="contactdiv">
@@ -143,10 +150,6 @@ DiggerHub account helpful but not required.
 
 </ul>
     </div>
-  </div>
-
-  <div id="taglinediv">
-    Dig into your music collection. Bring your friends.
   </div>
 
   <div id="localtestdiv" style="display:none">

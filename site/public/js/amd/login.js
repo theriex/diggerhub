@@ -242,6 +242,39 @@ app.login = (function () {
     }());
 
 
+    mgrs.sld = (function () {
+        const slides = [2400, 2400, 2400, 4800, 4800];
+        const srcp = "docs/slideshow/slide$I.png";
+        const sc = 5;
+        var idx = sc - 1;
+        var tmo = null;
+    return {
+        nextSlide: function (slideindex) {
+            var waitms = 0;
+            clearTimeout(tmo);
+            if(slideindex >= 0) {
+                waitms += 5000;
+                idx = slideindex; }
+            else {
+                idx = (idx + 1) % slides.length; }
+            waitms += slides[idx];
+            jt.out("slidepgdiv", jt.tac2html(
+                slides.map((ignore /*millis*/, i) =>
+                    ["a", {href:"#slide" + i, onclick:mdfs("sld.nextSlide", i)},
+                     ((i === idx)? "&#x2b24;" : "&#x25ef;")])));
+            jt.out("slidedispdiv", jt.tac2html(
+                ["img", {src:srcp.replace(/\$I/g, idx)}]));
+            tmo = setTimeout(mgrs.sld.nextSlide, waitms); },
+        runSlideshow: function () {
+            if(!jt.byId("slidesdiv")) { return; }
+            jt.out("slidesdiv", jt.tac2html(
+                [["div", {id:"slidepgdiv"}],
+                 ["div", {id:"slidedispdiv"}]]));
+            mgrs.sld.nextSlide(); }
+    };  //end mgrs.sld returned functions
+    }());
+
+
     function signIn (contf) {
         var statmsg = "Authentication information not available";
         jt.out("acctmsglinediv", "");  //clear any previous login error
@@ -285,7 +318,6 @@ app.login = (function () {
              "&nbsp",
              ["a", {href:"#streaming", onclick:oc.replace("CLICK", "spchstrm")},
               ["span", {id:"tcgcspchstrm", cla:"spchspan"}, "Streaming"]]]));
-        const projurl = "https://github.com/theriex/digger#digger";
         if(window.location.href.endsWith("#files")) {
             app.togdivdisp({rootids:["spchfile","spchstrm"],
                             clicked:"spchfile"}); }
@@ -306,6 +338,7 @@ app.login = (function () {
             jt.out("topactiondiv", initialTopActionHTML); }
         //decorate the plain HTML for processing
         decorateSplashContents();
+        mgrs.sld.runSlideshow();
         jt.out("loginlinksdiv", jt.tac2html(
             [["a", {href:"#newaccount", title:"Create a DiggerHub account",
                     onclick:mdfs("act.createNewAccountDisplay")},
