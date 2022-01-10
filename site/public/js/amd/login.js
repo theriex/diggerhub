@@ -258,7 +258,7 @@ app.login = (function () {
             else {
                 idx = (idx + 1) % slides.length; }
             waitms += slides[idx];
-            jt.out("slidepgdiv", jt.tac2html(
+            jt.out("slidepgindspan", jt.tac2html(
                 slides.map((ignore /*millis*/, i) =>
                     ["a", {href:"#slide" + i, onclick:mdfs("sld.nextSlide", i)},
                      ((i === idx)? "&#x2b24;" : "&#x25ef;")])));
@@ -271,7 +271,13 @@ app.login = (function () {
         runSlideshow: function () {
             if(!jt.byId("slidesdiv")) { return; }
             jt.out("slidesdiv", jt.tac2html(
-                [["div", {id:"slidepgdiv"}],
+                [["div", {id:"slidepgdiv"},
+                  [["span", {id:"slidepgindspan"}],
+                   ["span", {id:"rtfmspan"},
+                    ["&nbsp;&nbsp;&nbsp;",
+                     ["a", {href:"/docs/manual.html", title:"How Digger works",
+                            onclick:"window.open('/docs/manual.html')" +
+                                    ";return false;"}, "RTFM"]]]]],
                  ["div", {id:"slidedispdiv"},
                   ["img", {id:"currslide", src:srcp.replace(/\$I/g, 0)}]]]));
             mgrs.sld.nextSlide(0); }
