@@ -6,7 +6,7 @@
 import logging
 import py.util as util
 
-CACHE_BUST_PARAM = "v=220109"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=220110"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -63,7 +63,7 @@ INDEXHTML = """
 <div id="btihubdiv">Hub</div>
 
 <div id="splashblockdiv">
-<p>Digger spins tracks from your library matching your control settings. Works with:</p>
+<p>How to get noise in the room without having to wade through the stacks each time:</p>
 
 <div id="fileorstreamchoicediv">
   <a href="#files"><span class="spchspan">Files</span></a>

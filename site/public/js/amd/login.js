@@ -243,7 +243,7 @@ app.login = (function () {
 
 
     mgrs.sld = (function () {
-        const slides = [2400, 2400, 2400, 4800, 4800];
+        const slides = [4800, 2400, 2800, 4800, 2800];
         const srcp = "docs/slideshow/slide$I.png";
         const sc = 5;
         var idx = sc - 1;
@@ -253,7 +253,7 @@ app.login = (function () {
             var waitms = 0;
             clearTimeout(tmo);
             if(slideindex >= 0) {
-                waitms += 5000;
+                waitms += 8000;
                 idx = slideindex; }
             else {
                 idx = (idx + 1) % slides.length; }
@@ -264,6 +264,10 @@ app.login = (function () {
                      ((i === idx)? "&#x2b24;" : "&#x25ef;")])));
             jt.byId("currslide").src = srcp.replace(/\$I/g, idx);
             tmo = setTimeout(mgrs.sld.nextSlide, waitms); },
+        pauseSlideshow: function () {
+            jt.log("pausing slideshow");
+            if(!jt.byId("slidesdiv")) { return; }
+            mgrs.sld.nextSlide(0); },
         runSlideshow: function () {
             if(!jt.byId("slidesdiv")) { return; }
             jt.out("slidesdiv", jt.tac2html(
