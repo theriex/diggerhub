@@ -82,7 +82,12 @@ app.login = (function () {
             authobj.token = accntok[1];
             mgrs.ap.save(); }
     return {
-        successfulSignIn: function (result, contf) {
+        authContent: function () {
+            if(app.startPath === "/songfinder") {
+                mgrs.sgf.display(); }
+            else {
+                mgrs.spl.display(); } },
+        successfulSignIn: function (result) {
             if(result) {
                 updateAuthObj(result); }
             jt.out("acctmsglinediv", "");
@@ -99,8 +104,7 @@ app.login = (function () {
                           onclick:mdfs("act.signOut")},
                     "Sign Out"]]],
                  ["div", {id:"tactdiv"}]]));
-            if(contf) {
-                contf(); } },
+            mgrs.act.authContent(); },
         signOut: function () {
             mgrs.ap.clear();
             authobj = null;
@@ -242,6 +246,36 @@ app.login = (function () {
     }());
 
 
+    //The splash manager handles default screen display functions
+    mgrs.spl = (function () {
+    return {
+        decorateSplashContents: function () {
+            var oc = "app.togdivdisp({rootids:['spchfile','spchstrm']," +
+                                     "clicked:'CLICK'})";
+            jt.out("fileorstreamchoicediv", jt.tac2html(
+                [["a", {href:"#files",
+                        onclick:oc.replace("CLICK", "spchfile")},
+                  ["span", {id:"tcgcspchfile", cla:"spchspan"},
+                   "Files"]],
+                 "&nbsp", "or", "&nbsp",
+                 ["a", {href:"#streaming",
+                        onclick:oc.replace("CLICK", "spchstrm")},
+                  ["span", {id:"tcgcspchstrm", cla:"spchspan"},
+                   "Streaming"]]]));
+            if(window.location.href.endsWith("#files")) {
+                app.togdivdisp({rootids:["spchfile","spchstrm"],
+                                clicked:"spchfile"}); }
+            if(window.location.href.endsWith("#streaming")) {
+                app.togdivdisp({rootids:["spchfile","spchstrm"],
+                                clicked:"spchstrm"}); } },
+        display: function () {
+            mgrs.spl.decorateSplashContents();
+            mgrs.sld.runSlideshow(); }
+    };  //end mgrs.spl returned functions
+    }());
+
+
+    //The slides manager handles displaying how the app works
     mgrs.sld = (function () {
         const slides = [4800, 2400, 2800, 4800, 2800];
         const srcp = "docs/slideshow/slide$I.png";
@@ -253,7 +287,6 @@ app.login = (function () {
             var waitms = 0;
             clearTimeout(tmo);
             if(slideindex >= 0) {
-                waitms += 8000;
                 idx = slideindex; }
             else {
                 idx = (idx + 1) % slides.length; }
@@ -263,11 +296,11 @@ app.login = (function () {
                     ["a", {href:"#slide" + i, onclick:mdfs("sld.nextSlide", i)},
                      ((i === idx)? "&#x2b24;" : "&#x25ef;")])));
             jt.byId("currslide").src = srcp.replace(/\$I/g, idx);
+            if(slideindex >= 0 && tmo) { //pause on specific slide
+                clearTimeout(tmo);
+                tmo = null;
+                return; }
             tmo = setTimeout(mgrs.sld.nextSlide, waitms); },
-        pauseSlideshow: function () {
-            jt.log("pausing slideshow");
-            if(!jt.byId("slidesdiv")) { return; }
-            mgrs.sld.nextSlide(0); },
         runSlideshow: function () {
             if(!jt.byId("slidesdiv")) { return; }
             jt.out("slidesdiv", jt.tac2html(
@@ -280,15 +313,102 @@ app.login = (function () {
                                     ";return false;"}, "RTFM"]]]]],
                  ["div", {id:"slidedispdiv"},
                   ["img", {id:"currslide", src:srcp.replace(/\$I/g, 0)}]]]));
-            mgrs.sld.nextSlide(0); }
+            mgrs.sld.nextSlide(); }
     };  //end mgrs.sld returned functions
     }());
 
 
-    function signIn (contf) {
-        var statmsg = "Authentication information not available";
+    //The songfinder manager handles the song connect process
+    mgrs.sgf = (function () {
+    return {
+        spotifyAvailability: function (song) {
+            const ret = {svc:"Spotify", av:"no", links:[]};
+            if(song.spid && song.spid.startsWith("z:")) {
+                const du = "https://diggerhub.com/digger?songid=" + song.dsId;
+                const su = "https://open.spotify.com/track/" +
+                      song.spid.slice(2);
+                ret.links = [{txt:"Digger", url:du}, {txt:"Track", url:su}];
+                ret.av = "yes"; }
+            return ret; },
+        amazonAvailability: function (song) {
+            const st = jt.enc(song.ti + " " + song.ar).replace(/%20/g, "+");
+            const su = "https://www.amazon.com/s?k=" + st;
+            return {svc:"Amazon", av:"maybe",
+                    links:[{txt:"Search", url:su}]}; },
+        youtubeAvailability: function (song) {
+            const st = jt.enc(song.ti + " " + song.ar).replace(/%20/g, "+");
+            const su = "https://music.youtube.com/search?q=" + st;
+            return {
+                svc:"YouTube", av:"maybe",
+                links:[{txt:"Search", url:su}]}; },
+        bandcampAvailability: function (song) {
+            const st = jt.enc(song.ti + " " + song.ar).replace(/%20/g, "%2B");
+            const su = "https://bandcamp.com/search?item_type&q=" + st;
+            return {svc:"Bandcamp", av:"maybe",
+                    links:[{txt:"Search", url:su}]}; },
+        availabilityGlyph: function (av) {
+            switch(av) {
+            case "yes": return "&check;";
+            case "no": return "x";
+            default: return "?"; } },
+        makeFindDisplay: function (song) {
+            const savs = [{a:"Title", v:song.ti, s:"font-weight:bold;"},
+                          {a:"Artist", v:song.ar, s:""},
+                          {a:"Album", v:song.ab, s:"opacity:0.7;"}];
+            const svcs = [mgrs.sgf.spotifyAvailability(song),
+                          //tidal (no web player - no free access link)
+                          //audible (owned by amazon, using amazon access)
+                          //apple (music.apple.com - no free access link)
+                          mgrs.sgf.youtubeAvailability(song),
+                          mgrs.sgf.bandcampAvailability(song),
+                          mgrs.sgf.amazonAvailability(song)];
+            jt.out("sgfdiv", jt.tac2html(
+                [["div", {id:"songfindertitlediv"}, "Song Finder"],
+                 ["div", {id:"sgfsongiddiv"},
+                  ["table", {id:"songavtable"},
+                   savs.map((sav) =>
+                       ["tr",
+                        [["td", {cla:"sgfattr"}, sav.a],
+                         ["td", {cla:"sgfval", style:sav.s}, sav.v]]])]],
+                 ["div", {id:"sgfsvcsdiv"},
+                  ["table", {id:"availtable"},
+                   svcs.map((svc) =>
+                       ["tr", {cla:"sgfsvcline"},
+                        [["td", mgrs.sgf.availabilityGlyph(svc.av)],
+                         ["td", ["div", {cla:"sgfsvcname"}, svc.svc]],
+                         ["td", svc.links.map((link, i) =>
+                             [(i? "&nbsp;&nbsp;&nbsp;" : ""),
+                              ["a", {href:link.url,
+                                     onclick:"window.open('" + link.url +
+                                             "');return false"},
+                               link.txt]])]]])]]])); },
+        displayContent: function () {
+            if(!authobj) {
+                jt.out("sgfdiv", "Login required to use the song finder."); }
+            else if(!app.startParams.songid) {
+                jt.out("sgfdiv", "No songid specified"); }
+            else {
+                jt.out("sgfdiv", "Fetching Song " + app.startParams.songid);
+                const dat = {an:authobj.email, at:authobj.token,
+                             songid:app.startParams.songid};
+                jt.call("POST", app.dr("/api/songtip"), jt.objdata(dat),
+                        function (songs) {
+                            mgrs.sgf.makeFindDisplay(songs[0]); },
+                        function (code, errtxt) {
+                            return jt.out("sgfdiv", "Fetch failed " +
+                                          code + ": " + errtxt); },
+                        jt.semaphore("sgf.songtip")); } },
+        display: function () {
+            jt.out("logodiv", "");  //clear overlay
+            jt.out("outercontentdiv", jt.tac2html(
+                ["div", {id:"sgfdiv"}]));
+            mgrs.sgf.displayContent(); }
+    };  //end mgrs.sgf returned functions
+    }());
+
+
+    function signIn () {
         jt.out("acctmsglinediv", "");  //clear any previous login error
-        contf = contf || function () { jt.log(statmsg); };
         const sav = mgrs.ap.read() || {};
         const ps = {an:app.startParams.an || sav.authname || "",
                     at:app.startParams.at || sav.authtoken || "",
@@ -297,43 +417,23 @@ app.login = (function () {
                     actcode:app.startParams.actcode || ""};
         if(ps.emailin && !(ps.at || ps.passin)) {
             jt.byId("passin").focus();
-            return contf(); }
+            return mgrs.act.authContent(); }
         if(!((ps.an || ps.emailin) && (ps.at || ps.passin))) {
             jt.byId("emailin").focus();
-            return contf(); }  //not trying to sign in (or activate) yet.
+            return mgrs.act.authContent(); } //not trying to sign in or activate
         jt.out("acctmsglinediv", "Signing in...");
         jt.byId("topsectiondiv").style.cursor = "wait";
         //URL parameters cleared after sign in
         jt.call("POST", app.dr("/api/acctok"), jt.objdata(ps),
                 function (result) {
-                    statmsg = "acctok signIn successful return";
                     jt.byId("topsectiondiv").style.cursor = "default";
-                    mgrs.act.successfulSignIn(result, contf); },
+                    mgrs.act.successfulSignIn(result); },
                 function (code, errtxt) {
                     jt.byId("topsectiondiv").style.cursor = "default";
                     jt.log("authentication failure " + code + ": " + errtxt);
-                    jt.out("acctmsglinediv", errtxt); },
+                    jt.out("acctmsglinediv", errtxt);
+                    mgrs.act.authContent(); },
                 jt.semaphore("login.signIn"));
-    }
-
-
-    function decorateSplashContents () {
-        var oc = "app.togdivdisp({rootids:['spchfile','spchstrm']," +
-                                 "clicked:'CLICK'})";
-        jt.out("fileorstreamchoicediv", jt.tac2html(
-            [["a", {href:"#files", onclick:oc.replace("CLICK", "spchfile")},
-              ["span", {id:"tcgcspchfile", cla:"spchspan"}, "Files"]],
-             "&nbsp",
-             "or",
-             "&nbsp",
-             ["a", {href:"#streaming", onclick:oc.replace("CLICK", "spchstrm")},
-              ["span", {id:"tcgcspchstrm", cla:"spchspan"}, "Streaming"]]]));
-        if(window.location.href.endsWith("#files")) {
-            app.togdivdisp({rootids:["spchfile","spchstrm"],
-                            clicked:"spchfile"}); }
-        if(window.location.href.endsWith("#streaming")) {
-            app.togdivdisp({rootids:["spchfile","spchstrm"],
-                            clicked:"spchstrm"}); }
     }
 
 
@@ -346,9 +446,6 @@ app.login = (function () {
             initialTopActionHTML = jt.byId("topactiondiv").innerHTML; }
         if(restore) {
             jt.out("topactiondiv", initialTopActionHTML); }
-        //decorate the plain HTML for processing
-        decorateSplashContents();
-        mgrs.sld.runSlideshow();
         jt.out("loginlinksdiv", jt.tac2html(
             [["a", {href:"#newaccount", title:"Create a DiggerHub account",
                     onclick:mdfs("act.createNewAccountDisplay")},
@@ -357,14 +454,14 @@ app.login = (function () {
                     onclick:mdfs("act.sendResetPasswordLink")},
               "reset password"]]));
         jt.on("loginform", "submit", app.login.formSubmit);
-        signIn(contf);  //attempt to sign in with cookie.
+        signIn();  //attempt to sign in with cookie and update page content
+        if(contf) { contf(); }
     }
 
 
 return {
     init: function (restore, contf) { initialize(restore, contf); },
     formSubmit: function (event) { jt.evtend(event); signIn(); },
-    signIn: function () { signIn(); },
     getAuth: function () { return authobj; },
     dispatch: function (mgrname, fname, ...args) {
         return mgrs[mgrname][fname].apply(app.login, args); }

@@ -59,6 +59,19 @@ CREATE TABLE SKeyMap (  -- Song Title/Artist/Album key mappings
 );
 ALTER TABLE SKeyMap AUTO_INCREMENT = 2020;
 
+CREATE TABLE SongRec (  -- Song recommendation note
+  dsId BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE,
+  created VARCHAR(256) NOT NULL,
+  modified VARCHAR(256) NOT NULL,
+  batchconv VARCHAR(256),
+  songid BIGINT NOT NULL,
+  sfr BIGINT NOT NULL,
+  rfr BIGINT NOT NULL,
+  count INT NOT NULL,
+  PRIMARY KEY (dsId)
+);
+ALTER TABLE SongRec AUTO_INCREMENT = 2020;
+
 CREATE TABLE AppService (  -- Processing service access
   dsId BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE,
   created VARCHAR(256) NOT NULL,

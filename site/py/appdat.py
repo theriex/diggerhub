@@ -241,6 +241,41 @@ def path_for_spotify_track(track):
     return make_song_path(dno, tno, artist, album, title)
 
 
+rfdvs = {"el":49, "al":49, "rv":5, "kws":""}
+
+def unset_rating_fields(song):
+    for fld, val in rfdvs.items():
+        song[fld] = val
+
+def set_srcrat_from_rating_fields(song):
+    song["srcrat"] = ":".join([str(song[v]) for v in rfdvs])
+
+def set_rating_fields_from_source(song, source):
+    song["srcid"] = source["aid"]
+    for fld, val in rfdvs.items():
+        song[fld] = source.get(fld, val)
+    set_srcrat_from_rating_fields(song)
+
+def ratings_changed_from_srcrat(song):
+    rats = dict(zip(rfdvs.keys(), song["srcrat"].split(":")))
+    for fld in rfdvs:
+        if str(song[fld]) != rats[fld]:
+            return True
+    return False
+
+
+# Factored method to set default values appropriately.
+def copy_song(song, digacc):
+    cs = {"dsType":"Song", "dsId":"", "created":"", "modified":"",
+          "batchconv":"", "aid":digacc["dsId"], "path":song["path"],
+          "ti":song["ti"], "ar":song["ar"], "ab":song["ab"],
+          "fq":"N", "lp":"", "nt":"", "pc":0,
+          "srcid":"", "srcrat":"", "spid":song.get("spid", "")}
+    rebuild_derived_song_fields(song)
+    unset_rating_fields(song)
+    return cs
+
+
 def merge_spotify_track(digacc, track):
     spid = "z:" + track["id"]
     # lookup by aid/spid to check if track already exists
@@ -263,17 +298,15 @@ def merge_spotify_track(digacc, track):
         song = dbacc.write_entity(song, song["modified"])
         return song, "updated"
     # no existing song found, add new with sortable path for album view
-    song = {"dsType": "Song", "aid": digacc["dsId"], "batchconv": "spidimp",
-            "path": path_for_spotify_track(track),
+    song = {"path": path_for_spotify_track(track),
             "ti": track["name"],
             "ar": track["artists"][0]["name"],
             "ab": spotify_track_album(track),
-            "el": 49, "al": 49, "kws": "",
-            "rv": 7,  # above average since they liked it
-            "fq": "P",  # playable rather than newly added since filling in lp
-            "lp": dbacc.timestamp(-1 * 60 * 24),  # yesterday, so ok to play now
-            "nt": "", "spid": spid}
-    rebuild_derived_song_fields(song)
+            "spid": spid}
+    song = copy_song(song, digacc)
+    song["batchconv"] = "spidmap"
+    song["fq"] = "P"  # playable since filling in lp
+    song["lp"] = dbacc.timestamp(-1 * 60 * 24)  # yesterday
     song = dbacc.write_entity(song)
     return song, "created"
 
@@ -326,6 +359,39 @@ def convert_albums_to_tracks(items):
     return ret
 
 
+def note_song_recommendation(song, digacc):
+    if song["aid"] == digacc["dsId"]:
+        return  # can't recommend a song to yourself
+    where = ("WHERE songid = " + song["dsId"] +
+             " AND sfr = " + song["aid"] +
+             " AND rfr = " + digacc["dsId"] +
+             " ORDER BY created LIMIT 1")
+    recs = dbacc.query_entity("SongRec", where)
+    if len(recs) > 0:
+        if recs[0]["modified"] >= dbacc.timestamp(-1 * 60 * 24):
+            return  # only increment once per day, may have multiple calls
+        rec = recs[0]
+        rec["count"] += 1
+    else:
+        rec = {"dsType":"SongRec", "songid":song["dsId"],
+               "sfr":song["aid"], "rfr":digacc["dsId"], "count":1,
+               "modified":""}
+    rec = dbacc.write_entity(rec, vck=rec["modified"])
+    logging.info("DigAcc " + str(rec["sfr"]) + " recommended Song " +
+                 str(song["dsId"]) + " (" + song["ti"] + ") to DigAcc " +
+                 str(digacc["dsId"]) + " (" + digacc["firstname"] + ")")
+
+
+def user_song_by_songid(digacc, songid):
+    song = dbacc.cfbk("Song", "dsId", songid, required=True)
+    if song["aid"] != digacc["dsId"]:
+        note_song_recommendation(song, digacc)
+        cs = copy_song(song, digacc)
+        set_rating_fields_from_source(cs, song)
+        song = cs
+    return song
+
+
 def fvs_match_sql_clauses(fvs):
     where = ""
     if fvs["fpst"] == "on":
@@ -367,6 +433,8 @@ def fetch_matching_songs(digacc, fvs, limit):
     where += " ORDER BY lp LIMIT " + str(limit)
     logging.info("songfetch " + where)
     songs = dbacc.query_entity("Song", where)
+    if fvs.get("startsongid"):
+        songs.insert(0, user_song_by_songid(digacc, int(fvs["startsongid"])))
     return songs
 
 
@@ -455,12 +523,11 @@ def append_default_ratings_from_friend(digacc, mf, prcsongs, maxret):
     cds = dbacc.collaborate_default_ratings(digacc["dsId"], mf["dsId"],
                                             since=checksince, limit=sflim)
     if len(cds) > 0:
-        rfs = ["el", "al", "rv", "kws"]  # rating fields
         for song in cds:
             mf["checksince"] = song["mfcreated"]
             mf["dhcontrib"] = mf.get("dhcontrib", 0) + 1
             song["srcid"] = song["mfid"]
-            song["srcrat"] = ":".join([str(song[v]) for v in rfs])
+            set_srcrat_from_rating_fields(song)
             # cds may contain duplicate songs due to join expansion. 14sep21
             # No need for overhead of querying for version before writing.
             prcsongs.append(dbacc.write_entity(song, vck="override"))
@@ -498,18 +565,9 @@ def clear_default_ratings_from_friend(digacc, mfid, maxret):
     logging.info("clearing " + str(len(songs)) + " default ratings from " +
                  mfid + " for " + digacc["dsId"])
     res = []
-    rfs = ["el", "al", "rv", "kws"]  # rating fields
     for song in songs:
-        rats = dict(zip(rfs, song["srcrat"].split(":")))
-        changed = False
-        for fld in rfs:
-            if str(song[fld]) != rats[fld]:
-                changed = True
-        if not changed:  # reset to default unrated (remove mf values)
-            song["el"] = 49
-            song["al"] = 49
-            song["rv"] = 5
-            song["kws"] = ""
+        if not ratings_changed_from_srcrat(song):
+            unset_rating_fields(song)
         song["srcid"] = ""
         song["srcrat"] = ""
         res.append(dbacc.write_entity(song, song["modified"]))
@@ -877,3 +935,16 @@ def playerr():
     except ValueError as e:
         return util.serve_value_error(e)
     return util.respJSON([skmap])
+
+
+# Note song recommendation and return the recommended song.
+def songtip():
+    try:
+        digacc, _ = util.authenticate()
+        songid = dbacc.reqarg("songid", "dbid", required=True)
+        song = dbacc.cfbk("Song", "dsId", int(songid), required=True)
+        if song["aid"] != digacc["dsId"]:
+            note_song_recommendation(song, digacc)
+    except ValueError as e:
+        return util.serve_value_error(e)
+    return util.respJSON([song])

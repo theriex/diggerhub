@@ -110,6 +110,15 @@ def spabimp():  # params: auth, abinf
 def playerr():  # params: auth, type, spid, error
     return util.secure(appdat.playerr)
 
+@app.route('/api/songtip', methods=['GET', 'POST'])
+def songtip():  #parms: auth, songid
+    return util.secure(appdat.songtip)
+
+
+######################################################################
+#  General site endpoints
+#
+
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def startpage(path):

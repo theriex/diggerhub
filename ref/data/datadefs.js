@@ -112,6 +112,14 @@ module.exports = (function () {
         {f:"notes", d:"json", c:"optional data processing details"}],
      cache:{minutes:0},
      logflds:["skey", "spid"]},
+
+    {entity:"SongRec", descr:"Song recommendation note", fields:[
+        {f:"songid", d:"req dbid", c:"the song being recommended"},
+        {f:"sfr", d:"req dbid", c:"sending friend"},
+        {f:"rfr", d:"req dbid", c:"receiving friend"},
+        {f:"count", d:"req int", c:"access count for recommendation"}],
+     cache:{minutes:0},
+     logflds:["songid", "sfr", "rfr"]},
         
     {entity:"AppService", descr:"Processing service access", fields:[
         {f:"name", d:"string req unique", c:"Name of service"},

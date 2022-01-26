@@ -107,6 +107,16 @@ entdefs = {
         "spid": {"pt": "string", "un": False, "dv": ""},
         "notes": {"pt": "string", "un": False, "dv": ""}
     },
+    "SongRec": {  # Song recommendation note
+        "dsId": {"pt": "dbid", "un": True, "dv": 0},
+        "created": {"pt": "string", "un": False, "dv": ""},
+        "modified": {"pt": "string", "un": False, "dv": ""},
+        "batchconv": {"pt": "string", "un": False, "dv": ""},
+        "songid": {"pt": "dbid", "un": False, "dv": 0},
+        "sfr": {"pt": "dbid", "un": False, "dv": 0},
+        "rfr": {"pt": "dbid", "un": False, "dv": 0},
+        "count": {"pt": "int", "un": False, "dv": 0}
+    },
     "AppService": {  # Processing service access
         "dsId": {"pt": "dbid", "un": True, "dv": 0},
         "created": {"pt": "string", "un": False, "dv": ""},
@@ -124,6 +134,7 @@ entkeys = {
     "DigAcc": ["email", "hashtag"],
     "Song": [],
     "SKeyMap": ["skey"],
+    "SongRec": [],
     "AppService": ["name"]
 }
 
@@ -132,6 +143,7 @@ cachedefs = {
     "DigAcc": {"minutes": 120, "manualadd": False},
     "Song": {"minutes": 0, "manualadd": False},
     "SKeyMap": {"minutes": 0, "manualadd": False},
+    "SongRec": {"minutes": 0, "manualadd": False},
     "AppService": {"minutes": 240, "manualadd": False}
 }
 
@@ -606,6 +618,46 @@ def db2app_SKeyMap(inst):
     return cnv
 
 
+# Convert the given SongRec inst dict from app values to db values.  Removes
+# the dsType field to avoid trying to write it to the db.
+def app2db_SongRec(inst, fill=True):
+    cnv = {}
+    cnv["dsId"] = None
+    if "dsId" in inst:
+        cnv["dsId"] = app2db_fieldval(None, "dsId", inst)
+    if fill or "created" in inst:
+        cnv["created"] = app2db_fieldval(None, "created", inst)
+    if fill or "modified" in inst:
+        cnv["modified"] = app2db_fieldval(None, "modified", inst)
+    if fill or "batchconv" in inst:
+        cnv["batchconv"] = app2db_fieldval(None, "batchconv", inst)
+    if fill or "songid" in inst:
+        cnv["songid"] = app2db_fieldval("SongRec", "songid", inst)
+    if fill or "sfr" in inst:
+        cnv["sfr"] = app2db_fieldval("SongRec", "sfr", inst)
+    if fill or "rfr" in inst:
+        cnv["rfr"] = app2db_fieldval("SongRec", "rfr", inst)
+    if fill or "count" in inst:
+        cnv["count"] = app2db_fieldval("SongRec", "count", inst)
+    return cnv
+
+
+# Convert the given SongRec inst dict from db values to app values.  Adds the
+# dsType field for general app processing.
+def db2app_SongRec(inst):
+    cnv = {}
+    cnv["dsType"] = "SongRec"
+    cnv["dsId"] = db2app_fieldval(None, "dsId", inst)
+    cnv["created"] = db2app_fieldval(None, "created", inst)
+    cnv["modified"] = db2app_fieldval(None, "modified", inst)
+    cnv["batchconv"] = db2app_fieldval(None, "batchconv", inst)
+    cnv["songid"] = db2app_fieldval("SongRec", "songid", inst)
+    cnv["sfr"] = db2app_fieldval("SongRec", "sfr", inst)
+    cnv["rfr"] = db2app_fieldval("SongRec", "rfr", inst)
+    cnv["count"] = db2app_fieldval("SongRec", "count", inst)
+    return cnv
+
+
 # Convert the given AppService inst dict from app values to db values.  Removes
 # the dsType field to avoid trying to write it to the db.
 def app2db_AppService(inst, fill=True):
@@ -651,6 +703,7 @@ def dblogmsg(op, entity, res):
         "DigAcc": ["email", "firstname"],
         "Song": ["aid", "ti", "ar"],
         "SKeyMap": ["skey", "spid"],
+        "SongRec": ["songid", "sfr", "rfr"],
         "AppService": ["name"]}
     if res:
         if op != "QRY":  # query is already a list, listify anything else
@@ -842,6 +895,57 @@ def update_existing_SKeyMap(context, fields):
     return result
 
 
+# Write a new SongRec row, using the given field values or defaults.
+def insert_new_SongRec(cnx, cursor, fields):
+    fields = app2db_SongRec(fields)
+    stmt = (
+        "INSERT INTO SongRec (created, modified, songid, sfr, rfr, count) "
+        "VALUES (%(created)s, %(modified)s, %(songid)s, %(sfr)s, %(rfr)s, %(count)s)")
+    data = {
+        'created': fields.get("created"),
+        'modified': fields.get("modified"),
+        'songid': fields.get("songid", entdefs["SongRec"]["songid"]["dv"]),
+        'sfr': fields.get("sfr", entdefs["SongRec"]["sfr"]["dv"]),
+        'rfr': fields.get("rfr", entdefs["SongRec"]["rfr"]["dv"]),
+        'count': fields.get("count", entdefs["SongRec"]["count"]["dv"])}
+    cursor.execute(stmt, data)
+    fields["dsId"] = cursor.lastrowid
+    cnx.commit()
+    fields = db2app_SongRec(fields)
+    dblogmsg("ADD", "SongRec", fields)
+    return fields
+
+
+# Update the specified SongRec row with the given field values.
+def update_existing_SongRec(context, fields):
+    fields = app2db_SongRec(fields, fill=False)
+    dsId = int(fields["dsId"])  # Verify int value
+    stmt = ""
+    for field in fields:  # only updating the fields passed in
+        if stmt:
+            stmt += ", "
+        stmt += field + "=(%(" + field + ")s)"
+    stmt = "UPDATE SongRec SET " + stmt + " WHERE dsId=" + str(dsId)
+    if context["vck"] != "override":
+        stmt += " AND modified=\"" + context["vck"] + "\""
+    data = {}
+    for field in fields:
+        data[field] = fields[field]
+    context["cursor"].execute(stmt, data)
+    if context["cursor"].rowcount < 1 and context["vck"] != "override":
+        logging.error(stmt + " " + json.dumps(data))
+        entcache.cache_clean()  # out of sync, clear it all
+        raise ValueError("SongRec" + str(dsId) + " update received outdated version check value " + context["vck"] + ".")
+    context["cnx"].commit()
+    result = context["existing"]
+    for field in fields:
+        result[field] = fields[field]
+    result = db2app_SongRec(result)
+    dblogmsg("UPD", "SongRec", result)
+    entcache.cache_remove(result)
+    return result
+
+
 # Write a new AppService row, using the given field values or defaults.
 def insert_new_AppService(cnx, cursor, fields):
     fields = app2db_AppService(fields)
@@ -916,6 +1020,8 @@ def write_entity(inst, vck="1234-12-12T00:00:00Z"):
                     return update_existing_Song(context, inst)
                 if entity == "SKeyMap":
                     return update_existing_SKeyMap(context, inst)
+                if entity == "SongRec":
+                    return update_existing_SongRec(context, inst)
                 if entity == "AppService":
                     return update_existing_AppService(context, inst)
                 raise ValueError("Cannot modify unknown entity dsType " +
@@ -928,6 +1034,8 @@ def write_entity(inst, vck="1234-12-12T00:00:00Z"):
                 return insert_new_Song(cnx, cursor, inst)
             if entity == "SKeyMap":
                 return insert_new_SKeyMap(cnx, cursor, inst)
+            if entity == "SongRec":
+                return insert_new_SongRec(cnx, cursor, inst)
             if entity == "AppService":
                 return insert_new_AppService(cnx, cursor, inst)
             raise ValueError("Cannot create unknown entity dsType " +
@@ -1002,6 +1110,20 @@ def query_SKeyMap(cnx, cursor, where):
     return res
 
 
+def query_SongRec(cnx, cursor, where):
+    query = "SELECT dsId, created, modified, "
+    query += "songid, sfr, rfr, count"
+    query += " FROM SongRec " + where
+    cursor.execute(query)
+    res = []
+    for (dsId, created, modified, songid, sfr, rfr, count) in cursor:
+        inst = {"dsType": "SongRec", "dsId": dsId, "created": created, "modified": modified, "songid": songid, "sfr": sfr, "rfr": rfr, "count": count}
+        inst = db2app_SongRec(inst)
+        res.append(inst)
+    dblogmsg("QRY", "SongRec", res)
+    return res
+
+
 def query_AppService(cnx, cursor, where):
     query = "SELECT dsId, created, modified, "
     query += "name, ckey, csec, data"
@@ -1033,6 +1155,8 @@ def query_entity(entity, where):
                 return query_Song(cnx, cursor, where)
             if entity == "SKeyMap":
                 return query_SKeyMap(cnx, cursor, where)
+            if entity == "SongRec":
+                return query_SongRec(cnx, cursor, where)
             if entity == "AppService":
                 return query_AppService(cnx, cursor, where)
         except mysql.connector.Error as e:
@@ -1076,6 +1200,13 @@ def visible_SKeyMap_fields(obj, audience):
     return filtobj
 
 
+def visible_SongRec_fields(obj, audience):
+    filtobj = {}
+    for fld, val in obj.items():
+        filtobj[fld] = val
+    return filtobj
+
+
 def visible_AppService_fields(obj, audience):
     filtobj = {}
     for fld, val in obj.items():
@@ -1094,6 +1225,8 @@ def visible_fields(obj, audience="public"):
         return visible_Song_fields(obj, audience)
     if obj["dsType"] == "SKeyMap":
         return visible_SKeyMap_fields(obj, audience)
+    if obj["dsType"] == "SongRec":
+        return visible_SongRec_fields(obj, audience)
     if obj["dsType"] == "AppService":
         return visible_AppService_fields(obj, audience)
     raise ValueError("Unknown object dsType: " + obj["dsType"])

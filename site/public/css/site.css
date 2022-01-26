@@ -79,6 +79,20 @@ button, .buttonstyle { border: 2px solid #666666; border-radius:8px;
 
 
 /* -------------------- */
+/* songfinder */
+
+#sgfdiv { padding:10px; display:table; margin:auto; }
+#songfindertitlediv { font-size:x-large; font-weight:bold; }
+#sgfsongiddiv { padding:10px; margin:10px auto 10px 0px; display:table;
+  background-image:url("../img/white60percent.png"); }
+.sgfattr { text-align:right; font-style:italic; padding-right:6px;
+  opacity:0.6; }
+.sgflink { display:inline-block; padding-right:10px; }
+.sgfsvcline { }
+.sgfsvcname { font-weight:bold; padding:8px 4px 8px 0px; }
+
+
+/* -------------------- */
 /* actions */
 
 #loginvisualelementsdiv { 0px 2px 0px 10px; }
