@@ -83,10 +83,10 @@ app.login = (function () {
             mgrs.ap.save(); }
     return {
         authContent: function () {
-            if(app.startPath === "/songfinder") {
-                mgrs.sgf.display(); }
-            else {
-                mgrs.spl.display(); } },
+            switch(app.startPath) {
+            case "/songfinder": mgrs.sgf.display(); break;
+            case "/digger": app.initDiggerModules(); break;
+            default: mgrs.spl.display(); } },
         successfulSignIn: function (result) {
             if(result) {
                 updateAuthObj(result); }
@@ -249,7 +249,7 @@ app.login = (function () {
     //The splash manager handles default screen display functions
     mgrs.spl = (function () {
     return {
-        decorateSplashContents: function () {
+        activateFileOrStreamChoices: function () {
             var oc = "app.togdivdisp({rootids:['spchfile','spchstrm']," +
                                      "clicked:'CLICK'})";
             jt.out("fileorstreamchoicediv", jt.tac2html(
@@ -264,10 +264,24 @@ app.login = (function () {
                    "Streaming"]]]));
             if(window.location.href.endsWith("#files")) {
                 app.togdivdisp({rootids:["spchfile","spchstrm"],
-                                clicked:"spchfile"}); }
+                                clicked:"spchfile"}, "block"); }
             if(window.location.href.endsWith("#streaming")) {
                 app.togdivdisp({rootids:["spchfile","spchstrm"],
-                                clicked:"spchstrm"}); } },
+                                clicked:"spchstrm"}, "block"); } },
+        verifySignedIn: function (event) {
+            if(!authobj) {
+                jt.out("loginreqdiv", "Sign in to launch Digger");
+                jt.evtend(event); }
+            else {
+                jt.out("loginreqdiv", "Starting Digger..."); } },
+        activateDiggerLaunchLinks: function () {
+            const links = document.getElementsByClassName("diggerlaunchlink");
+            Array.prototype.forEach.call(links, function (link) {
+                jt.on(link, "click", mgrs.spl.verifySignedIn); });
+            jt.out("loginreqdiv", ""); },
+        decorateSplashContents: function () {
+            mgrs.spl.activateFileOrStreamChoices();
+            mgrs.spl.activateDiggerLaunchLinks(); },
         display: function () {
             mgrs.spl.decorateSplashContents();
             mgrs.sld.runSlideshow(); }
@@ -439,7 +453,7 @@ app.login = (function () {
 
     //This works in conjunction with the static undecorated form created by
     //start.py, decorating to provide login without page reload.
-    function initialize (restore, contf) {
+    function initialize (restore) {
         if(initialTopActionHTML && !restore) {
             return; }  //form setup and initial signIn already done.
         if(!initialTopActionHTML) {  //save so it can be restored on logout
@@ -454,8 +468,7 @@ app.login = (function () {
                     onclick:mdfs("act.sendResetPasswordLink")},
               "reset password"]]));
         jt.on("loginform", "submit", app.login.formSubmit);
-        signIn();  //attempt to sign in with cookie and update page content
-        if(contf) { contf(); }
+        signIn();  //attempt to sign in with cookie then update content
     }
 
 

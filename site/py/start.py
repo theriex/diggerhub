@@ -93,9 +93,12 @@ Digger is a
 
 <div id="tcgdspchstrm" style="display:none;">
 
-<span class="streamtypespan"><a href="/digger">Spotify Premium</a></span>
+<div id="loginreqdiv"></div>
+<span class="streamtypespan">
+  <a href="/digger" class="diggerlaunchlink">Spotify Premium</a>
+</span>
 <span style="font-size:small;">
-<a href="#spotauth" onclick="app.togdivdisp('spotauthdiv');return false">
+  <a href="#spotauth" onclick="app.togdivdisp('spotauthdiv');return false">
 (authorization)</a>
 </span>
 <div id="spotauthdiv" style="display:none;text-align:left;max-width:600px">
