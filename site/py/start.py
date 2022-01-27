@@ -6,7 +6,7 @@
 import logging
 import py.util as util
 
-CACHE_BUST_PARAM = "v=220126"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=220127"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -15,7 +15,7 @@ INDEXHTML = """
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <meta name="robots" content="noodp" />
-  <meta name="description" content="Digger is a contextual music retrieval tool for your music library." />
+  <meta name="description" content="Digger let's you get noise in the room without having to wade through the stacks each time. People use Digger to get back into their music collections." />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="mobile-web-app-capable" content="yes" />
   <link rel="icon" href="$SITEPIC">
@@ -59,11 +59,10 @@ INDEXHTML = """
   <div id="textcontentdiv">
     <div id="splashdiv">
 
-<div id="btidiggerdiv">Digger</div>
-<div id="btihubdiv">Hub</div>
+<div id="marqueediv">Digger <i>Hub</i></div>
 
 <div id="splashblockdiv">
-<p>How to get noise in the room without having to wade through the stacks each time:</p>
+<p><em>Digger</em> now available for:</p>
 
 <div id="fileorstreamchoicediv">
   <a href="#files"><span class="spchspan">Files</span></a>
@@ -93,7 +92,11 @@ Digger is a
 
 <div id="tcgdspchstrm" style="display:none;">
 
+Run Digger for:
+
 <div id="loginreqdiv"></div>
+
+<div id="diggerweboptionsdiv">
 <span class="streamtypespan">
   <a href="/digger" class="diggerlaunchlink">Spotify Premium</a>
 </span>
@@ -106,6 +109,10 @@ Digger will read songs and albums in your library, it will not retain other
 information from your Spotify account.  Digger will not write to Spotify
 except to export a playlist if you choose to.  All privileges requested are
 necessary.  Premium account required.
+</div>
+</div> <!-- diggerweboptionsdiv -->
+
+<div id="streamcloseline">
 </div>
 
 </div> <!-- diggerstreamingdiv -->
@@ -130,24 +137,25 @@ necessary.  Premium account required.
     <div id="principdiv" style="display:none;text-align:left;max-width:600px;margin:auto">
 
 <ul>
-<li><b>Trustable</b>: <a href="https://github.com/theriex/digger#digger" onclick="window.open('https://github.com/theriex/digger#digger');return false">Open source</a>, verifiable principles.
+<li><b>Trustable</b>: <a href="https://github.com/theriex/digger#digger" onclick="window.open('https://github.com/theriex/digger#digger');return false">Open source</a>, verifiable.
 
-<li><b>Transparent</b>: You rate songs and Digger makes your library fun.
-Sponsorship and <a href="https://epinova.com"
+<li><b>Transparent</b>: Digger saves your song ratings and music friend
+connections to provide the best independent interface to your music
+collection.  Sponsorship and <a href="https://epinova.com"
 onclick="window.open('https://epinova.com';return false">donations</a>
 welcome.  If added later, reports, ads, and anything else using community
 data will be by and for the community, available to all.
 
-<li><b>All about the music</b>: Keep only minimum personal information needed
-for independent login and app comms.  Conversations are outside the app.  No
-spam or selling of email addresses.
+<li><b>All about the music</b>: Only keep the minimum personal information
+needed for independent login and app comms.  Conversations are outside the
+app.  No spam or selling of email addresses.
 
 <li><b>Respect for music</b>: Enhance library access for local files,
 streaming, or both.  Don't modify music files.  Support and add value to
 vendors and streaming services.
 
-<li><b>Opt-in hub</b>: Run standalone without a network connection.
-DiggerHub account helpful but not required.
+<li><b>Opt-in hub</b>: Run standalone without a network connection if you want.
+Sign into DiggerHub because it makes Digger awesome.
 
 <li><b>Stop hate</b>: Lead, follow, or get out of the way.
 

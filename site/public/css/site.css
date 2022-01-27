@@ -45,12 +45,10 @@ button, .buttonstyle { border: 2px solid #666666; border-radius:8px;
 /* -------------------- */
 /* splash */
 
-#btidiggerdiv { text-align:center; font-size:xx-large; font-weight:bold;
-  letter-spacing:0.42em; padding:5px; }
-#btihubdiv { text-align:center; font-size:x-large; letter-spacing:0.2em; 
-  font-style:italic; }
 #logodiv { position:absolute; top:30px; left:-12px; }
 #logodiv img { max-height:64px; }
+#marqueediv { margin-left:32px; font-weight:bold; font-size:large;
+  text-align:center; color:#cf3838; }
 #splashdiv { background-image:url("../img/bglogo.png");
   background-repeat:no-repeat; background-size:contain;
   background-position: 10% 84%; }
@@ -66,15 +64,16 @@ button, .buttonstyle { border: 2px solid #666666; border-radius:8px;
 #downloadsdiv div { display:inline-block; padding:10px; text-align:center;
   vertical-align:top; }
 #downloadsdiv div span { font-size:small; color:#999; }
-#wsadiv { font-size:small; margin-bottom:20px; }
+#wsadiv, #streamcloseline { font-size:small; margin-bottom:20px; }
 .streamtypespan { font-size:large; font-weight:bold; }
 
 /* -------------------- */
 /* slides */
 
 #slidepgdiv { text-align:center; }
-#slidedispdiv { text-align:center; }
-#slidedispdiv img { width:100%; max-width:400px; }
+#slidedispdiv { position:relative; max-width:400px; margin:0px auto; }
+#slidedispdiv img { width:100%; max-width:400px; transition:opacity 0.5s; }
+#prevslide, #currslide { position:absolute; top:0px; left:0px; }
 #rtfmspan { font-size:small; }
 
 

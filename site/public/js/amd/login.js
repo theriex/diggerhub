@@ -284,8 +284,39 @@ app.login = (function () {
             mgrs.spl.activateDiggerLaunchLinks(); },
         display: function () {
             mgrs.spl.decorateSplashContents();
+            mgrs.mrq.runMarquee();
             mgrs.sld.runSlideshow(); }
     };  //end mgrs.spl returned functions
+    }());
+
+
+    //The marquee manager handles headline text in the default display
+    mgrs.mrq = (function () {
+        const fis = 0.3;
+        const fos = 1.2;
+        const disptime = 8;
+        const mhds = [
+            "Music is art",
+            "What you listen to matters",
+            "Your collection is you",
+            "Your impressions matter",
+            "Artists enrich your life",
+            "Songs touch your soul"];
+        var idx = 0;
+    return {
+        nextStatement: function () {
+            const md = jt.byId("marqueediv");
+            md.style.transition = "opacity " + fos + "s";
+            md.style.opacity = 0.0;
+            setTimeout(function () {
+                md.innerHTML = mhds[idx] + ".";
+                idx = (idx + 1) % mhds.length;
+                md.style.transition = "opacity " + fis + "s";
+                md.style.opacity = 1.0; }, fos * 1000);
+            setTimeout(mgrs.mrq.nextStatement, (fis + disptime) * 1000); },
+        runMarquee: function () {
+            mgrs.mrq.nextStatement(); }
+    };  //end mgrs.mrq returned functions
     }());
 
 
@@ -294,27 +325,31 @@ app.login = (function () {
         const slides = [4800, 2400, 2800, 4800, 2800];
         const srcp = "docs/slideshow/slide$I.png";
         const sc = 5;
-        var idx = sc - 1;
+        var idx = 0;
         var tmo = null;
     return {
         nextSlide: function (slideindex) {
-            var waitms = 0;
             clearTimeout(tmo);
+            const previdx = idx;
             if(slideindex >= 0) {
                 idx = slideindex; }
             else {
                 idx = (idx + 1) % slides.length; }
-            waitms += slides[idx];
             jt.out("slidepgindspan", jt.tac2html(
                 slides.map((ignore /*millis*/, i) =>
                     ["a", {href:"#slide" + i, onclick:mdfs("sld.nextSlide", i)},
                      ((i === idx)? "&#x2b24;" : "&#x25ef;")])));
-            jt.byId("currslide").src = srcp.replace(/\$I/g, idx);
+            jt.byId("prevslide").src = srcp.replace(/\$I/g, previdx);
+            const currslide = jt.byId("currslide")
+            currslide.style.opacity = 0.0;
+            setTimeout(function () {
+                currslide.src = srcp.replace(/\$I/g, idx);
+                currslide.style.opacity = 1.0; }, 500);  //match css transition
             if(slideindex >= 0 && tmo) { //pause on specific slide
                 clearTimeout(tmo);
                 tmo = null;
                 return; }
-            tmo = setTimeout(mgrs.sld.nextSlide, waitms); },
+            tmo = setTimeout(mgrs.sld.nextSlide, slides[idx]); },
         runSlideshow: function () {
             if(!jt.byId("slidesdiv")) { return; }
             jt.out("slidesdiv", jt.tac2html(
@@ -326,8 +361,10 @@ app.login = (function () {
                             onclick:"window.open('/docs/manual.html')" +
                                     ";return false;"}, "RTFM"]]]]],
                  ["div", {id:"slidedispdiv"},
-                  ["img", {id:"currslide", src:srcp.replace(/\$I/g, 0)}]]]));
-            mgrs.sld.nextSlide(); }
+                  [["img", {src:srcp.replace(/\$I/g, 0)}],
+                   ["img", {id:"prevslide", src:srcp.replace(/\$I/g, 0)}],
+                   ["img", {id:"currslide", src:srcp.replace(/\$I/g, 0)}]]]]));
+            setTimeout(mgrs.sld.nextSlide, 12000); }
     };  //end mgrs.sld returned functions
     }());
 
