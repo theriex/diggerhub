@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ScappleDocument Version="1.2" ID="EE86CB94-B1F9-4C28-A196-A6A8646D3682">
     <Notes>
-        <Note ID="0" FontSize="12.0" Position="93.218277,86.547348" Width="101.0">
+        <Note ID="0" FontSize="12.0" Position="93.0,87.0" Width="101.0">
             <Appearance>
                 <Alignment>Left</Alignment>
                 <Border Weight="1"></Border>
@@ -10,7 +10,7 @@
             <ConnectedNoteIDs>1, 13</ConnectedNoteIDs>
             <PointsToNoteIDs>1, 13</PointsToNoteIDs>
         </Note>
-        <Note ID="1" FontSize="12.0" Position="187.60791,139.558151" Width="83.0">
+        <Note ID="1" FontSize="12.0" Position="215.340103,117.468552" Width="83.0">
             <Appearance>
                 <Alignment>Left</Alignment>
             </Appearance>
@@ -18,39 +18,40 @@
             <ConnectedNoteIDs>0, 2</ConnectedNoteIDs>
             <PointsToNoteIDs>2</PointsToNoteIDs>
         </Note>
-        <Note ID="2" FontSize="12.022418" Position="299.381561,140.0" Width="103.0">
+        <Note ID="2" FontSize="12.022418" Position="95.0,157.0" Width="107.0">
             <Appearance>
                 <Alignment>Left</Alignment>
                 <Border Weight="1"></Border>
             </Appearance>
-            <String>songfinder page</String>
-            <ConnectedNoteIDs>1, 9, 12</ConnectedNoteIDs>
+            <String>songfinder page
+(SongRec noted)</String>
+            <ConnectedNoteIDs>1, 9</ConnectedNoteIDs>
             <PointsToNoteIDs>9</PointsToNoteIDs>
         </Note>
-        <Note ID="3" FontSize="12.0" Position="545.0,150.0" Width="83.0">
+        <Note ID="3" FontSize="12.0" Position="319.861206,195.391708" Width="46.0">
             <Appearance>
                 <Alignment>Left</Alignment>
             </Appearance>
-            <String>Spotify track</String>
+            <String>Track</String>
             <ConnectedNoteIDs>4, 9</ConnectedNoteIDs>
             <PointsToNoteIDs>4</PointsToNoteIDs>
         </Note>
-        <Note ID="4" FontSize="12.0" Position="702.830444,151.683701" Width="126.0">
+        <Note ID="4" FontSize="12.0" Position="417.0,195.0" Width="169.0">
             <Appearance>
                 <Alignment>Left</Alignment>
             </Appearance>
-            <String>add to Spotify library</String>
+            <String>song added to Spotify library</String>
             <ConnectedNoteIDs>3, 5</ConnectedNoteIDs>
             <PointsToNoteIDs>5</PointsToNoteIDs>
         </Note>
-        <Note ID="5" FontSize="12.0" Position="701.054138,213.224304" Width="200.0">
+        <Note ID="5" FontSize="12.0" Position="617.0,188.674698" Width="200.0">
             <Appearance>
                 <Alignment>Left</Alignment>
             </Appearance>
-            <String>DiggerHub Spotify player checks Spotify library on start and imports the song.</String>
-            <ConnectedNoteIDs>4, 16</ConnectedNoteIDs>
+            <String>DiggerHub Spotify player checks Spotify library on start and imports the song. Save process fills srcid from SongRec</String>
+            <ConnectedNoteIDs>4</ConnectedNoteIDs>
         </Note>
-        <Note ID="9" FontSize="12.0" Position="439.680908,142.169617" Width="53.0">
+        <Note ID="9" FontSize="12.0" Position="241.080902,163.514084" Width="53.0">
             <Appearance>
                 <Alignment>Left</Alignment>
             </Appearance>
@@ -58,29 +59,22 @@
             <ConnectedNoteIDs>2-3, 10</ConnectedNoteIDs>
             <PointsToNoteIDs>3, 10</PointsToNoteIDs>
         </Note>
-        <Note ID="10" FontSize="12.0" Position="542.0,103.0" Width="113.0">
+        <Note ID="10" FontSize="12.0" Position="324.175903,165.0" Width="52.0">
             <Appearance>
                 <Alignment>Left</Alignment>
             </Appearance>
-            <String>Digger impression</String>
+            <String>Digger</String>
             <ConnectedNoteIDs>9, 11</ConnectedNoteIDs>
             <PointsToNoteIDs>11</PointsToNoteIDs>
         </Note>
-        <Note ID="11" FontSize="12.0" Position="693.81488,100.280243" Width="200.0">
+        <Note ID="11" FontSize="12.0" Position="418.560913,155.368713" Width="200.0">
             <Appearance>
                 <Alignment>Left</Alignment>
             </Appearance>
             <String>If not already in library, song added with srcid of recommender.</String>
             <ConnectedNoteIDs>10</ConnectedNoteIDs>
         </Note>
-        <Note ID="12" FontSize="12.0" Position="241.358734,185.984314" Width="200.0">
-            <Appearance>
-                <Alignment>Left</Alignment>
-            </Appearance>
-            <String>Recommendation noted from sender to recipient.</String>
-            <ConnectedNoteIDs>2, 16</ConnectedNoteIDs>
-        </Note>
-        <Note ID="13" FontSize="12.0" Position="216.0,64.0" Width="63.0">
+        <Note ID="13" FontSize="12.0" Position="217.895279,68.068268" Width="63.0">
             <Appearance>
                 <Alignment>Left</Alignment>
             </Appearance>
@@ -88,31 +82,24 @@
             <ConnectedNoteIDs>0, 14</ConnectedNoteIDs>
             <PointsToNoteIDs>14</PointsToNoteIDs>
         </Note>
-        <Note ID="14" FontSize="12.0" Position="332.0,58.0" Width="194.0">
+        <Note ID="14" FontSize="12.0" Position="306.0,70.0" Width="196.0">
             <Appearance>
                 <Alignment>Left</Alignment>
             </Appearance>
-            <String>Added to local db on next re-read</String>
+            <String>Digger notes new song on startup</String>
             <ConnectedNoteIDs>13, 15</ConnectedNoteIDs>
             <PointsToNoteIDs>15</PointsToNoteIDs>
         </Note>
-        <Note ID="15" FontSize="12.0" Position="561.0,62.0" Width="185.0">
+        <Note ID="15" FontSize="12.0" Position="537.0,70.0" Width="200.0">
             <Appearance>
                 <Alignment>Left</Alignment>
             </Appearance>
-            <String>Added to DiggerHub lib on sync</String>
-            <ConnectedNoteIDs>14, 16</ConnectedNoteIDs>
-        </Note>
-        <Note ID="16" FontSize="12.0" Position="443.464844,260.586456" Width="200.0">
-            <Appearance>
-                <Alignment>Left</Alignment>
-            </Appearance>
-            <String>Lib save checks recommendations to fill out srcid when adding new Song</String>
-            <ConnectedNoteIDs>5, 12, 15</ConnectedNoteIDs>
+            <String>DiggerHub sync fills default rating info and srcid from music friend</String>
+            <ConnectedNoteIDs>14</ConnectedNoteIDs>
         </Note>
     </Notes>
     <BackgroundShapes></BackgroundShapes>
-    <AutoFit>0-4, 9-10, 13-15</AutoFit>
+    <AutoFit>0-4, 9-10, 13-14</AutoFit>
     <NoteStyles>
         <Style Name="Bubble (Blue)" ID="01DAAC0F-F252-4514-A68F-AEB2011E556F" AffectFontStyle="No" AffectAlignment="No" AffectTextColor="No" AffectNoteBody="Yes" AffectFade="No">
             <BorderThickness>1</BorderThickness>

@@ -392,6 +392,16 @@ def user_song_by_songid(digacc, songid):
     return song
 
 
+def fetch_newest_songs(digacc, fvs, limit):
+    where = ("WHERE aid = " + digacc["dsId"] +
+             " AND spid LIKE \"z:%\"" +
+             " AND (lp IS NULL OR (el = 49 AND al = 49 AND kws IS NULL))" +
+             " ORDER BY created DESC LIMIT " + str(limit))
+    logging.info("fetch_newest_songs " + where)
+    songs = dbacc.query_entity("Song", where)
+    return songs
+
+
 def fvs_match_sql_clauses(fvs):
     where = ""
     if fvs["fpst"] == "on":
@@ -418,6 +428,8 @@ def fvs_match_sql_clauses(fvs):
 
 
 def fetch_matching_songs(digacc, fvs, limit):
+    if fvs.get("ddst") == "newest":
+        return fetch_newest_songs(digacc, fvs, limit)
     where = ("WHERE aid = " + digacc["dsId"] +
              " AND spid LIKE \"z:%\"" +
              " AND rv >= " + str(fvs["minrat"]))
