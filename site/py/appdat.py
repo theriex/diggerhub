@@ -177,9 +177,10 @@ def unWSRW(matchobj):
 def unescape_song_fields(song):
     for fld in ["path", "ti", "ar", "ab", "nt"]:
         if song.get(fld):
-            song[fld] = song[fld].replace("&#40;", "(")
-            song[fld] = song[fld].replace("&#41;", ")")
-            song[fld] = song[fld].replace("&#39;", "'")
+            song[fld] = song[fld].replace("ESCOPENPAREN", "(")
+            song[fld] = song[fld].replace("ESCCLOSEPAREN", ")")
+            song[fld] = song[fld].replace("ESCSINGLEQUOTE", "'")
+            song[fld] = song[fld].replace("ESCAMPERSAND", "&")
             for rw in ["having", "select", "union"]:
                 song[fld] = re.sub(re.compile("WSRW" + rw[::-1], re.I),
                                    unWSRW, song[fld])
