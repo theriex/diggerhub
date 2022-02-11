@@ -143,9 +143,10 @@ def write_song(updsong, digacc, forcenew=False):
         song = {"dsType":"Song", "aid":digacc["dsId"]}
     else: # updating existing song instance
         if is_unrated_song(updsong) and not is_unrated_song(song):
-            # should never happen due to hub push before hub receive, but
-            # leaving in place as a general protective measure.
-            updsong = song  # ignore updsong to avoid information loss
+            # hub push before hub receive should prevent this case, but
+            # rebuilding local data might trigger it.
+            song["path"] = updsong["path"]
+            updsong = song  # ignore updsong values to avoid information loss
             logging.info("write_song not unrating " + song_string(song))
         song["modified"] = max_modified_value(updsong, song)
     update_song_fields(updsong, song)
@@ -527,11 +528,15 @@ def save_uploaded_songs(digacc, uplds, maxret):
 def append_default_ratings_from_friend(digacc, mf, prcsongs, maxret):
     if len(prcsongs) >= maxret:
         return False # have enough songs already
-    checksince = mf.get("checksince", "1970-01-01T00:00:00Z")
+    checksince = mf.get("checksince") or "1970-01-01T00:00:00Z"
     chkthresh = dbacc.ISO2dt(checksince) + datetime.timedelta(days=1)
     chkthresh = dbacc.dt2ISO(chkthresh)
     if chkthresh > dbacc.nowISO():
         return False # already checked today
+    mf["obcontrib"] = 0  # reset in case no counts left
+    obcs = dbacc.count_contributions(mf["dsId"], digacc["dsId"])
+    if len(obcs) > 0:
+        mf["obcontrib"] = obcs[0]["ccnt"]
     sflim = maxret - len(prcsongs)
     cds = dbacc.collaborate_default_ratings(digacc["dsId"], mf["dsId"],
                                             since=checksince, limit=sflim)

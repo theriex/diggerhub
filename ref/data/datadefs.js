@@ -62,13 +62,15 @@ module.exports = (function () {
      //    songcounts: fetched, posschg, totals
      //    xps: playlist exports by platform, then by playlist name
      //    spimport: counts of imported library tracks and when
-     //*3 musfs: Music friend instance:
+     //*3 musfs: Music friend instances
      //    dsId: id of music friend's account
      //    email: email address at the time friend was added
-     //    firstname: for display purposes
-     //    hashtag: for playlist page (not currently available)
-     //    status: Active|Inactive|Removed  (preserve refs for default ratings)
+     //    firstname: friend firstname at time friend added. Used for email
+     //    dispname: display name for friend (editable, used for list diaplay)
+     //    hashtag: for playlist page (when/if available)
+     //    status: Active|Inactive
      //    dhcontrib: how many default song ratings this friend has contributed
+     //    obcontrib: how many default ratings you have provided this friend
      //    checksince: last contributed song time stamp or last check time
      cache:{minutes:2*60}, //fast auth after initial load
      logflds:["email", "firstname"]},
