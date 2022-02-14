@@ -6,7 +6,7 @@
 import logging
 import py.util as util
 
-CACHE_BUST_PARAM = "v=220211"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=220214"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -59,7 +59,7 @@ INDEXHTML = """
   <div id="textcontentdiv">
     <div id="splashdiv">
 
-<div id="marqueediv">Digger <i>Hub</i></div>
+<div id="headertextdiv">Digger <i>Hub</i></div>
 
 <div id="splashblockdiv">
 <p><em>Digger</em> now available for:</p>

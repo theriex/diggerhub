@@ -292,9 +292,10 @@ app.login = (function () {
 
     //The marquee manager handles headline text in the default display
     mgrs.mrq = (function () {
-        const fis = 0.3;
-        const fos = 1.2;
-        const disptime = 8;
+        const mst = {  //marguee settings
+            fis:0.3,   //fade-in seconds
+            fos:1.2,   //fade-out seconds
+            dts:8};    //text display time seconds
         const mhds = [
             "Music is art",
             "What you listen to matters",
@@ -306,15 +307,17 @@ app.login = (function () {
     return {
         nextStatement: function () {
             const md = jt.byId("marqueediv");
-            md.style.transition = "opacity " + fos + "s";
+            md.style.transition = "opacity " + mst.fos + "s";
             md.style.opacity = 0.0;
             setTimeout(function () {
                 md.innerHTML = mhds[idx] + ".";
                 idx = (idx + 1) % mhds.length;
-                md.style.transition = "opacity " + fis + "s";
-                md.style.opacity = 1.0; }, fos * 1000);
-            setTimeout(mgrs.mrq.nextStatement, (fis + disptime) * 1000); },
+                md.style.transition = "opacity " + mst.fis + "s";
+                md.style.opacity = 1.0; }, mst.fos * 1000);
+            setTimeout(mgrs.mrq.nextStatement, (mst.fis + mst.dts) * 1000); },
         runMarquee: function () {
+            if(jt.byId("marqueediv")) { return; }  //already set up and running
+            jt.out("headertextdiv", jt.tac2html(["div", {id:"marqueediv"}]));
             mgrs.mrq.nextStatement(); }
     };  //end mgrs.mrq returned functions
     }());
@@ -324,7 +327,6 @@ app.login = (function () {
     mgrs.sld = (function () {
         const slides = [4800, 2400, 2800, 4800, 2800];
         const srcp = "docs/slideshow/slide$I.png";
-        const sc = 5;
         var idx = 0;
         var tmo = null;
     return {
@@ -340,7 +342,7 @@ app.login = (function () {
                     ["a", {href:"#slide" + i, onclick:mdfs("sld.nextSlide", i)},
                      ((i === idx)? "&#x2b24;" : "&#x25ef;")])));
             jt.byId("prevslide").src = srcp.replace(/\$I/g, previdx);
-            const currslide = jt.byId("currslide")
+            const currslide = jt.byId("currslide");
             currslide.style.opacity = 0.0;
             setTimeout(function () {
                 currslide.src = srcp.replace(/\$I/g, idx);
