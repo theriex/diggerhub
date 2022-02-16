@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ScappleDocument Version="1.2" ID="EE86CB94-B1F9-4C28-A196-A6A8646D3682">
     <Notes>
-        <Note ID="0" FontSize="12.0" Position="93.0,87.0" Width="101.0">
+        <Note ID="0" FontSize="12.0" Position="197.687378,174.400543" Width="76.0">
             <Appearance>
                 <Alignment>Left</Alignment>
                 <Border Weight="1"></Border>
             </Appearance>
-            <String>share song mail</String>
-            <ConnectedNoteIDs>1, 13</ConnectedNoteIDs>
+            <String>share song</String>
+            <ConnectedNoteIDs>1, 13, 26</ConnectedNoteIDs>
             <PointsToNoteIDs>1, 13</PointsToNoteIDs>
         </Note>
-        <Note ID="1" FontSize="12.0" Position="215.0,117.0" Width="83.0">
+        <Note ID="1" FontSize="12.0" Position="319.687378,204.400543" Width="83.0">
             <Appearance>
                 <Alignment>Left</Alignment>
             </Appearance>
@@ -18,17 +18,16 @@
             <ConnectedNoteIDs>0, 2</ConnectedNoteIDs>
             <PointsToNoteIDs>2</PointsToNoteIDs>
         </Note>
-        <Note ID="2" FontSize="12.022418" Position="95.0,157.0" Width="103.0">
+        <Note ID="2" FontSize="12.022418" Position="199.687378,244.400543" Width="103.0">
             <Appearance>
                 <Alignment>Left</Alignment>
-                <Border Weight="1"></Border>
             </Appearance>
             <String>songfinder page
 notes SongRec</String>
-            <ConnectedNoteIDs>1, 9, 16</ConnectedNoteIDs>
+            <ConnectedNoteIDs>1, 9, 16, 20</ConnectedNoteIDs>
             <PointsToNoteIDs>9, 16</PointsToNoteIDs>
         </Note>
-        <Note ID="3" FontSize="12.0" Position="310.636169,229.626373" Width="46.0">
+        <Note ID="3" FontSize="12.0" Position="415.687378,317.400543" Width="46.0">
             <Appearance>
                 <Alignment>Left</Alignment>
             </Appearance>
@@ -36,7 +35,7 @@ notes SongRec</String>
             <ConnectedNoteIDs>4, 9</ConnectedNoteIDs>
             <PointsToNoteIDs>4</PointsToNoteIDs>
         </Note>
-        <Note ID="4" FontSize="12.0" Position="407.636169,229.626373" Width="169.0">
+        <Note ID="4" FontSize="12.0" Position="512.687378,317.400543" Width="169.0">
             <Appearance>
                 <Alignment>Left</Alignment>
             </Appearance>
@@ -44,14 +43,14 @@ notes SongRec</String>
             <ConnectedNoteIDs>3, 5</ConnectedNoteIDs>
             <PointsToNoteIDs>5</PointsToNoteIDs>
         </Note>
-        <Note ID="5" FontSize="12.0" Position="607.636169,223.626373" Width="200.0">
+        <Note ID="5" FontSize="12.0" Position="712.687378,311.400543" Width="200.0">
             <Appearance>
                 <Alignment>Left</Alignment>
             </Appearance>
             <String>DiggerHub Spotify player checks Spotify library on start and imports the song. Save process fills srcid from SongRec</String>
             <ConnectedNoteIDs>4</ConnectedNoteIDs>
         </Note>
-        <Note ID="9" FontSize="12.0" Position="231.636169,198.626373" Width="53.0">
+        <Note ID="9" FontSize="12.0" Position="336.687378,286.400543" Width="53.0">
             <Appearance>
                 <Alignment>Left</Alignment>
             </Appearance>
@@ -59,7 +58,7 @@ notes SongRec</String>
             <ConnectedNoteIDs>2-3, 10</ConnectedNoteIDs>
             <PointsToNoteIDs>3, 10</PointsToNoteIDs>
         </Note>
-        <Note ID="10" FontSize="12.0" Position="314.636169,199.626373" Width="52.0">
+        <Note ID="10" FontSize="12.0" Position="419.687378,287.400543" Width="52.0">
             <Appearance>
                 <Alignment>Left</Alignment>
             </Appearance>
@@ -67,14 +66,14 @@ notes SongRec</String>
             <ConnectedNoteIDs>9, 11</ConnectedNoteIDs>
             <PointsToNoteIDs>11</PointsToNoteIDs>
         </Note>
-        <Note ID="11" FontSize="12.0" Position="409.636169,189.626373" Width="200.0">
+        <Note ID="11" FontSize="12.0" Position="514.687378,277.400543" Width="200.0">
             <Appearance>
                 <Alignment>Left</Alignment>
             </Appearance>
             <String>If not already in library, song added with srcid of recommender.</String>
             <ConnectedNoteIDs>10</ConnectedNoteIDs>
         </Note>
-        <Note ID="13" FontSize="12.0" Position="218.0,68.0" Width="63.0">
+        <Note ID="13" FontSize="12.0" Position="322.687378,155.400543" Width="63.0">
             <Appearance>
                 <Alignment>Left</Alignment>
             </Appearance>
@@ -82,7 +81,7 @@ notes SongRec</String>
             <ConnectedNoteIDs>0, 14</ConnectedNoteIDs>
             <PointsToNoteIDs>14</PointsToNoteIDs>
         </Note>
-        <Note ID="14" FontSize="12.0" Position="306.0,70.0" Width="196.0">
+        <Note ID="14" FontSize="12.0" Position="410.687378,157.400543" Width="196.0">
             <Appearance>
                 <Alignment>Left</Alignment>
             </Appearance>
@@ -90,14 +89,14 @@ notes SongRec</String>
             <ConnectedNoteIDs>13, 15-16</ConnectedNoteIDs>
             <PointsToNoteIDs>15</PointsToNoteIDs>
         </Note>
-        <Note ID="15" FontSize="12.0" Position="537.0,70.0" Width="200.0">
+        <Note ID="15" FontSize="12.0" Position="641.687378,157.400543" Width="200.0">
             <Appearance>
                 <Alignment>Left</Alignment>
             </Appearance>
             <String>DiggerHub sync fills default rating info and srcid from SongRec or music friends</String>
             <ConnectedNoteIDs>14</ConnectedNoteIDs>
         </Note>
-        <Note ID="16" FontSize="12.0" Position="229.248657,163.469315" Width="81.0">
+        <Note ID="16" FontSize="12.0" Position="333.687378,250.400543" Width="81.0">
             <Appearance>
                 <Alignment>Left</Alignment>
             </Appearance>
@@ -105,9 +104,96 @@ notes SongRec</String>
             <ConnectedNoteIDs>2, 14</ConnectedNoteIDs>
             <PointsToNoteIDs>14</PointsToNoteIDs>
         </Note>
+        <Note ID="17" FontSize="12.0" Position="697.338135,71.043991" Width="126.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+                <Border Weight="1"></Border>
+            </Appearance>
+            <String>get recommendation</String>
+            <ConnectedNoteIDs>18, 22</ConnectedNoteIDs>
+            <PointsToNoteIDs>18, 22</PointsToNoteIDs>
+        </Note>
+        <Note ID="18" FontSize="12.0" Position="613.784058,107.382172" Width="38.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>files</String>
+            <ConnectedNoteIDs>17, 19</ConnectedNoteIDs>
+            <PointsToNoteIDs>19</PointsToNoteIDs>
+        </Note>
+        <Note ID="19" FontSize="12.0" Position="441.503906,112.118317" Width="129.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>in/out count for friend</String>
+            <ConnectedNoteIDs>18, 21</ConnectedNoteIDs>
+            <PointsToNoteIDs>21</PointsToNoteIDs>
+        </Note>
+        <Note ID="20" FontSize="12.0" Position="33.0,115.0" Width="127.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>recommendation link</String>
+            <ConnectedNoteIDs>2, 21</ConnectedNoteIDs>
+            <PointsToNoteIDs>2</PointsToNoteIDs>
+        </Note>
+        <Note ID="21" FontSize="12.0" Position="210.077515,113.662094" Width="183.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>hub  in/out/common/recs report</String>
+            <ConnectedNoteIDs>19-20</ConnectedNoteIDs>
+            <PointsToNoteIDs>20</PointsToNoteIDs>
+            <Formatting>
+                <FormatRange Italic="Yes">0,30</FormatRange>
+            </Formatting>
+        </Note>
+        <Note ID="22" FontSize="12.0" Position="602.128235,39.411011" Width="53.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>Spotify</String>
+            <ConnectedNoteIDs>17, 23</ConnectedNoteIDs>
+            <PointsToNoteIDs>23</PointsToNoteIDs>
+        </Note>
+        <Note ID="23" FontSize="12.0" Position="361.616241,37.397003" Width="175.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>friend songs included on deck</String>
+            <ConnectedNoteIDs>22, 24</ConnectedNoteIDs>
+            <PointsToNoteIDs>24</PointsToNoteIDs>
+        </Note>
+        <Note ID="24" FontSize="12.0" Position="112.886536,37.906937" Width="197.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>play creates song with friend srcid</String>
+            <ConnectedNoteIDs>23</ConnectedNoteIDs>
+        </Note>
+        <Note ID="25" FontSize="12.0" Position="235.0,386.0" Width="148.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+                <Border Weight="1"></Border>
+            </Appearance>
+            <String>Common listening notice</String>
+            <ConnectedNoteIDs>26</ConnectedNoteIDs>
+            <PointsToNoteIDs>26</PointsToNoteIDs>
+            <Formatting>
+                <FormatRange Italic="Yes">0,23</FormatRange>
+            </Formatting>
+        </Note>
+        <Note ID="26" FontSize="12.0" Position="27.0,338.0" Width="161.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>remember other good song</String>
+            <ConnectedNoteIDs>0, 25</ConnectedNoteIDs>
+            <PointsToNoteIDs>0</PointsToNoteIDs>
+        </Note>
     </Notes>
     <BackgroundShapes></BackgroundShapes>
-    <AutoFit>0-4, 9-10, 13-14, 16</AutoFit>
+    <AutoFit>0-4, 9-10, 13-14, 16-26</AutoFit>
     <NoteStyles>
         <Style Name="Bubble (Blue)" ID="01DAAC0F-F252-4514-A68F-AEB2011E556F" AffectFontStyle="No" AffectAlignment="No" AffectTextColor="No" AffectNoteBody="Yes" AffectFade="No">
             <BorderThickness>1</BorderThickness>
