@@ -1,4 +1,4 @@
-/*jslint node, white, fudge */
+/*jslint node, white */
 
 //Create/verify diggerhub links to the digger source files.
 //node makelinks.js
