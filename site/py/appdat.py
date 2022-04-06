@@ -778,7 +778,7 @@ def mfcontrib():
         digacc, _ = util.authenticate()
         maxret = 200
         uplds = dbacc.reqarg("uplds", "jsarr")
-        if uplds:
+        if uplds and uplds != "[]":
             logging.info("mfcontrib urs: " + uplds[0:512])
             uplds = json.loads(uplds)
             for song in uplds:
