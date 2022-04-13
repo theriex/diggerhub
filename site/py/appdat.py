@@ -182,7 +182,7 @@ def unescape_song_fields(song):
             song[fld] = song[fld].replace("ESCCLOSEPAREN", ")")
             song[fld] = song[fld].replace("ESCSINGLEQUOTE", "'")
             song[fld] = song[fld].replace("ESCAMPERSAND", "&")
-            for rw in ["having", "select", "union"]:
+            for rw in ["having", "select", "union", "within"]:
                 song[fld] = re.sub(re.compile("WSRW" + rw[::-1], re.I),
                                    unWSRW, song[fld])
 
