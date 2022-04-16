@@ -325,7 +325,7 @@ app.login = (function () {
 
     //The slides manager handles displaying how the app works
     mgrs.sld = (function () {
-        const slides = [4800, 2400, 2800, 4800, 2800];
+        const slides = [8200, 2800, 2200, 2800, 2800];
         const srcp = "docs/slideshow/slide$I.png";
         var idx = 0;
         var tmo = null;
