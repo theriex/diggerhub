@@ -76,6 +76,8 @@ button, .buttonstyle { border: 2px solid #666666; border-radius:8px;
 #prevslide, #currslide { position:absolute; top:0px; left:0px; }
 #rtfmspan { font-size:small; }
 
+#suppdiv, #principdiv { text-align:left; max-width:600px; margin:auto }
+
 
 /* -------------------- */
 /* songfinder */

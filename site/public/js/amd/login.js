@@ -356,12 +356,7 @@ app.login = (function () {
             if(!jt.byId("slidesdiv")) { return; }
             jt.out("slidesdiv", jt.tac2html(
                 [["div", {id:"slidepgdiv"},
-                  [["span", {id:"slidepgindspan"}],
-                   ["span", {id:"rtfmspan"},
-                    ["&nbsp;&nbsp;&nbsp;",
-                     ["a", {href:"/docs/manual.html", title:"How Digger works",
-                            onclick:"window.open('/docs/manual.html')" +
-                                    ";return false;"}, "RTFM"]]]]],
+                  ["span", {id:"slidepgindspan"}]],
                  ["div", {id:"slidedispdiv"},
                   [["img", {src:srcp.replace(/\$I/g, 0)}],
                    ["img", {id:"prevslide", src:srcp.replace(/\$I/g, 0)}],
@@ -490,6 +485,25 @@ app.login = (function () {
     }
 
 
+    function writeSupportContact () {
+        var bot = "@diggerhub.com";
+        var repls = [
+            {p:"ISSUESONGITHUB", h:"https://github.com/theriex/digger/issues",
+             t:"issues on GitHub"},
+            {p:"SUPPORTEMAIL", h:"mailto:support" + bot, t:"support" + bot},
+            {p:"EPINOVA", h:"https://epinova.com", t:"epinova.com"}];
+        var html = jt.byId("suppdiv").innerHTML;
+        repls.forEach(function (r) {
+            var link = "<a href=\"" + r.h + "\"";
+            if(r.h.startsWith("https")) {
+                link += " onclick=\"window.open('" + r.h + "')" + 
+                    ";return false\""; }
+            link += ">" + r.t + "</a>"
+            html = html.replace(r.p, link); });
+        jt.out("suppdiv", html);
+    }
+
+
     //This works in conjunction with the static undecorated form created by
     //start.py, decorating to provide login without page reload.
     function initialize (restore) {
@@ -507,6 +521,7 @@ app.login = (function () {
                     onclick:mdfs("act.sendResetPasswordLink")},
               "reset password"]]));
         jt.on("loginform", "submit", app.login.formSubmit);
+        setTimeout(writeSupportContact, 5000);
         signIn();  //attempt to sign in with cookie then update content
     }
 

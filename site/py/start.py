@@ -6,7 +6,7 @@
 import logging
 import py.util as util
 
-CACHE_BUST_PARAM = "v=220416"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=220425"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -116,6 +116,11 @@ necessary.  Premium account required.
 </div>
 
 </div> <!-- diggerstreamingdiv -->
+<div id="splashbottomdiv">
+  <span id="rtfmspan">
+    <a href="/docs/manual.html" title="How Digger works"
+       onclick="window.open('/docs/manual.html');return false;">RTFM</a></span>
+</div>
 </div> <!-- splashblockdiv -->
 
     </div> <!-- splashdiv -->
@@ -128,39 +133,44 @@ necessary.  Premium account required.
   </div>
 -->
 
-  <div id="taglinediv">
-    Dig into your music collection. Bring your friends.
-  </div>
-
   <div id="contactdiv">
-    <a href="#principles" onclick="app.togdivdisp('principdiv');return false">Digger Project Principles</a>
-    <div id="principdiv" style="display:none;text-align:left;max-width:600px;margin:auto">
+    <a href="#principles" onclick="app.togdivdisp('principdiv');return false">Project Principles</a>
+    &nbsp;
+    <a href="#support" onclick="app.togdivdisp('suppdiv');return false">Support</a>
+    <div id="suppdiv" style="display:none">
+
+<p>If you have run into an issue with Digger on any platform, consider
+searching the ISSUESONGITHUB and adding a comment if found, or opening a new
+issue as needed.  If you prefer, you can also contact SUPPORTEMAIL to get in
+touch.  For sponsored development, donations, or other inquiries contact
+EPINOVA. </p>
+
+    </div>
+    <div id="principdiv" style="display:none">
 
 <ul>
-<li><b>Trustable</b>: <a href="https://github.com/theriex/digger#digger" onclick="window.open('https://github.com/theriex/digger#digger');return false">Open source</a>, verifiable.
+<li><b>Trustable</b>: <a href="https://github.com/theriex/digger#digger" onclick="window.open('https://github.com/theriex/digger#digger');return false">Open source</a>, verifiable behavior.
 
-<li><b>Transparent</b>: Digger saves your song ratings and music friend
-connections to provide the best independent interface to your music
-collection.  Sponsorship and <a href="https://epinova.com"
-onclick="window.open('https://epinova.com';return false">donations</a>
-welcome.  If added later, reports, ads, and anything else using community
-data will be by and for the community, available to all.
+<li><b>Minimal data</b>: Save song impressions, designated music friends,
+and just enough personal information for independent authentication.  No
+spam or selling of individual data.
 
-<li><b>All about the music</b>: Only keep the minimum personal information
-needed for independent login and app comms.  Conversations are outside the
-app.  No spam or selling of email addresses.
+<li><b>All about the music</b>: Conversations are outside the app.
 
 <li><b>Respect for music</b>: Enhance library access for local files,
-streaming, or both.  Don't modify music files.  Support and add value to
+streaming, or both.  Don't modify music files.  Support and add value for
 vendors and streaming services.
 
-<li><b>Opt-in hub</b>: Run standalone without a network connection if you want.
-Sign into DiggerHub because it makes Digger awesome.
+<li><b>Opt-in hub</b>: Run standalone with no network connection.  Sign in
+for backup, sync, and collaboration.
 
-<li><b>Stop hate</b>: Lead, follow, or get out of the way.
 
 </ul>
     </div>
+  </div>
+
+  <div id="taglinediv">
+    Dig into your music collection.
   </div>
 
   <div id="localtestdiv" style="display:none">

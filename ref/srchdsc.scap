@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ScappleDocument Version="1.2" ID="44E29C56-F502-4B23-92B8-9168AF7D6FAB">
+    <Notes>
+        <Note ID="0" FontSize="12.0" Position="241.263184,213.856354" Width="53.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>search</String>
+            <ConnectedNoteIDs>1</ConnectedNoteIDs>
+            <PointsToNoteIDs>1</PointsToNoteIDs>
+        </Note>
+        <Note ID="1" FontSize="12.0" Position="455.192139,213.965759" Width="62.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>describe</String>
+            <ConnectedNoteIDs>0</ConnectedNoteIDs>
+        </Note>
+        <Note ID="2" FontSize="12.0" Position="564.0,125.283859" Width="85.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>Curation 250</String>
+        </Note>
+        <Note ID="3" FontSize="12.0" Position="1.741913,8.06572" Width="155.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>“Music” omitted for brevity</String>
+        </Note>
+        <Note ID="4" FontSize="12.0" Position="29.008316,96.198547" Width="126.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>collection player 250</String>
+        </Note>
+        <Note ID="5" FontSize="12.0" Position="27.388123,149.741913" Width="141.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>collection manager 250</String>
+        </Note>
+        <Note ID="6" FontSize="12.0" Position="253.278091,456.936279" Width="104.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>(x) automatic DJ</String>
+        </Note>
+        <Note ID="7" FontSize="12.0" Position="24.781906,204.909485" Width="120.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>(A) song select 250</String>
+        </Note>
+        <Note ID="8" FontSize="12.0" Position="429.499176,455.965271" Width="125.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>(x) playlist generator</String>
+        </Note>
+        <Note ID="10" FontSize="12.0" Position="26.0,259.0" Width="89.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>(A) mood 249</String>
+        </Note>
+        <Note ID="11" FontSize="12.0" Position="540.0,168.0" Width="75.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>Rating 250</String>
+        </Note>
+        <Note ID="12" FontSize="12.0" Position="560.0,224.0" Width="143.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>Impression Sharing 250</String>
+        </Note>
+        <Note ID="13" FontSize="12.0" Position="28.468613,67.820602" Width="73.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>player 250</String>
+        </Note>
+        <Note ID="14" FontSize="12.0" Position="551.0,265.0" Width="96.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>Autoselect 250</String>
+        </Note>
+        <Note ID="15" FontSize="12.0" Position="141.278091,456.936279" Width="99.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>(x) organization</String>
+        </Note>
+        <Note ID="16" FontSize="12.0" Position="357.225739,456.729187" Width="73.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>(x) sharing</String>
+        </Note>
+        <Note ID="17" FontSize="12.0" Position="549.0,317.0" Width="131.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>Automatic Player 250</String>
+        </Note>
+        <Note ID="18" FontSize="12.0" Position="28.760193,121.774231" Width="136.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>collection curation 250</String>
+        </Note>
+        <Note ID="19" FontSize="12.0" Position="154.571945,8.215881" Width="167.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>Numbers are app search ttls</String>
+        </Note>
+        <Note ID="20" FontSize="12.0" Position="25.0,287.0" Width="168.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>(x) impression database 248</String>
+        </Note>
+        <Note ID="21" FontSize="12.0" Position="24.597778,317.519379" Width="131.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>impression notes 250</String>
+        </Note>
+        <Note ID="22" FontSize="12.0" Position="26.071259,456.188568" Width="104.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>(x) management</String>
+        </Note>
+        <Note ID="23" FontSize="12.0" Position="110.951324,67.239258" Width="89.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>database 250</String>
+        </Note>
+        <Note ID="24" FontSize="12.0" Position="320.739624,7.592667" Width="108.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>(A) autocomplete</String>
+        </Note>
+        <Note ID="25" FontSize="12.0" Position="31.0,42.0" Width="162.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>(A) collection database 249</String>
+        </Note>
+        <Note ID="26" FontSize="12.0" Position="428.971741,7.387405" Width="77.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>(x) rejected</String>
+        </Note>
+        <Note ID="27" FontSize="12.0" Position="25.0,180.0" Width="119.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>(A) auto player 250</String>
+        </Note>
+        <Note ID="28" FontSize="12.0" Position="24.0,232.0" Width="133.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>(A) playlist maker 250</String>
+        </Note>
+        <Note ID="29" FontSize="12.0" Position="25.827011,343.289642" Width="139.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>rating and retrieval 250</String>
+        </Note>
+        <Note ID="30" FontSize="12.0" Position="25.317322,375.250183" Width="115.0">
+            <Appearance>
+                <Alignment>Left</Alignment>
+            </Appearance>
+            <String>categorization 250</String>
+        </Note>
+    </Notes>
+    <BackgroundShapes></BackgroundShapes>
+    <Stacks>
+        <Stack>4, 18</Stack>
+        <Stack>27, 7</Stack>
+    </Stacks>
+    <AutoFit>0-8, 10-30</AutoFit>
+    <NoteStyles>
+        <Style Name="Bubble (Blue)" ID="7B2AD046-9432-4D22-842E-3A10A0BC48F0" AffectFontStyle="No" AffectAlignment="No" AffectTextColor="No" AffectNoteBody="Yes" AffectFade="No">
+            <BorderThickness>1</BorderThickness>
+            <BorderColor>0.668962 0.810287 0.895092</BorderColor>
+            <FillColor>0.743291 0.900319 0.994547</FillColor>
+        </Style>
+        <Style Name="Bubble (Green)" ID="8B62E5DB-C977-4646-A508-A58FD675BA7C" AffectFontStyle="No" AffectAlignment="No" AffectTextColor="No" AffectNoteBody="Yes" AffectFade="No">
+            <BorderThickness>1</BorderThickness>
+            <BorderColor>0.669404 0.885265 0.567007</BorderColor>
+            <FillColor>0.743783 0.983628 0.630008</FillColor>
+        </Style>
+        <Style Name="Bubble (Pink)" ID="2491C90C-231B-48B6-A990-6F3C58246545" AffectFontStyle="No" AffectAlignment="No" AffectTextColor="No" AffectNoteBody="Yes" AffectFade="No">
+            <BorderThickness>1</BorderThickness>
+            <BorderColor>0.894547 0.707772 0.715904</BorderColor>
+            <FillColor>0.989115 0.814114 0.999483</FillColor>
+        </Style>
+        <Style Name="Bubble (Red)" ID="F051B070-7FFC-4AE9-B16B-D3B10BE88E11" AffectFontStyle="No" AffectAlignment="No" AffectTextColor="No" AffectNoteBody="Yes" AffectFade="No">
+            <BorderThickness>1</BorderThickness>
+            <BorderColor>0.894547 0.707772 0.715904</BorderColor>
+            <FillColor>0.993942 0.786413 0.795449</FillColor>
+        </Style>
+        <Style Name="Bubble (Yellow)" ID="5EE0225D-C038-407E-99FD-D015F8941951" AffectFontStyle="No" AffectAlignment="No" AffectTextColor="No" AffectNoteBody="Yes" AffectFade="No">
+            <BorderThickness>1</BorderThickness>
+            <BorderColor>0.877748 0.828289 0.562126</BorderColor>
+            <FillColor>0.975275 0.920321 0.624585</FillColor>
+        </Style>
+        <Style Name="Red Text" ID="4184C3D6-53BB-4996-9173-E3B74C61AE71" AffectFontStyle="No" AffectAlignment="No" AffectTextColor="Yes" AffectNoteBody="No" AffectFade="No">
+            <TextColor>0.985954 0.0 0.02694</TextColor>
+        </Style>
+        <Style Name="Title Text" ID="6261BF6C-1380-4776-AB5A-EB4AC3833073" AffectFontStyle="Yes" AffectAlignment="Yes" AffectTextColor="No" AffectNoteBody="No" AffectFade="No">
+            <FontSize>28.0</FontSize>
+            <IsBold>Yes</IsBold>
+        </Style>
+    </NoteStyles>
+    <UISettings>
+        <BackgroundColor>0.999763 0.988395 0.949915</BackgroundColor>
+        <DefaultFont>Helvetica</DefaultFont>
+        <NoteXPadding>8.0</NoteXPadding>
+    </UISettings>
+    <PrintSettings PaperSize="612.0,792.0" LeftMargin="72.0" RightMargin="72.0" TopMargin="90.0" BottomMargin="90.0" PaperType="na-letter" Orientation="Portrait" HorizontalPagination="Clip" VerticalPagination="Auto" ScaleFactor="1.0" HorizontallyCentered="Yes" VerticallyCentered="Yes" Collates="Yes" PagesAcross="1" PagesDown="1"></PrintSettings>
+</ScappleDocument>
