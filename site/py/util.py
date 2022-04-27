@@ -270,15 +270,15 @@ def url_for_mail_message():
     return returl
 
 
-def send_activation_email(digacc, friend=None):
+def send_activation_email(digacc, fan=None):
     acturl = (url_for_mail_message() + "?actcode=" + digacc["actcode"] +
               "&an=" + urllib.parse.quote(digacc["email"]) +
               "&at=" + token_for_user(digacc))
-    if friend:
+    if fan:
         logging.info("Invitation mail -> " + digacc["email"])
-        subj = friend["firstname"] + " has invited you to join DiggerHub"
+        subj = fan["firstname"] + " has invited you to join DiggerHub"
         body = ("Hello " + digacc["firstname"] + ",\n\n" +
-                friend["firstname"] + " (" + friend["email"] +
+                fan["firstname"] + " (" + fan["email"] +
                 ") has invited you to join DiggerHub!\n\n" +
                 "Use this link to access your account:\n\n" +
                 acturl + "\n\n" +
@@ -292,7 +292,7 @@ def send_activation_email(digacc, friend=None):
     send_mail(digacc["email"], subj, body)
 
 
-def update_email_and_password(digacc, emaddr, pwd, friend=None):
+def update_email_and_password(digacc, emaddr, pwd, fan=None):
     emaddr = normalize_email(emaddr)
     if pwd and pwd.lower() == "noval":
         pwd = ""
@@ -315,7 +315,7 @@ def update_email_and_password(digacc, emaddr, pwd, friend=None):
     digacc["phash"] = make_password_hash(digacc["email"], pwd,
                                          digacc["created"])
     if digacc["status"] == "Pending":
-        send_activation_email(digacc, friend)
+        send_activation_email(digacc, fan)
     return change
 
 

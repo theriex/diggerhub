@@ -151,7 +151,7 @@ EPINOVA. </p>
 <ul>
 <li><b>Trustable</b>: <a href="https://github.com/theriex/digger#digger" onclick="window.open('https://github.com/theriex/digger#digger');return false">Open source</a>, verifiable behavior.
 
-<li><b>Minimal data</b>: Save song impressions, designated music friends,
+<li><b>Minimal data</b>: Save song impressions, designated music fans,
 and just enough personal information for independent authentication.  No
 spam or selling of individual data.
 

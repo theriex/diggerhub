@@ -50,7 +50,7 @@ module.exports = (function () {
         {f:"kwdefs", d:"json", c:"keyword definitions for this account (*1)"},
         {f:"igfolds", d:"json", c:"ignore folders used by this account"},
         {f:"settings", d:"json", c:"ctrl vals, general options (*2)"},
-        {f:"musfs", d:"jsarr", c:"sorted music friends, max 4 active (*3)"}],
+        {f:"musfs", d:"jsarr", c:"sorted music fans, max 4 active (*3)"}],
      //*1 kwdefs: At least 4 keyword definitions by keyword, each with
      //    pos: position of keyword in selection/filters
      //    sc: song count, how many songs have this keyword
@@ -62,15 +62,15 @@ module.exports = (function () {
      //    songcounts: fetched, posschg, totals
      //    xps: playlist exports by platform, then by playlist name
      //    spimport: counts of imported library tracks and when
-     //*3 musfs: Music friend instances
-     //    dsId: id of music friend's account
-     //    email: email address at the time friend was added
-     //    firstname: friend firstname at time friend added. Used for email
-     //    dispname: display name for friend (editable, used for list diaplay)
+     //*3 musfs: Music fan instances
+     //    dsId: id of music fan's account
+     //    email: email address as entered when adding the fan
+     //    firstname: fan firstname at time fan added. Used for email
+     //    dispname: display name for fan (editable, used for list diaplay)
      //    hashtag: for playlist page (when/if available)
      //    status: Active|Inactive
-     //    dhcontrib: how many default song ratings this friend has contributed
-     //    obcontrib: how many default ratings you have provided this friend
+     //    dhcontrib: how many default song ratings this fan has contributed
+     //    obcontrib: how many default ratings you have provided this fan
      //    checksince: last contributed song time stamp or last check time
      cache:{minutes:2*60}, //fast auth after initial load
      logflds:["email", "firstname"]},
@@ -92,11 +92,11 @@ module.exports = (function () {
         {f:"lp", d:"isodate", c:"last played timestamp"},
         {f:"nt", d:"text", c:"note text (whatever the user wrote)"},
         {f:"pc", d:"int", c:"how many times song was loaded into player"},
-        {f:"srcid", d:"dbid", c:"music friend id or source id (*1)"},
+        {f:"srcid", d:"dbid", c:"music fan id or source id (*1)"},
         {f:"srcrat", d:"string", c:"src el:al:rv:kwscsv values"},
         {f:"spid", d:"string", c:"z:trackID, code:val or null/empty (*2)"}],
      //SHOW TABLE STATUS WHERE NAME="Song"\G
-     //*1 srcid: null or zero if not music friend contributed.  Special ids:
+     //*1 srcid: null or zero if not music fan contributed.  Special ids:
      //          1: spotify playback (Digger reacted to song on spotify player)
      //*2 spid: null if not searched.
      //         "z:" + spotify track id - successfully mapped.
@@ -117,8 +117,8 @@ module.exports = (function () {
 
     {entity:"SongRec", descr:"Song recommendation note", fields:[
         {f:"songid", d:"req dbid", c:"the song being recommended"},
-        {f:"sfr", d:"req dbid", c:"sending friend"},
-        {f:"rfr", d:"req dbid", c:"receiving friend"},
+        {f:"sfr", d:"req dbid", c:"sending fan"},
+        {f:"rfr", d:"req dbid", c:"receiving fan"},
         {f:"count", d:"req int", c:"access count for recommendation"}],
      cache:{minutes:0},
      logflds:["songid", "sfr", "rfr"]},

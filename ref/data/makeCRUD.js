@@ -880,7 +880,7 @@ function appSpecificFunctions () {
     pyc += "        cnx.close()\n";
     pyc += "\n";
     pyc += "\n";
-    pyc += "# Count the songs for the given user from the given music friend\n";
+    pyc += "# Count the songs for the given user from the given music fan\n";
     pyc += "def count_contributions(uid, mfid):\n";
     pyc += "    cnx = get_mysql_connector()\n";
     pyc += "    if not cnx:\n";

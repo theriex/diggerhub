@@ -1310,7 +1310,7 @@ def collaborate_default_ratings(uid, fid, since="1970-01-01T00:00:00Z",
         cnx.close()
 
 
-# Count the songs for the given user from the given music friend
+# Count the songs for the given user from the given music fan
 def count_contributions(uid, mfid):
     cnx = get_mysql_connector()
     if not cnx:

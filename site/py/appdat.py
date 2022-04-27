@@ -452,27 +452,27 @@ def fetch_matching_songs(digacc, fvs, limit):
     return songs
 
 
-def fetch_friend_songs(digacc, fvs, limit):
-    where = ("WHERE aid IN (" + fvs["friendidcsv"] + ")" +
+def fetch_fan_songs(digacc, fvs, limit):
+    where = ("WHERE aid IN (" + fvs["fanidcsv"] + ")" +
              " AND spid LIKE \"z:%\"" +
              " AND rv >= 8" +  # 4 stars or better
              " AND spid NOT IN" +
              " (SELECT spid FROM Song WHERE aid=" + digacc["dsId"] + ")")
     where += fvs_match_sql_clauses(fvs)
     where += " ORDER BY rv DESC, modified DESC LIMIT " + str(limit)
-    logging.info("fetch_friend_songs " + where)
+    logging.info("fetch_fan_songs " + where)
     songs = dbacc.query_entity("Song", where)
     # mark the dsIds so new song instances can be created on update
     for song in songs:
         song["dsId"] = "fr" + song["dsId"]
-    # two or more friends may have recommended the same song. De-dupe
+    # two or more fans may have recommended the same song. De-dupe
     ddd = {}
     for song in songs:
         ddd[song["spid"]] = song
     return list(ddd.values())
 
 
-def add_music_friend(digacc, mfacct):
+def add_music_fan(digacc, mfacct):
     musfs = json.loads(digacc.get("musfs") or "[]")
     for mf in musfs:  # verify and update existing data
         fstat = mf.get("status")
@@ -486,7 +486,7 @@ def add_music_friend(digacc, mfacct):
              [mf for mf in musfs if mf["dsId"] != mfacct["dsId"]])
     digacc["musfs"] = json.dumps(musfs)
     digacc = dbacc.write_entity(digacc, digacc["modified"])
-    logging.info(digacc["email"] + " added friend: " + mfacct["email"])
+    logging.info(digacc["email"] + " added fan: " + mfacct["email"])
     return digacc
 
 
@@ -494,7 +494,7 @@ def add_music_friend(digacc, mfacct):
 # raises an error.  The uplds list may contain multiple songs (with
 # different paths) that save to the same Song dsId, so avoid writing
 # multiple times to keep the "modified" value consistent.  Reset the
-# checksince value for all music friends.
+# checksince value for all music fans.
 def save_uploaded_songs(digacc, uplds, maxret):
     if len(uplds) > maxret:
         raise ValueError("Max song uplds: " + maxret +
@@ -525,7 +525,7 @@ def save_uploaded_songs(digacc, uplds, maxret):
     return [digacc] + prcsongs
 
 
-def append_default_ratings_from_friend(digacc, mf, prcsongs, maxret):
+def append_default_ratings_from_fan(digacc, mf, prcsongs, maxret):
     if len(prcsongs) >= maxret:
         return False # have enough songs already
     checksince = mf.get("checksince") or "1970-01-01T00:00:00Z"
@@ -557,12 +557,12 @@ def append_default_ratings_from_friend(digacc, mf, prcsongs, maxret):
     return True
 
 
-def fill_default_ratings_from_friends(digacc, maxret):
+def fill_default_ratings_from_fans(digacc, maxret):
     prcsongs = []
     accmod = False
     musfs = json.loads(digacc.get("musfs") or "[]")
     for mf in (mf for mf in musfs if mf.get("status") == "Active"):
-        if append_default_ratings_from_friend(digacc, mf, prcsongs, maxret):
+        if append_default_ratings_from_fan(digacc, mf, prcsongs, maxret):
             accmod = True
     if accmod:  # write updated checksince times for musfs
         digacc["musfs"] = json.dumps(musfs)
@@ -570,13 +570,13 @@ def fill_default_ratings_from_friends(digacc, maxret):
     return [digacc] + prcsongs
 
 
-# For each friend rated song, if the srcrat is the same as the current
+# For each fan rated song, if the srcrat is the same as the current
 # settings, revert the song to unrated.  Clear srcid and srcrat.  Return a
 # list of all updated Songs.
-# This does not change the dhcontrib count of the music friend.  That's left
+# This does not change the dhcontrib count of the music fan.  That's left
 # up to the caller who is presumably clearing all their ratings in
-# preparation for removing the friend.
-def clear_default_ratings_from_friend(digacc, mfid, maxret):
+# preparation for removing the fan.
+def clear_default_ratings_from_fan(digacc, mfid, maxret):
     where = ("WHERE aid=" + digacc["dsId"] + " AND srcid=" + mfid +
              " LIMIT " + str(maxret))
     songs = dbacc.query_entity("Song", where)
@@ -592,13 +592,13 @@ def clear_default_ratings_from_friend(digacc, mfid, maxret):
     return res
 
 
-def fetchcreate_song_from_friend(digacc, updsong):
+def fetchcreate_song_from_fan(digacc, updsong):
     dsId = updsong["dsId"]
-    logging.info("fetchcreate_song_from_friend updsong " + dsId)
+    logging.info("fetchcreate_song_from_fan updsong " + dsId)
     frsong = dbacc.cfbk("Song", "dsId", dsId[2:], required=True)
     dbsong = find_song({"aid":digacc["dsId"], "ti":updsong["ti"],
                         "ar":updsong["ar"], "ab":updsong["ab"]})
-    if not dbsong:  # copy friend song data into new instance
+    if not dbsong:  # copy fan song data into new instance
         dbsong = frsong
         dbsong["dsId"] = ""
         dbsong["aid"] = digacc["dsId"]
@@ -676,12 +676,12 @@ def songfetch():
         digacc, _ = util.authenticate()
         fvs = json.loads(dbacc.reqarg("fvs", "json", required=True))
         songs = fetch_matching_songs(digacc, fvs, 400)
-        friendsongs = []
-        if fvs.get("friendidcsv"):
-            friendsongs = fetch_friend_songs(digacc, fvs, 100)
+        fansongs = []
+        if fvs.get("fanidcsv"):
+            fansongs = fetch_fan_songs(digacc, fvs, 100)
     except ValueError as e:
         return util.serve_value_error(e)
-    return util.respJSON(songs + friendsongs)
+    return util.respJSON(songs + fansongs)
 
 
 # The song is passed in JSON format because string fields like the title can
@@ -695,8 +695,8 @@ def songupd():
         dsId = song.get("dsId")
         if not dsId:
             raise ValueError("dsId required")
-        if dsId.startswith("fr"):  # song suggested from music friend
-            song = fetchcreate_song_from_friend(digacc, song)
+        if dsId.startswith("fr"):  # song suggested from music fan
+            song = fetchcreate_song_from_fan(digacc, song)
         elif dsId.startswith("spotify"):  # song direct play from Spotify
             song = fetchcreate_song_from_spid(digacc, song)
         else: # standard update from web player
@@ -725,11 +725,11 @@ def multiupd():
     return util.respJSON(songs)
 
 
-# mfaddr: music friend mail address required for lookup. Stay personal.
-# Sorting of friends and changing their status is handled client side.  This
-# adds the new music friend at the beginning of the list after verifying
+# mfaddr: music fan mail address required for lookup. Stay personal.
+# Sorting of fans and changing their status is handled client side.  This
+# adds the new music fan at the beginning of the list after verifying
 # the account exists.  Existing intances are checked and minimally modified
-# to reflect the ordering and status updates implied by adding a new friend.
+# to reflect the ordering and status updates implied by adding a new fan.
 def addmusf():
     try:
         digacc, _ = util.authenticate()
@@ -739,13 +739,13 @@ def addmusf():
         mfacct = dbacc.cfbk("DigAcc", "email", mfaddr)
         if not mfacct:
             return util.srverr(mfaddr + " not found", code=404)
-        digacc = add_music_friend(digacc, mfacct)
+        digacc = add_music_fan(digacc, mfacct)
     except ValueError as e:
         return util.serve_value_error(e)
     return util.respJSON([digacc], audience="private")
 
 
-# emaddr, firstname used to create new account with auth digacc as friend.
+# emaddr, firstname used to create new account with auth digacc as fan.
 def createmusf():
     try:
         digacc, _ = util.authenticate()
@@ -758,18 +758,18 @@ def createmusf():
                  "firstname":firstname}
         util.update_email_and_password(mfacc, emaddr,
                                        util.make_activation_code(),  #temp pwd
-                                       friend=digacc)
+                                       fan=digacc)
         mfacc = dbacc.write_entity(mfacc)
-        mfacc = add_music_friend(mfacc, digacc)
-        digacc = add_music_friend(digacc, mfacc)
+        mfacc = add_music_fan(mfacc, digacc)
+        digacc = add_music_fan(digacc, mfacc)
     except ValueError as e:
         return util.serve_value_error(e)
     return util.respJSON([digacc], audience="private")
 
 
 # If uplds are given, save those and return them.  Otherwise walk the DigAcc
-# music friends whose checksince is more than 24hrs ago and update default
-# ratings for the DigAcc.  Fill in checksince for the music friend with the
+# music fans whose checksince is more than 24hrs ago and update default
+# ratings for the DigAcc.  Fill in checksince for the music fan with the
 # creation time of the most recent contributed song, or the current time if
 # none found.  The dhcontrib count is incremented but not recalculated.
 # Songs with contributed default ratings have
@@ -785,7 +785,7 @@ def mfcontrib():
                 unescape_song_fields(song)
             res = save_uploaded_songs(digacc, uplds, maxret)
         else:
-            res = fill_default_ratings_from_friends(digacc, maxret)
+            res = fill_default_ratings_from_fans(digacc, maxret)
     except ValueError as e:
         return util.serve_value_error(e)
     return util.respJSON(res, audience="private")
@@ -796,7 +796,7 @@ def mfclear():
         digacc, _ = util.authenticate()
         maxret = 200
         mfid = dbacc.reqarg("mfid", "dbid", required=True)
-        res = clear_default_ratings_from_friend(digacc, mfid, maxret)
+        res = clear_default_ratings_from_fan(digacc, mfid, maxret)
     except ValueError as e:
         return util.serve_value_error(e)
     return util.respJSON(res, audience="private")
