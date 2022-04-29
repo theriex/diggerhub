@@ -6,7 +6,7 @@
 import logging
 import py.util as util
 
-CACHE_BUST_PARAM = "v=220425"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=220429"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -29,6 +29,13 @@ INDEXHTML = """
 </head>
 <body id="bodyid">
 <div id="sitebody">
+
+<div id="contactdiv">
+  <a href="docs/about.html">About</a>
+  &nbsp; | &nbsp; <a href="docs/manual.html">Manual</a>
+  &nbsp; | &nbsp; <a href="docs/privacy.html">Privacy</a>
+  &nbsp; | &nbsp; <a href="docs/support.html">Support</a>
+</div>
 
 <div id="topsectiondiv">
   <div id="logodiv"><img src="img/appicon.png"/></div>
@@ -56,6 +63,7 @@ INDEXHTML = """
 
 
 <div id="outercontentdiv">
+<div id="homepgcontentdiv">
   <div id="textcontentdiv">
     <div id="splashdiv">
 
@@ -116,11 +124,6 @@ necessary.  Premium account required.
 </div>
 
 </div> <!-- diggerstreamingdiv -->
-<div id="splashbottomdiv">
-  <span id="rtfmspan">
-    <a href="/docs/manual.html" title="How Digger works"
-       onclick="window.open('/docs/manual.html');return false;">RTFM</a></span>
-</div>
 </div> <!-- splashblockdiv -->
 
     </div> <!-- splashdiv -->
@@ -133,42 +136,6 @@ necessary.  Premium account required.
   </div>
 -->
 
-  <div id="contactdiv">
-    <a href="#principles" onclick="app.togdivdisp('principdiv');return false">Project Principles</a>
-    &nbsp;
-    <a href="#support" onclick="app.togdivdisp('suppdiv');return false">Support</a>
-    <div id="suppdiv" style="display:none">
-
-<p>If you have run into an issue with Digger on any platform, consider
-searching the ISSUESONGITHUB and adding a comment if found, or opening a new
-issue as needed.  If you prefer, you can also contact SUPPORTEMAIL to get in
-touch.  For sponsored development, donations, or other inquiries contact
-EPINOVA. </p>
-
-    </div>
-    <div id="principdiv" style="display:none">
-
-<ul>
-<li><b>Trustable</b>: <a href="https://github.com/theriex/digger#digger" onclick="window.open('https://github.com/theriex/digger#digger');return false">Open source</a>, verifiable behavior.
-
-<li><b>Minimal data</b>: Save song impressions, designated music fans,
-and just enough personal information for independent authentication.  No
-spam or selling of individual data.
-
-<li><b>All about the music</b>: Conversations are outside the app.
-
-<li><b>Respect for music</b>: Enhance library access for local files,
-streaming, or both.  Don't modify music files.  Support and add value for
-vendors and streaming services.
-
-<li><b>Opt-in hub</b>: Run standalone with no network connection.  Sign in
-for backup, sync, and collaboration.
-
-
-</ul>
-    </div>
-  </div>
-
   <div id="taglinediv">
     Dig into your music collection.
   </div>
@@ -177,6 +144,9 @@ for backup, sync, and collaboration.
     <iframe title="test to see if local digger server is running" id="diggerlocaliframe" src="http://localhost:6980/version"></iframe>
   </div>
 
+  <div id="hpgoverlaydiv"></div>
+
+</div> <!-- homepgcontentdiv -->
 </div> <!-- outercontentdiv -->
 
 <script>

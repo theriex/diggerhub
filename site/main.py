@@ -114,6 +114,10 @@ def playerr():  # params: auth, type, spid, error
 def songtip():  #parms: auth, songid
     return util.secure(appdat.songtip)
 
+@app.route('/api/doctext')
+def doctext():  #params: docurl
+    return util.doctext()
+
 
 ######################################################################
 #  General site endpoints

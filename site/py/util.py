@@ -13,6 +13,7 @@ import ssl
 import smtplib
 from email.mime.text import MIMEText
 import urllib.parse
+import urllib.request
 import string
 import random
 import flask
@@ -20,7 +21,7 @@ import py.dbacc as dbacc
 import py.mconf as mconf
 
 def version():
-    return "v1.0.0"
+    return "v1.0.1"
 
 
 def srverr(msg, code=400):
@@ -478,3 +479,24 @@ def updacc():
     except ValueError as e:
         return serve_value_error(e)
     return respJSON([digacc, token], audience="private")
+
+
+def doctext():
+    text = ""
+    try:
+        docurl = dbacc.reqarg("docurl", "string", required=True);
+        # logging.info("docurl: " + docurl)
+        docurl = urllib.parse.unquote(docurl)
+        # logging.info("docurl: " + docurl)
+        sidx = docurl.rfind("/")
+        if sidx >= 0:
+            docurl = docurl[sidx + 1:]
+        # logging.info("docurl: " + docurl)
+        docurl = flask.request.host_url + "docs/" + docurl
+        docurl = docurl.replace("8081", "8080")  # local dev static server
+        logging.info("doctext fetching " + docurl)
+        with urllib.request.urlopen(docurl) as response:
+            text = response.read()
+    except ValueError as e:
+        return serve_value_error(e)
+    return text

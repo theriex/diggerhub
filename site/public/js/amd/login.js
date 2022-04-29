@@ -325,7 +325,7 @@ app.login = (function () {
 
     //The slides manager handles displaying how the app works
     mgrs.sld = (function () {
-        const slides = [8200, 2800, 2200, 2800, 2800];
+        const slides = [9200, 2800, 2200, 2800, 2800];
         const srcp = "docs/slideshow/slide$I.png";
         var idx = 0;
         var tmo = null;
@@ -485,25 +485,6 @@ app.login = (function () {
     }
 
 
-    function writeSupportContact () {
-        var bot = "@diggerhub.com";
-        var repls = [
-            {p:"ISSUESONGITHUB", h:"https://github.com/theriex/digger/issues",
-             t:"issues on GitHub"},
-            {p:"SUPPORTEMAIL", h:"mailto:support" + bot, t:"support" + bot},
-            {p:"EPINOVA", h:"https://epinova.com", t:"epinova.com"}];
-        var html = jt.byId("suppdiv").innerHTML;
-        repls.forEach(function (r) {
-            var link = "<a href=\"" + r.h + "\"";
-            if(r.h.startsWith("https")) {
-                link += " onclick=\"window.open('" + r.h + "')" + 
-                    ";return false\""; }
-            link += ">" + r.t + "</a>"
-            html = html.replace(r.p, link); });
-        jt.out("suppdiv", html);
-    }
-
-
     //This works in conjunction with the static undecorated form created by
     //start.py, decorating to provide login without page reload.
     function initialize (restore) {
@@ -521,7 +502,11 @@ app.login = (function () {
                     onclick:mdfs("act.sendResetPasswordLink")},
               "reset password"]]));
         jt.on("loginform", "submit", app.login.formSubmit);
-        setTimeout(writeSupportContact, 5000);
+        app.svc.dispatch("gen", "initplat", "web");  //doc content retrieval
+        Array.from(jt.byId("contactdiv").children).forEach(function (a) {
+            jt.on(a, "click", function (event) {
+                jt.evtend(event);
+                app.displayDoc("hpgoverlaydiv", event.target.href); }); });
         signIn();  //attempt to sign in with cookie then update content
     }
 
