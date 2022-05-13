@@ -10,7 +10,7 @@ CREATE TABLE DigAcc (  -- Digger Hub access account
   actsends LONGTEXT,
   actcode VARCHAR(256),
   firstname VARCHAR(256) NOT NULL,
-  hashtag VARCHAR(256) UNIQUE,
+  digname VARCHAR(256) UNIQUE,
   kwdefs LONGTEXT,
   igfolds LONGTEXT,
   settings LONGTEXT,

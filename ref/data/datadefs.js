@@ -46,7 +46,7 @@ module.exports = (function () {
         {f:"actsends", d:"adm gencsv", c:"latest first isod;emaddr vals"},
         {f:"actcode", d:"adm string", c:"account activation code"},
         {f:"firstname", d:"req string", c:"general display use"},
-        {f:"hashtag", d:"unique string", c:"activity view handle"},
+        {f:"digname", d:"unique string", c:"collaboration handle"},
         {f:"kwdefs", d:"json", c:"keyword definitions for this account (*1)"},
         {f:"igfolds", d:"json", c:"ignore folders used by this account"},
         {f:"settings", d:"json", c:"ctrl vals, general options (*2)"},

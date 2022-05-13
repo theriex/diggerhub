@@ -39,114 +39,37 @@ INDEXHTML = """
 
 <div id="topsectiondiv">
   <div id="logodiv"><img src="img/appicon.png"/></div>
-  <!-- login has to be an actual form to enable remembered passwords -->
-  <div id="topactiondiv">
-    <!-- need a real form for password autosave, no onchange submit. -->
-    <form id="loginform" method="post" action="redirlogin">
-      <div id="loginparaminputs"></div>
-      <div id="loginvisualelementsdiv">
-        <div class="onelineformdiv">
-          <input type="email" class="lifin" name="emailin" id="emailin"
-                 size="16" placeholder="nospam@example.com"/><input
-                 type="password" class="lifin" name="passin" id="passin"
-                 size="6" placeholder="*password*"/>
-          <input value="LogIn" type="submit" class="buttonstyle" id="loginb"/>
-        </div>
-        <div id="acctmsglinediv"></div>
-        <div id="loginbuttonsdiv" class="formbuttonsdiv">
-          <div id="loginlinksdiv"></div>
-        </div>
-      </div> <!-- loginvisualelementsdiv -->
-    </form>
-  </div>
 </div>
-
 
 <div id="outercontentdiv">
-<div id="homepgcontentdiv">
-  <div id="textcontentdiv">
-    <div id="splashdiv">
-
-<div id="headertextdiv">Digger <i>Hub</i></div>
-
-<div id="splashblockdiv">
-<p><em>Digger</em> now available for:</p>
-
-<div id="fileorstreamchoicediv">
-  <a href="#files"><span class="spchspan">Files</span></a>
-  or
-  <a href="#streaming"><span class="spchspan">Streaming</span></a>
-</div>
-
-<div id="tcgdspchfile" style="display:none;">
-
-<p>Download Digger for your platform: </p>
-
-<div id="downloadsdiv">
-<div><a href="downloads/digger-linux">digger-linux</a></div>
-<div><a href="downloads/Digger.dmg">Digger.dmg</a></div>
-<div><a href="downloads/digger-win.zip">digger-win.zip</a><br/>
-     <span>(win8.1+)</span></div>
-</div>
-
-<div id="wsadiv">
-Digger is a 
-  <a onclick="window.open('docs/websrvapp.html');return false" 
-     href="docs/websrvapp.html">webserver app</a>
-</div>
-
-
-</div> <!-- diggerfilediv -->
-
-<div id="tcgdspchstrm" style="display:none;">
-
-Run Digger for:
-
-<div id="loginreqdiv"></div>
-
-<div id="diggerweboptionsdiv">
-<span class="streamtypespan">
-  <a href="/digger" class="diggerlaunchlink">Spotify Premium</a>
-</span>
-<span style="font-size:small;">
-  <a href="#spotauth" onclick="app.togdivdisp('spotauthdiv');return false">
-(authorization)</a>
-</span>
-<div id="spotauthdiv" style="display:none;text-align:left;max-width:600px">
-Digger will read songs and albums in your library, it will not retain other
-information from your Spotify account.  Digger will not write to Spotify
-except to export a playlist if you choose to.  All privileges requested are
-necessary.  Premium account required.
-</div>
-</div> <!-- diggerweboptionsdiv -->
-
-<div id="streamcloseline">
-</div>
-
-</div> <!-- diggerstreamingdiv -->
-</div> <!-- splashblockdiv -->
-
-    </div> <!-- splashdiv -->
-  </div> <!-- textcontentdiv -->
-  <div id="slidesdiv"></div>
-<!--
-  <div id="vidcontentdiv">
-    <video controls src="img/DiggerDemo540HighBQ.mp4" width="300">
-      Video unavailable in this browser.</video>
-  </div>
--->
-
-  <div id="taglinediv">
-    Dig into your music collection.
-  </div>
-
-  <div id="localtestdiv" style="display:none">
-    <iframe title="test to see if local digger server is running" id="diggerlocaliframe" src="http://localhost:6980/version"></iframe>
-  </div>
-
-  <div id="hpgoverlaydiv"></div>
-
-</div> <!-- homepgcontentdiv -->
+  <div id="homepgcontentdiv">
+    <div id="textcontentdiv">
+      <div id="splashdiv">
+        <div id="headertextdiv">Digger <i>Hub</i></div>
+        <div id="splashblockdiv">
+          <div id="wsadiv">
+            Digger
+            <a onclick="window.open('docs/websrvapp.html');return false"
+               href="docs/websrvapp.html">webserver app</a>
+          </div>
+          <div id="downloadsdiv">
+            <div><a href="downloads/digger-linux">digger-linux</a></div>
+            <div><a href="downloads/Digger.dmg">Digger.dmg</a></div>
+            <div><a href="downloads/digger-win.zip">digger-win.zip</a><br/>
+                 <span>(win8.1+)</span></div>
+          </div>
+        </div>
+      </div>
+    </div> <!-- textcontentdiv -->
+    <div id="slidesdiv"></div>
+    <div id="taglinediv">
+      Dig into your music collection.
+    </div>
+    <div id="localtestdiv" style="display:none">
+      <iframe title="test to see if local digger server is running" id="diggerlocaliframe" src="http://localhost:6980/version"></iframe>
+    </div>
+    <div id="hpgoverlaydiv"></div>
+  </div> <!-- homepgcontentdiv -->
 </div> <!-- outercontentdiv -->
 
 <script>

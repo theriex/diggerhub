@@ -4,7 +4,6 @@
 app.login = (function () {
     "use strict";
 
-    var initialTopActionHTML = "";  //initial form html kept for sign out
     var authobj = null;  //basically the DigAcc, but may skip some fields
     var mgrs = {};  //container for managers. used for dispatch
 
@@ -69,224 +68,64 @@ app.login = (function () {
             try {
                 jt.cookie(sname, "", -1);
             } catch (e) {
-                jt.log("login.mgrs.ap.clear exception: " + e); } }
+                jt.log("login.mgrs.ap.clear exception: " + e); } },
+        signInUsingCookie: function (contf, errf) {
+            var ret = mgrs.ap.read();
+            if(!ret) {
+                return errf(403, "Cookie read failed"); }
+            const ps = {an:ret.authname, at:ret.authtoken};
+            jt.call("POST", app.dr("/api/acctok"), jt.objdata(s),
+                    contf, errf); }
     };  //end mgrs.ap returned functions
     }());
 
 
-    //The action manager handles signin/out and account updates
-    mgrs.act = (function () {
-        var authflds = ["an", "at", "email", "emailin", "passin"];
-        function updateAuthObj (accntok) {
-            authobj = app.refmgr.deserialize(accntok[0]);
-            authobj.token = accntok[1];
-            mgrs.ap.save(); }
+    //The hub account display manager handles account access outside of app
+    mgrs.had = (function () {
+        var cred = null;
     return {
-        authContent: function () {
-            switch(app.startPath) {
-            case "/songfinder": mgrs.sgf.display(); break;
-            case "/digger": app.initDiggerModules(); break;
-            default: mgrs.spl.display(); } },
-        successfulSignIn: function (result) {
-            if(result) {
-                updateAuthObj(result); }
-            jt.out("acctmsglinediv", "");
-            if(authflds.some((f) => app.startParams[f])) {
-                //clear auth app params to avoid conflicts with auth changes
-                authflds.forEach(function (a) { delete app.startParams[a]; });
-                window.history.replaceState({}, document.title, "/"); }
-            jt.out("topactiondiv", jt.tac2html(
-                [["div", {id:"loginlinksdiv"},
-                  [["a", {href:"#settings", title:"Account info and settings",
-                          onclick:mdfs("act.accountInfoDisplay", true)},
-                    authobj.firstname],
-                   ["a", {href:"#signout", title:"Sign out and clear cookie",
-                          onclick:mdfs("act.signOut")},
-                    "Sign Out"]]],
-                 ["div", {id:"tactdiv"}]]));
-            mgrs.act.authContent(); },
-        signOut: function () {
-            mgrs.ap.clear();
-            authobj = null;
-            app.login.init(true); },
-        accountInfoDisplay: function (toggle) {
-            if(toggle && jt.byId("tactdiv").innerHTML) { //toggle off
-                jt.out("tactdiv", "");
-                return; }
-            jt.out("tactdiv", jt.tac2html(
-                [["div", {cla:"acctactdiv", id:"acctactivdiv"},
-                  mgrs.act.acctActivHTML()],
-                 ["div", {cla:"acctactdiv", id:"chgpwddiv"},
-                  ["a", {href:"#ChgPwd", title:"Change your account password",
-                         onclick:mdfs("act.changePasswordDisplay")},
-                   "Change Password"]],
-                 ["div", {cla:"forminline"},
-                  [["label", {cla:"forminlab", fo:"firstnamein"}, "First Name"],
-                   ["input", {type:"text", cla:"formin", id:"firstnamein",
-                              value:authobj.firstname}]]],
-                 ["div", {cla:"forminline"},
-                  [["label", {cla:"forminlab", fo:"hashtagin"}, "Hashtag #"],
-                   ["input", {type:"text", cla:"formin", id:"hashtagin",
-                              value:authobj.hashtag}]]],
-                 ["div", {id:"acctmsglinediv"}],
-                 ["div", {cla:"formbuttonsdiv"},
-                  ["button", {type:"button", id:"updaccb",
-                              onclick:mdfs("act.updateAccountInfo")},
-                   "Update Account"]]])); },
-        updateAccount: function (data, contf, errf) {
-            jt.call("POST", app.dr("/api/updacc"), data,
-                    function (accntok) {
-                        updateAuthObj(accntok);
-                        contf(); },
-                    errf,
-                    jt.semaphore("login.act.updateAccount")); },
-        updateAccountInfo: function () {
-            var data = jt.objdata(
-                {an:authobj.email, at:authobj.token,
-                 firstname:jt.byId("firstnamein").value || "NOVAL",
-                 hashtag:jt.byId("hashtagin").value || "NOVAL"});
-            jt.byId("updaccb").disabled = true;
-            mgrs.act.updateAccount(data, mgrs.act.successfulSignIn,
-                function (code, errtxt) {
-                    jt.byId("updaccb").disabled = false;
-                    jt.out("acctmsglinediv", "Account update failed " +
-                           code + ": " + errtxt); }); },
-        noteUpdatedAccount: function (digacc) {
-            digacc.token = authobj.token;
-            authobj = digacc;
-            return authobj; },
-        changePasswordDisplay: function () {
-            jt.out("tactdiv", jt.tac2html(
-                [["div", {cla:"forminline"},
-                  [["label", {cla:"forminlab", fo:"pwdin"}, "New Password"],
-                   ["input", {type:"password", cla:"formin", id:"pwdin"}]]],
-                 ["div", {id:"acctmsglinediv"}],
-                 ["div", {cla:"formbuttonsdiv"},
-                  ["button", {type:"button", id:"updaccb",
-                              onclick:mdfs("act.changePassword")},
-                  "Change Password"]]])); },
-        changePassword: function () {
-            //No need to change email. Just sign out of the local server
-            //then sign in with a new account. Data preserved.
-            jt.byId("updaccb").disabled = true;
-            const data = jt.objdata(
-                {an:authobj.email, at:authobj.token, updemail:authobj.email,
-                 updpassword:jt.byId("pwdin").value});
-            mgrs.act.updateAccount(data, mgrs.act.successfulSignIn,
-                function (code, errtxt) {
-                    jt.out("acctmsglinediv", "Password change failed " +
-                           code + ": " + errtxt); }); },
-        acctActivHTML: function () {
-            if(authobj.status !== "Pending") { return ""; }
-            return jt.tac2html(
-                ["a", {href:"#sendactcode", 
-                       title:"Email a link to activate this account",
-                       onclick:mdfs("act.sendActivationCode")},
-                 "Send Activation Code"]); },
-        sendActivationCode: function () {
-            jt.out("acctactivdiv", "Activation code sent");
-            const data = jt.objdata({an:authobj.email, at:authobj.token});
-            jt.call("POST", app.dr("/api/mailactcode"), data,
-                    function () {
-                        jt.log("Activation send completed successfully"); },
-                    function (code, errtxt) {
-                        jt.out("acctactivdiv", "Send failed " + code + ": " +
-                               errtxt); },
-                    jt.semaphore("login.act.sendActivationCode")); },
-        createNewAccountDisplay: function () {
-            var emv = jt.byId("emailin") || "";
-            if(emv) { emv = emv.value || ""; }
-            jt.out("topactiondiv", jt.tac2html(
-                ["div", {id:"tactdiv"},
-                 [["div", {cla:"forminline"},
-                   [["label", {cla:"forminlab", fo:"emailin"}, "Email"],
-                    ["input", {type:"email", cla:"formin", id:"emailin",
-                               value:emv, placeholder:"nospam@example.com"}]]],
-                  ["div", {cla:"forminline"},
-                   [["label", {cla:"forminlab", fo:"passin"}, "Password"],
-                    ["input", {type:"password", cla:"formin", id:"passin",
-                               placeholder:"min 6 chars"}]]],
-                  ["div", {cla:"forminline"},
-                   [["label", {cla:"forminlab", fo:"firstin"}, "First Name"],
-                    ["input", {type:"text", cla:"formin", id:"firstin",
-                               placeholder:"How you like to be called"}]]],
-                  ["div", {id:"acctmsglinediv"}],
-                  ["div", {cla:"formbuttonsdiv"},
-                   ["button", {type:"button", id:"newaccb",
-                               onclick:mdfs("act.createAccount")},
-                    "Join"]]]])); },
-        createAccount: function () {
-            jt.byId("newaccb").disabled = true;
-            const data = jt.objdata(
-                {email:jt.byId("emailin").value,
-                 password:jt.byId("passin").value,
-                 firstname:jt.byId("firstin").value});
-            jt.call("POST", app.dr("/api/newacct"), data,
-                    function (result) {
-                        mgrs.act.successfulSignIn(result); },
-                    function (code, errtxt) {
-                        jt.byId("newaccb").disabled = false;
-                        jt.out("acctmsglinediv", "Account creation failed " +
-                               code + ": " + errtxt); },
-                    jt.semaphore("login.act.createAccount")); },
-        sendResetPasswordLink: function () {
-            var emaddr = jt.byId("emailin").value;
-            if(!jt.isProbablyEmail(emaddr)) {
-                jt.out("acctmsglinediv", "Need email address to send to"); }
-            jt.out("acctactivdiv", "Reset password link sent");
-            const data = jt.objdata({email:emaddr});
-            jt.call("POST", app.dr("/api/mailpwr"), data,
-                    function () {
-                        jt.out("acctmsglinediv", "Password reset sent."); },
-                    function (code, errtxt) {
-                        jt.out("acctactivdiv", "Send failed " + code + ": " +
-                               errtxt); },
-                    jt.semaphore("login.act.sendResetPasswordLink")); }
-    };  //end mgrs.act returned functions
-    }());
-
-
-    //The splash manager handles default screen display functions
-    mgrs.spl = (function () {
-    return {
-        activateFileOrStreamChoices: function () {
-            var oc = "app.togdivdisp({rootids:['spchfile','spchstrm']," +
-                                     "clicked:'CLICK'})";
-            jt.out("fileorstreamchoicediv", jt.tac2html(
-                [["a", {href:"#files",
-                        onclick:oc.replace("CLICK", "spchfile")},
-                  ["span", {id:"tcgcspchfile", cla:"spchspan"},
-                   "Files"]],
-                 "&nbsp", "or", "&nbsp",
-                 ["a", {href:"#streaming",
-                        onclick:oc.replace("CLICK", "spchstrm")},
-                  ["span", {id:"tcgcspchstrm", cla:"spchspan"},
-                   "Streaming"]]]));
-            if(window.location.href.endsWith("#files")) {
-                app.togdivdisp({rootids:["spchfile","spchstrm"],
-                                clicked:"spchfile"}, "block"); }
-            if(window.location.href.endsWith("#streaming")) {
-                app.togdivdisp({rootids:["spchfile","spchstrm"],
-                                clicked:"spchstrm"}, "block"); } },
-        verifySignedIn: function (event) {
-            if(!authobj) {
-                jt.out("loginreqdiv", "Sign in to launch Digger");
-                jt.evtend(event); }
+        initialSignIn: function (contf, errf) {
+            var auth = null;
+            if(app.startParams.an && app.startParams.at) {
+                auth = {an:app.startParams.an, at:app.startParams.at}; }
             else {
-                jt.out("loginreqdiv", "Starting Digger..."); } },
-        activateDiggerLaunchLinks: function () {
-            const links = document.getElementsByClassName("diggerlaunchlink");
-            Array.prototype.forEach.call(links, function (link) {
-                jt.on(link, "click", mgrs.spl.verifySignedIn); });
-            jt.out("loginreqdiv", ""); },
-        decorateSplashContents: function () {
-            mgrs.spl.activateFileOrStreamChoices();
-            mgrs.spl.activateDiggerLaunchLinks(); },
+                const cookauth = mgrs.ap.read();
+                if(cookauth) {
+                    auth = {an:cookauth.authname, at:cookauth.authtoken}; } }
+            if(auth) {
+                jt.call("POST", app.dr("/api/acctok"), jt.objdata(auth),
+                        contf, errf); }
+            else {
+                errf(403, "No authentication parameters given"); } },
+        signOut: function () {
+            authobj = null;
+            mgrs.ap.clear(); },
         display: function () {
-            mgrs.spl.decorateSplashContents();
-            mgrs.mrq.runMarquee();
-            mgrs.sld.runSlideshow(); }
-    };  //end mgrs.spl returned functions
+            window.history.replaceState({}, document.title, "/account");
+            jt.out("logodiv", "");  //clear overlay
+            jt.out("outercontentdiv", jt.tac2html(
+                ["div", {id:"hubactionpagediv"},
+                 [["div", {id:"hubactionheaderdiv"},
+                   [["div", {id:"homelinkdiv"},
+                     ["a", {href:"/", title:"DiggerHub Home Page"},
+                      ["img", {src:"/img/appicon.png", cla:"hubacttitleimg"}]]],
+                    ["div", {id:"hubactiontitlediv"},
+                     "DiggerHub Account"]]],
+                  ["div", {id:"contentdiv"},  //as used in digger app
+                   ["div", {id:"haddiv"}, "Starting..."]]]]));
+            app.top.dispatch("afg", "setDisplayDiv", "haddiv");
+            app.top.dispatch("afg", "setInApp", "");
+            mgrs.had.initialSignIn(
+                function (accntok) {
+                    app.top.dispatch("hcu", "deserializeAccount", accntok[0]);
+                    app.top.dispatch("aaa", "reflectAccountChangeInRuntime",
+                                     accntok[0], accntok[1]);
+                    authobj = app.top.dispatch("aaa", "getAccount");
+                    mgrs.ap.save();
+                    app.top.dispatch("afg", "accountFanGroup", "personal"); },
+                function () {  //not signed in
+                    app.top.dispatch("afg", "accountFanGroup"); }); }
+    };  //end mgrs.had returned functions
     }());
 
 
@@ -455,65 +294,26 @@ app.login = (function () {
     }());
 
 
-    function signIn () {
-        jt.out("acctmsglinediv", "");  //clear any previous login error
-        const sav = mgrs.ap.read() || {};
-        const ps = {an:app.startParams.an || sav.authname || "",
-                    at:app.startParams.at || sav.authtoken || "",
-                    emailin:jt.safeget("emailin", "value") || "",
-                    passin:jt.safeget("passin", "value") || "",
-                    actcode:app.startParams.actcode || ""};
-        if(ps.emailin && !(ps.at || ps.passin)) {
-            jt.byId("passin").focus();
-            return mgrs.act.authContent(); }
-        if(!((ps.an || ps.emailin) && (ps.at || ps.passin))) {
-            jt.byId("emailin").focus();
-            return mgrs.act.authContent(); } //not trying to sign in or activate
-        jt.out("acctmsglinediv", "Signing in...");
-        jt.byId("topsectiondiv").style.cursor = "wait";
-        //URL parameters cleared after sign in
-        jt.call("POST", app.dr("/api/acctok"), jt.objdata(ps),
-                function (result) {
-                    jt.byId("topsectiondiv").style.cursor = "default";
-                    mgrs.act.successfulSignIn(result); },
-                function (code, errtxt) {
-                    jt.byId("topsectiondiv").style.cursor = "default";
-                    jt.log("authentication failure " + code + ": " + errtxt);
-                    jt.out("acctmsglinediv", errtxt);
-                    mgrs.act.authContent(); },
-                jt.semaphore("login.signIn"));
-    }
-
-
     //This works in conjunction with the static undecorated form created by
     //start.py, decorating to provide login without page reload.
-    function initialize (restore) {
-        if(initialTopActionHTML && !restore) {
-            return; }  //form setup and initial signIn already done.
-        if(!initialTopActionHTML) {  //save so it can be restored on logout
-            initialTopActionHTML = jt.byId("topactiondiv").innerHTML; }
-        if(restore) {
-            jt.out("topactiondiv", initialTopActionHTML); }
-        jt.out("loginlinksdiv", jt.tac2html(
-            [["a", {href:"#newaccount", title:"Create a DiggerHub account",
-                    onclick:mdfs("act.createNewAccountDisplay")},
-              "join"],
-             ["a", {href:"#resetpassword", title:"Email a password reset link",
-                    onclick:mdfs("act.sendResetPasswordLink")},
-              "reset password"]]));
-        jt.on("loginform", "submit", app.login.formSubmit);
+    function initialize () {        
         app.svc.dispatch("gen", "initplat", "web");  //doc content retrieval
         Array.from(jt.byId("contactdiv").children).forEach(function (a) {
             jt.on(a, "click", function (event) {
                 jt.evtend(event);
                 app.displayDoc("hpgoverlaydiv", event.target.href); }); });
-        signIn();  //attempt to sign in with cookie then update content
+        switch(app.startPath) {
+        case "/account": return mgrs.had.display();
+        case "/songfinder": return mgrs.sgf.display();
+        case "/digger": return app.initDiggerModules();
+        default: jt.log("Standard site homepage display"); }
+        mgrs.mrq.runMarquee();
+        mgrs.sld.runSlideshow();
     }
 
 
 return {
-    init: function (restore, contf) { initialize(restore, contf); },
-    formSubmit: function (event) { jt.evtend(event); signIn(); },
+    init: function () { initialize(); },
     getAuth: function () { return authobj; },
     dispatch: function (mgrname, fname, ...args) {
         return mgrs[mgrname][fname].apply(app.login, args); }

@@ -245,16 +245,24 @@ def send_mail(emaddr, subj, body, domain=None, sender="support", replyto=""):
         smtp.sendmail(fromaddr, emaddr, msg.as_string())
 
 
-def verify_new_email_valid(emaddr):
-    # something @ something . something
+def verify_new_email_valid(emaddr, digacc=None):
     if not re.match(r"[^@]+@[^@]+\.[^@]+", emaddr):
+        # something @ something . something
         raise ValueError("Invalid email address: " + emaddr)
+    emaddr = normalize_email(emaddr)
     if emaddr == "support@diggerhub.com":
         raise ValueError("Address reserved for default account")
     existing = dbacc.cfbk("DigAcc", "email", emaddr)
-    if existing:
+    if existing and (not digacc or existing["dsId"] != digacc["dsId"]):
         raise ValueError("Email address already used")
     return emaddr
+
+
+def verify_unique_digname(digname, digacc=None):
+    existing = dbacc.cfbk("DigAcc", "digname", digname)
+    if existing and (not digacc or existing["dsId"] != digacc["dsId"]):
+        raise ValueError("digname already used")
+    return digname
 
 
 def make_activation_code():
@@ -272,7 +280,7 @@ def url_for_mail_message():
 
 
 def send_activation_email(digacc, fan=None):
-    acturl = (url_for_mail_message() + "?actcode=" + digacc["actcode"] +
+    acturl = (url_for_mail_message() + "/account?actcode=" + digacc["actcode"] +
               "&an=" + urllib.parse.quote(digacc["email"]) +
               "&at=" + token_for_user(digacc))
     if fan:
@@ -345,7 +353,7 @@ def fill_missing_fields(fields, src, trg):
 
 def update_account_fields(digacc):
     set_fields_from_reqargs(
-        ["hubdat", "firstname", "hashtag", "kwdefs", "igfolds", "settings",
+        ["hubdat", "firstname", "digname", "kwdefs", "igfolds", "settings",
          "musfs"],
         digacc)
     if not digacc.get("kwdefs") or digacc["kwdefs"] == "{}":
@@ -362,6 +370,15 @@ def checkActivationCode(digacc, save=False):
                 digacc = dbacc.write_entity(digacc, digacc["modified"])
         else:
             logging.info("actcode did not match: " + digacc["actcode"])
+    return digacc
+
+
+def checkPrivAccept(digacc):
+    privaccept = dbacc.reqarg("privaccept", "string")
+    if privaccept:
+        hubdat = json.loads(digacc.get("hubdat") or "{}")
+        hubdat["privaccept"] = privaccept
+        digacc["hubdat"] = json.dumps(hubdat)
     return digacc
 
 
@@ -388,9 +405,12 @@ def newacct():
         verify_new_email_valid(emaddr)
         pwd = dbacc.reqarg("password", "string", required=True)
         dbacc.reqarg("firstname", "DigAcc.firstname", required=True)
+        digname = dbacc.reqarg("digname", "DigAcc.digname", required=True)
+        verify_unique_digname(digname)
         cretime = dbacc.nowISO()
         digacc = {"dsType":"DigAcc", "created":cretime,
                   "email":"placeholder", "phash":"whatever"}
+        checkPrivAccept(digacc)
         update_email_and_password(digacc, emaddr, pwd)
         update_account_fields(digacc)
         digacc = dbacc.write_entity(digacc)
@@ -426,7 +446,7 @@ def mailpwr():
     try:
         subj = "DiggerHub.com account password reset link"
         emaddr = dbacc.reqarg("email", "DigAcc.email", required=True)
-        returl = url_for_mail_message()
+        returl = url_for_mail_message() + "/account"
         body = "You asked to reset your DiggerHub account password.\n\n"
         user = dbacc.cfbk("DigAcc", "email", emaddr)
         if user:
@@ -467,12 +487,16 @@ def updacc():
     try:
         digacc, token = authenticate()
         emaddr = dbacc.reqarg("updemail", "DigAcc.email") or digacc["email"]
+        verify_new_email_valid(emaddr, digacc)
         chg = update_email_and_password(digacc, emaddr,
                                         dbacc.reqarg("updpassword", "string"))
         if chg != "nochange":
-            logging.info("Changing " + chg + " for " + digacc["email"])
+            logging.info("Changing " + chg + " for " + digacc["dsId"])
+        digname = dbacc.reqarg("digname", "DigAcc.digname") or digacc["digname"]
+        verify_unique_digname(digname, digacc)
         update_account_fields(digacc)
         digacc = checkActivationCode(digacc)
+        digacc = checkPrivAccept(digacc)
         digacc = dbacc.write_entity(digacc, digacc["modified"])
         runtime_decorate_account(digacc)
         token = token_for_user(digacc)    # return possibly updated token

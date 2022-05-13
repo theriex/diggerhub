@@ -67,7 +67,7 @@ entdefs = {
         "actsends": {"pt": "string", "un": False, "dv": ""},
         "actcode": {"pt": "string", "un": False, "dv": ""},
         "firstname": {"pt": "string", "un": False, "dv": ""},
-        "hashtag": {"pt": "string", "un": True, "dv": ""},
+        "digname": {"pt": "string", "un": True, "dv": ""},
         "kwdefs": {"pt": "string", "un": False, "dv": ""},
         "igfolds": {"pt": "string", "un": False, "dv": ""},
         "settings": {"pt": "string", "un": False, "dv": ""},
@@ -131,7 +131,7 @@ entdefs = {
 
 
 entkeys = {
-    "DigAcc": ["email", "hashtag"],
+    "DigAcc": ["email", "digname"],
     "Song": [],
     "SKeyMap": ["skey"],
     "SongRec": [],
@@ -459,8 +459,8 @@ def app2db_DigAcc(inst, fill=True):
         cnv["actcode"] = app2db_fieldval("DigAcc", "actcode", inst)
     if fill or "firstname" in inst:
         cnv["firstname"] = app2db_fieldval("DigAcc", "firstname", inst)
-    if fill or "hashtag" in inst:
-        cnv["hashtag"] = app2db_fieldval("DigAcc", "hashtag", inst)
+    if fill or "digname" in inst:
+        cnv["digname"] = app2db_fieldval("DigAcc", "digname", inst)
     if fill or "kwdefs" in inst:
         cnv["kwdefs"] = app2db_fieldval("DigAcc", "kwdefs", inst)
     if fill or "igfolds" in inst:
@@ -488,7 +488,7 @@ def db2app_DigAcc(inst):
     cnv["actsends"] = db2app_fieldval("DigAcc", "actsends", inst)
     cnv["actcode"] = db2app_fieldval("DigAcc", "actcode", inst)
     cnv["firstname"] = db2app_fieldval("DigAcc", "firstname", inst)
-    cnv["hashtag"] = db2app_fieldval("DigAcc", "hashtag", inst)
+    cnv["digname"] = db2app_fieldval("DigAcc", "digname", inst)
     cnv["kwdefs"] = db2app_fieldval("DigAcc", "kwdefs", inst)
     cnv["igfolds"] = db2app_fieldval("DigAcc", "igfolds", inst)
     cnv["settings"] = db2app_fieldval("DigAcc", "settings", inst)
@@ -724,8 +724,8 @@ def dblogmsg(op, entity, res):
 def insert_new_DigAcc(cnx, cursor, fields):
     fields = app2db_DigAcc(fields)
     stmt = (
-        "INSERT INTO DigAcc (created, modified, email, phash, hubdat, status, actsends, actcode, firstname, hashtag, kwdefs, igfolds, settings, musfs) "
-        "VALUES (%(created)s, %(modified)s, %(email)s, %(phash)s, %(hubdat)s, %(status)s, %(actsends)s, %(actcode)s, %(firstname)s, %(hashtag)s, %(kwdefs)s, %(igfolds)s, %(settings)s, %(musfs)s)")
+        "INSERT INTO DigAcc (created, modified, email, phash, hubdat, status, actsends, actcode, firstname, digname, kwdefs, igfolds, settings, musfs) "
+        "VALUES (%(created)s, %(modified)s, %(email)s, %(phash)s, %(hubdat)s, %(status)s, %(actsends)s, %(actcode)s, %(firstname)s, %(digname)s, %(kwdefs)s, %(igfolds)s, %(settings)s, %(musfs)s)")
     data = {
         'created': fields.get("created"),
         'modified': fields.get("modified"),
@@ -736,7 +736,7 @@ def insert_new_DigAcc(cnx, cursor, fields):
         'actsends': fields.get("actsends", entdefs["DigAcc"]["actsends"]["dv"]),
         'actcode': fields.get("actcode", entdefs["DigAcc"]["actcode"]["dv"]),
         'firstname': fields.get("firstname", entdefs["DigAcc"]["firstname"]["dv"]),
-        'hashtag': fields.get("hashtag", entdefs["DigAcc"]["hashtag"]["dv"]),
+        'digname': fields.get("digname", entdefs["DigAcc"]["digname"]["dv"]),
         'kwdefs': fields.get("kwdefs", entdefs["DigAcc"]["kwdefs"]["dv"]),
         'igfolds': fields.get("igfolds", entdefs["DigAcc"]["igfolds"]["dv"]),
         'settings': fields.get("settings", entdefs["DigAcc"]["settings"]["dv"]),
@@ -1070,12 +1070,12 @@ def delete_entity(entity, dsId):
 
 def query_DigAcc(cnx, cursor, where):
     query = "SELECT dsId, created, modified, "
-    query += "email, phash, hubdat, status, actsends, actcode, firstname, hashtag, kwdefs, igfolds, settings, musfs"
+    query += "email, phash, hubdat, status, actsends, actcode, firstname, digname, kwdefs, igfolds, settings, musfs"
     query += " FROM DigAcc " + where
     cursor.execute(query)
     res = []
-    for (dsId, created, modified, email, phash, hubdat, status, actsends, actcode, firstname, hashtag, kwdefs, igfolds, settings, musfs) in cursor:
-        inst = {"dsType": "DigAcc", "dsId": dsId, "created": created, "modified": modified, "email": email, "phash": phash, "hubdat": hubdat, "status": status, "actsends": actsends, "actcode": actcode, "firstname": firstname, "hashtag": hashtag, "kwdefs": kwdefs, "igfolds": igfolds, "settings": settings, "musfs": musfs}
+    for (dsId, created, modified, email, phash, hubdat, status, actsends, actcode, firstname, digname, kwdefs, igfolds, settings, musfs) in cursor:
+        inst = {"dsType": "DigAcc", "dsId": dsId, "created": created, "modified": modified, "email": email, "phash": phash, "hubdat": hubdat, "status": status, "actsends": actsends, "actcode": actcode, "firstname": firstname, "digname": digname, "kwdefs": kwdefs, "igfolds": igfolds, "settings": settings, "musfs": musfs}
         inst = db2app_DigAcc(inst)
         res.append(inst)
     dblogmsg("QRY", "DigAcc", res)
