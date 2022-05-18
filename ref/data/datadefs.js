@@ -63,15 +63,18 @@ module.exports = (function () {
      //    xps: playlist exports by platform, then by playlist name
      //    spimport: counts of imported library tracks and when
      //*3 musfs: Music fan instances
-     //    dsId: id of music fan's account
-     //    email: email address as entered when adding the fan
-     //    firstname: fan firstname at time fan added. Used for email
-     //    dispname: display name for fan (editable, used for list diaplay)
-     //    hashtag: for playlist page (when/if available)
-     //    status: Active|Inactive
-     //    dhcontrib: how many default song ratings this fan has contributed
-     //    obcontrib: how many default ratings you have provided this fan
-     //    checksince: last contributed song time stamp or last check time
+     //    dsId: id of music fan
+     //    digname: digname of music fan
+     //    firstname: fan firstname
+     //    added: timestamp when fan was added
+     //    lastheard: latest msg time or added
+     //    common: count of songs you have both rated
+     //    dfltrcv: count of default ratings provided from this fan
+     //    dfltsnd: count of default ratings sent to this fan
+     //  The common/dfltrcv/dfltsnd fields are computed once when the fan
+     //  is added to the group.  Counts are updated when new songs are added
+     //  to the collection.  Deleting and re-adding a fan to your group may
+     //  result in different counts if ratings have changed.
      cache:{minutes:2*60}, //fast auth after initial load
      logflds:["email", "firstname"]},
 
@@ -115,13 +118,19 @@ module.exports = (function () {
      cache:{minutes:0},
      logflds:["skey", "spid"]},
 
-    {entity:"SongRec", descr:"Song recommendation note", fields:[
-        {f:"songid", d:"req dbid", c:"the song being recommended"},
-        {f:"sfr", d:"req dbid", c:"sending fan"},
-        {f:"rfr", d:"req dbid", c:"receiving fan"},
-        {f:"count", d:"req int", c:"access count for recommendation"}],
+    {entity:"DigMsg", descr:"Music communications between DigAccs", fields:[
+        {f:"sndr", d:"req dbid", descr:"Originating DigAcc for this message"},
+        {f:"sendername", d:"req string", descr:"Sender DigName"},
+        {f:"rcvr", d:"req dbid", descr:"Receiving DigAcc for this message"},
+        {f:"msgtype", d:"req string", descr:"Message type label"},
+        {f:"status", d:"req string", descr:"open|dismissed"},
+        {f:"srcmsg", d:"dbid", descr:"Source message if reply msgtype"},
+        {f:"songid", d:"dbid", descr:"Source song for message (*1)"}],
+     //*1 songid: At runtime, ti/ar/ab/el/al/kws/rv/nt fields are joined in
+     //           for reference. Not worth duplicating even though song data
+     //           may change over time.
      cache:{minutes:0},
-     logflds:["songid", "sfr", "rfr"]},
+     logflds:["sendername", "msgtype", "songid"]},
         
     {entity:"AppService", descr:"Processing service access", fields:[
         {f:"name", d:"string req unique", c:"Name of service"},
