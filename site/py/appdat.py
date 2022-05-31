@@ -3,6 +3,7 @@
 #pylint: disable=invalid-name
 #pylint: disable=missing-function-docstring
 #pylint: disable=logging-not-lazy
+#pylint: disable=too-many-lines
 
 import logging
 import json
@@ -243,7 +244,8 @@ def path_for_spotify_track(track):
     return make_song_path(dno, tno, artist, album, title)
 
 
-rfdvs = {"el":49, "al":49, "rv":5, "kws":""}
+# rv is no longer part of the default rating. More harmful than helpful.
+rfdvs = {"el":49, "al":49, "kws":""}
 
 def unset_rating_fields(song):
     for fld, val in rfdvs.items():
@@ -394,7 +396,7 @@ def user_song_by_songid(digacc, songid):
     return song
 
 
-def fetch_newest_songs(digacc, fvs, limit):
+def fetch_newest_songs(digacc, limit):
     where = ("WHERE aid = " + digacc["dsId"] +
              " AND spid LIKE \"z:%\"" +
              " AND (lp IS NULL OR (el = 49 AND al = 49 AND kws IS NULL))" +
@@ -431,7 +433,7 @@ def fvs_match_sql_clauses(fvs):
 
 def fetch_matching_songs(digacc, fvs, limit):
     if fvs.get("ddst") == "newest":
-        return fetch_newest_songs(digacc, fvs, limit)
+        return fetch_newest_songs(digacc, limit)
     where = ("WHERE aid = " + digacc["dsId"] +
              " AND spid LIKE \"z:%\"" +
              " AND rv >= " + str(fvs["minrat"]))
@@ -450,26 +452,6 @@ def fetch_matching_songs(digacc, fvs, limit):
     if fvs.get("startsongid"):
         songs.insert(0, user_song_by_songid(digacc, int(fvs["startsongid"])))
     return songs
-
-
-def fetch_fan_songs(digacc, fvs, limit):
-    where = ("WHERE aid IN (" + fvs["fanidcsv"] + ")" +
-             " AND spid LIKE \"z:%\"" +
-             " AND rv >= 8" +  # 4 stars or better
-             " AND spid NOT IN" +
-             " (SELECT spid FROM Song WHERE aid=" + digacc["dsId"] + ")")
-    where += fvs_match_sql_clauses(fvs)
-    where += " ORDER BY rv DESC, modified DESC LIMIT " + str(limit)
-    logging.info("fetch_fan_songs " + where)
-    songs = dbacc.query_entity("Song", where)
-    # mark the dsIds so new song instances can be created on update
-    for song in songs:
-        song["dsId"] = "fr" + song["dsId"]
-    # two or more fans may have recommended the same song. De-dupe
-    ddd = {}
-    for song in songs:
-        ddd[song["spid"]] = song
-    return list(ddd.values())
 
 
 def add_music_fan(digacc, mfacct):
@@ -573,9 +555,6 @@ def fill_default_ratings_from_fans(digacc, maxret):
 # For each fan rated song, if the srcrat is the same as the current
 # settings, revert the song to unrated.  Clear srcid and srcrat.  Return a
 # list of all updated Songs.
-# This does not change the dhcontrib count of the music fan.  That's left
-# up to the caller who is presumably clearing all their ratings in
-# preparation for removing the fan.
 def clear_default_ratings_from_fan(digacc, mfid, maxret):
     where = ("WHERE aid=" + digacc["dsId"] + " AND srcid=" + mfid +
              " LIMIT " + str(maxret))
@@ -590,6 +569,54 @@ def clear_default_ratings_from_fan(digacc, mfid, maxret):
         song["srcrat"] = ""
         res.append(dbacc.write_entity(song, song["modified"]))
     return res
+
+
+# Fill unrated digacc songs with default song ratings from mfid.
+def get_default_ratings_from_fan(digacc, mfid, maxret):
+    sql = ("SELECT asg.dsId, fsg.kws, fsg.el, fsg.al" +
+           " FROM Song AS asg, Song AS fsg" +
+           " WHERE asg.aid = " + str(digacc["dsId"]) + " AND asg.kws IS NULL" +
+           " AND asg.el = 49 AND asg.al = 49" +
+           " AND fsg.aid = " + str(mfid) + " AND fsg.kws IS NOT NULL" +
+           " AND fsg.el != 49 AND fsg.al != 49" +
+           " AND asg.smti = fsg.smti AND asg.smar = fsg.smar" +
+           " AND asg.smab = fsg.smab LIMIT " + str(maxret))
+    drs = dbacc.custom_query(sql, ["dsId", "kws", "el", "al"])
+    res = []
+    for rat in drs:
+        song = dbacc.cfbk("Song", "dsId", rat["dsId"], required=True)
+        song["srcid"] = mfid
+        set_rating_fields_from_source(song, rat)
+        res.append(dbacc.write_entity(song, song["modified"]))
+    logging.info(str(digacc["dsId"]) + " received " + str(len(res)) +
+                 " default ratings from " + str(mfid))
+    return res
+
+
+# Calculate and update mf common and dfltsnd.  Do not recalc dfltrcv.
+# mf.dfltrcv is the number of default ratings digacc has received from mf
+# that digacc has not overridden with their own values.  Songs that digacc
+# has changed the ratings for are now digacc rated, but mf still gets credit
+# for having provided initial default values even if mf is no longer part of
+# digacc's group.  They are counted in mf's dfltsnd.
+def count_collaborations(digacc, mf):
+    sql = ("SELECT COUNT(*) AS common FROM Song AS asg, Song AS fsg" +
+           "WHERE asg.aid = " + str(digacc["dsId"]) +
+           " AND fsg.aid = " + str(mf["dsId"]) +
+           " AND asg.smti = fsg.smti AND asg.smar = fsg.smar" +
+           " AND asg.smab = fsg.smab")
+    drs = dbacc.custom_query(sql, ["common"])
+    for row in drs:
+        mf["common"] = row["common"]
+    sql = ("SELECT COUNT(*) AS dfltsnd FROM Song" +
+           " WHERE aid = " + str(mf["dsId"]) +     # their songs
+           " AND srcid = " + str(digacc["dsId"]))  # you provided default rating
+    drs = dbacc.custom_query(sql, ["dfltsnd"])
+    for row in drs:
+        mf["dfltsnd"] = row["dfltsnd"]
+    logging.info(str(digacc["dsId"]) + " has " + str(mf["common"]) +
+                 " common with " + str(mf["dsId"]) +
+                 ". dfltsnd: " + str(mf["dfltsnd"]))
 
 
 def fetchcreate_song_from_fan(digacc, updsong):
@@ -643,6 +670,37 @@ def update_song_by_id(digacc, updsong):
     return dbsong
 
 
+def acct2mf(digacc):
+    mf = {"dsId": digacc["dsId"], "digname":digacc["digname"],
+          "firstname": digacc["firstname"], "added":dbacc.nowISO(),
+          "lastheard":"", "common":0, "dfltrcv":0, "dfltsnd":0}
+    return mf
+
+
+# This might be improved, but whoever has listened to the most music in the
+# past 6 monthis is not a bad person to meet.
+def connect_me(digacc):
+    now = datetime.datetime.utcnow()
+    since = dbacc.dt2ISO(now - datetime.timedelta(days=180))
+    sql = ("SELECT aid, count(dsId) AS scount FROM Song" +
+           " WHERE modified >= \"" + since + "\"" +
+           " AND aid != " + digacc["dsId"] +
+           " AND aid NOT IN " +
+           " (SELECT dsId FROM DigAcc WHERE status = \"nongrata\")" +
+           " GROUP BY aid ORDER BY scount DESC LIMIT 5")
+    tls = dbacc.custom_query(sql, ["aid", "count"])
+    logging.info("top listeners: " + json.dumps(tls))
+    aids = [str(tl["aid"]) for tl in tls]
+    where = ("WHERE dsId != " + str(digacc["dsId"]) +
+             " AND digname IS NOT NULL" +
+             " AND dsId IN (" + (", ".join(aids)) + ")")
+    fans = dbacc.query_entity("DigAcc", where)
+    if not fans:
+        raise ValueError("No listeners found")
+    musfs = [acct2mf(fan) for fan in fans]
+    return musfs
+
+
 ############################################################
 ## API endpoints:
 
@@ -655,7 +713,7 @@ def hubsync():
         updacc = syncdata[0]
         prevsync = updacc.get("syncsince") or updacc["modified"]
         # provide context for subsequent log messages
-        logging.info("hubsync -> " + digacc["email"] + "prevsync: " + prevsync)
+        logging.info("hubsync -> " + digacc["email"] + " prevsync: " + prevsync)
         if prevsync < digacc["modified"]:  # hub push
             racc, rsongs = find_hub_push_songs(digacc, prevsync)
             msg = "hub push"
@@ -676,12 +734,9 @@ def songfetch():
         digacc, _ = util.authenticate()
         fvs = json.loads(dbacc.reqarg("fvs", "json", required=True))
         songs = fetch_matching_songs(digacc, fvs, 400)
-        fansongs = []
-        if fvs.get("fanidcsv"):
-            fansongs = fetch_fan_songs(digacc, fvs, 100)
     except ValueError as e:
         return util.serve_value_error(e)
-    return util.respJSON(songs + fansongs)
+    return util.respJSON(songs)
 
 
 # The song is passed in JSON format because string fields like the title can
@@ -725,78 +780,62 @@ def multiupd():
     return util.respJSON(songs)
 
 
-# mfaddr: music fan mail address required for lookup. Stay personal.
-# Sorting of fans and changing their status is handled client side.  This
-# adds the new music fan at the beginning of the list after verifying
-# the account exists.  Existing intances are checked and minimally modified
-# to reflect the ordering and status updates implied by adding a new fan.
-def addmusf():
+def fangrpact():
     try:
         digacc, _ = util.authenticate()
-        mfaddr = dbacc.reqarg("mfaddr", "json", required=True)
-        mfaddr = util.normalize_email(mfaddr)
-        logging.info("addmusf " + digacc["email"] + " searching for " + mfaddr)
-        mfacct = dbacc.cfbk("DigAcc", "email", mfaddr)
-        if not mfacct:
-            return util.srverr(mfaddr + " not found", code=404)
-        digacc = add_music_fan(digacc, mfacct)
-    except ValueError as e:
-        return util.serve_value_error(e)
-    return util.respJSON([digacc], audience="private")
-
-
-# emaddr, firstname used to create new account with auth digacc as fan.
-def createmusf():
-    try:
-        digacc, _ = util.authenticate()
-        emaddr = dbacc.reqarg("emaddr", "json", required=True)
-        emaddr = util.normalize_email(emaddr)
-        util.verify_new_email_valid(emaddr)  # not already used
-        firstname = dbacc.reqarg("firstname", "string", required=True)
-        mfacc = {"dsType":"DigAcc", "created":dbacc.nowISO(),
-                 "email":"placeholder", "phash":"whatever",
-                 "firstname":firstname}
-        util.update_email_and_password(mfacc, emaddr,
-                                       util.make_activation_code(),  #temp pwd
-                                       fan=digacc)
-        mfacc = dbacc.write_entity(mfacc)
-        mfacc = add_music_fan(mfacc, digacc)
-        digacc = add_music_fan(digacc, mfacc)
-    except ValueError as e:
-        return util.serve_value_error(e)
-    return util.respJSON([digacc], audience="private")
-
-
-# If uplds are given, save those and return them.  Otherwise walk the DigAcc
-# music fans whose checksince is more than 24hrs ago and update default
-# ratings for the DigAcc.  Fill in checksince for the music fan with the
-# creation time of the most recent contributed song, or the current time if
-# none found.  The dhcontrib count is incremented but not recalculated.
-# Songs with contributed default ratings have
-def mfcontrib():
-    try:
-        digacc, _ = util.authenticate()
-        maxret = 200
-        uplds = dbacc.reqarg("uplds", "jsarr")
-        if uplds and uplds != "[]":
-            logging.info("mfcontrib urs: " + uplds[0:512])
-            uplds = json.loads(uplds)
-            for song in uplds:
-                unescape_song_fields(song)
-            res = save_uploaded_songs(digacc, uplds, maxret)
+        musfs = json.loads(digacc["musfs"] or "[]")
+        musfs = [m for m in musfs if not m.get("email")]  # filter old data
+        action = dbacc.reqarg("action", "string", required=True)
+        digname = dbacc.reqarg("digname", "string")
+        if action == "remove":
+            if not digname:
+                raise ValueError("Need digname to remove")
+            musfs = [m for m in musfs if m["digname"] != digname]
+        elif action == "add":
+            if digname:
+                mf = dbacc.cfbk("DigAcc", "digname", digname)
+                if not mf:
+                    raise ValueError(digname + " not found")
+                musfs.insert(0, acct2mf(mf))
+            else:
+                if len(musfs) > 0:
+                    raise ValueError("Already connected to other fans")
+                musfs = connect_me(digacc)
         else:
-            res = fill_default_ratings_from_fans(digacc, maxret)
+            raise ValueError("Unknown action " + action)
+        digacc["musfs"] = json.dumps(musfs)
+        digacc = dbacc.write_entity(digacc, digacc["modified"])
     except ValueError as e:
         return util.serve_value_error(e)
-    return util.respJSON(res, audience="private")
+    return util.respJSON([digacc], audience="private")
 
 
-def mfclear():
+def fancollab():
     try:
         digacc, _ = util.authenticate()
-        maxret = 200
+        musfs = json.loads(digacc["musfs"] or "[]")
         mfid = dbacc.reqarg("mfid", "dbid", required=True)
-        res = clear_default_ratings_from_fan(digacc, mfid, maxret)
+        specfans = [fan for fan in musfs if fan["dsId"] == mfid]
+        if not specfans:
+            raise ValueError(str(mfid) + " not found in fan group.")
+        fan = specfans[0]
+        ctype = dbacc.reqarg("ctype", "string", required=True)
+        maxret = 200
+        if ctype == "clear":
+            res = clear_default_ratings_from_fan(digacc, mfid, maxret)
+            if res < 200:  # no more default ratings to remove after this
+                fan["dfltrcv"] = 0
+            else: # decrement dfltrcv, floor at zero in case counts ever off
+                fan["dfltrcv"] = max(fan["dfltrcv"] - len(res), 0)
+        elif ctype == "get":
+            res = get_default_ratings_from_fan(digacc, mfid, maxret)
+            fan["dfltrcv"] += len(res)
+        elif ctype == "count":
+            res = []
+            count_collaborations(digacc, fan)
+        digacc["musfs"] = json.dumps(musfs)
+        digacc = dbacc.write_entity(digacc, digacc["modified"])
+        res.insert(0, digacc)
     except ValueError as e:
         return util.serve_value_error(e)
     return util.respJSON(res, audience="private")

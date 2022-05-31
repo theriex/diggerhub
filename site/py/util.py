@@ -356,8 +356,6 @@ def update_account_fields(digacc):
         ["hubdat", "firstname", "digname", "kwdefs", "igfolds", "settings",
          "musfs"],
         digacc)
-    if not digacc.get("kwdefs") or digacc["kwdefs"] == "{}":
-        digacc["kwdefs"] = json.dumps(dbacc.initial_keywords())
 
 
 def checkActivationCode(digacc, save=False):
@@ -508,7 +506,7 @@ def updacc():
 def doctext():
     text = ""
     try:
-        docurl = dbacc.reqarg("docurl", "string", required=True);
+        docurl = dbacc.reqarg("docurl", "string", required=True)
         # logging.info("docurl: " + docurl)
         docurl = urllib.parse.unquote(docurl)
         # logging.info("docurl: " + docurl)

@@ -902,58 +902,28 @@ function appSpecificFunctions () {
     pyc += "            cursor.close()\n";
     pyc += "    finally:\n";
     pyc += "        cnx.close()\n";
+    pyc += "\n";
+    pyc += "\n";
+    pyc += "def custom_query(sql, resflds):\n";
+    pyc += "    cnx = get_mysql_connector()  # MySQLConnection\n";
+    pyc += "    if not cnx:\n";
+    pyc += "        raise ValueError(\"Database connection failed.\")\n";
+    pyc += "    try:\n";
+    pyc += "        cursor = cnx.cursor()  # MySQLCursor\n";
+    pyc += "        try:\n";
+    pyc += "            cursor.execute(sql)\n";
+    pyc += "            res = []\n";
+    pyc += "            for valtuple in cursor:\n";
+    pyc += "                inst = dict(zip(resflds, list(valtuple)))\n";
+    pyc += "                res.append(inst)\n";
+    pyc += "            return res\n";
+    pyc += "        except mysql.connector.Error as e:\n";
+    pyc += "            raise ValueError(str(e) or \"No custom_query error details\")\n";
+    pyc += "        finally:\n";
+    pyc += "            cursor.close()\n";
+    pyc += "    finally:\n";
+    pyc += "        cnx.close()\n";
     return pyc;
-}
-
-
-function commonServerDefs (lang) {
-    var initkwds = {
-        Social:{pos:1, sc:0, ig:0, dsc:"Music I might select to play when other people are listening."},
-        Personal:{pos:2, sc:0, ig:0, dsc:"Music I might select to play when it's just me listening."},
-        Office:{pos:3, sc:0, ig:0, dsc:"Music that you can listen to while you work."},
-        Dance:{pos:4, sc:0, ig:0, dsc:"Music you would dance to."},
-        Ambient:{pos:0, sc:0, ig:0, dsc:"Music that can be listened to from zero to full attention, transitioning from and to silence."},
-        Jazz:{pos:0, sc:0, ig:0, dsc:"However you define it for your collection."},
-        Classical:{pos:0, sc:0, ig:0, dsc:"However you define it for your collection."},
-        Talk:{pos:0, sc:0, ig:0, dsc:"Spoken word."},
-        Solstice:{pos:0, sc:0, ig:0, dsc:"Holiday seasonal."}};
-    var indent = "    ";
-    if(lang != "js") {
-        indent = ""; }
-    var pjs = "";
-    if(lang === "js") {
-        pjs += "    initialKeywords: function () {\n";
-        pjs += "        //"; }
-    else {
-        pjs += "def initial_keywords():\n";
-        pjs += "    # "; }
-    pjs += " DO NOT EDIT. Change defs in makeCRUD.js\n"
-    pjs += indent + "    return {\n";
-    Object.entries(initkwds).forEach(function ([kwd, def], idx) {
-        pjs += indent + "        ";
-        if(lang === "js") {
-            pjs += kwd; }
-        else {
-            pjs += "\"" + kwd + "\""; }
-        pjs += ": {"
-        Object.entries(def).forEach(function ([dk, dv]) {
-            if(lang === "js") {
-                pjs += dk; }
-            else {
-                pjs += "\"" + dk + "\""; }
-            pjs += ": ";
-            if(dk === "dsc") {
-                pjs += "\"" + dv + "\"}"; }
-            else {
-                pjs += dv + ", "; }});
-        if(idx < Object.keys(initkwds).length - 1) {
-            pjs += ",\n"; }
-        else {
-            if(lang === "js") {
-                pjs += "}; }\n"; }
-            else {
-                pjs += "}\n"; } } });
-    return pjs;
 }
 
 
@@ -1026,7 +996,6 @@ function createPythonDBAcc () {
     pyc += entityQueryFunction() + "\n\n";
     pyc += fieldVisibilityFunction() + "\n\n";
     pyc += appSpecificFunctions() + "\n\n";
-    pyc += commonServerDefs("python") + "\n\n";
     writeFileSync(srcdir + "/dbacc.py", pyc);
 }
 
@@ -1235,35 +1204,9 @@ function createJSServerAcc () {
 }
 
 
-//The DiggerHub project assumes the Digger project is located off a sibling
-//directory.  Will have already run build/makelinks.js for client source.
-function createLocHubDefs () {
-    var jsc = "";
-    jsc += "/*jslint node, white, long, unordered */\n";
-    jsc += "//////////////////////////////////////////////////\n";
-    jsc += "//\n";
-    jsc += "//     D O   N O T   E D I T\n";
-    jsc += "//\n";
-    jsc += "// This file was written by makeCRUD.js.  Any changes should be made there.\n";
-    jsc += "//\n";
-    jsc += "//////////////////////////////////////////////////\n";
-    jsc += "\n";
-    jsc += "module.exports = (function () {\n";
-    jsc += "    \"use strict\";\n";
-    jsc += "\n";
-    jsc += "    return {\n";
-    jsc += commonServerDefs("js")
-    jsc += "    };\n";
-    jsc += "}());\n";
-    jsc += "\n";
-    writeFileSync(dsvdir + "/dhdefs.js", jsc);
-}
-
-
 ////////////////////////////////////////
 // Write the files
 
 createDatabaseSQL();
 createPythonDBAcc();
 createJSServerAcc();
-createLocHubDefs();

@@ -74,21 +74,13 @@ def songupd():  # params: auth, song
 def multipupd():  # params: auth, songs
     return util.secure(appdat.multiupd)
 
-@app.route('/api/addmusf', methods=['GET', 'POST'])
-def addmusf():  # params: auth, mfaddr
-    return util.secure(appdat.addmusf)
+@app.route('/api/fangrpact', methods=['GET', 'POST'])
+def fangrpact():  # params: auth, action, digname
+    return util.secure(appdat.fangrpact)
 
-@app.route('/api/mfcontrib', methods=['GET', 'POST'])
-def mfcontrib():  # params: auth
-    return util.secure(appdat.mfcontrib)
-
-@app.route('/api/mfclear', methods=['GET', 'POST'])
-def mfclear():  # params: auth, mfid
-    return util.secure(appdat.mfclear)
-
-@app.route('/api/createmusf', methods=['GET', 'POST'])
-def createmusf():  # params: auth, emaddr, firstname
-    return util.secure(appdat.createmusf)
+@app.route('/api/fancollab', methods=['GET', 'POST'])
+def fancollab():  # params: auth, mfid, ctype
+    return util.secure(appdat.fancollab)
 
 @app.route('/api/musfdat')
 def musfdat():  # params: auth, gid, since

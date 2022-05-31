@@ -50,7 +50,7 @@ module.exports = (function () {
         {f:"kwdefs", d:"json", c:"keyword definitions for this account (*1)"},
         {f:"igfolds", d:"json", c:"ignore folders used by this account"},
         {f:"settings", d:"json", c:"ctrl vals, general options (*2)"},
-        {f:"musfs", d:"jsarr", c:"sorted music fans, max 4 active (*3)"}],
+        {f:"musfs", d:"jsarr", c:"music fans in whatever sort order (*3)"}],
      //*1 kwdefs: At least 4 keyword definitions by keyword, each with
      //    pos: position of keyword in selection/filters
      //    sc: song count, how many songs have this keyword
@@ -67,8 +67,9 @@ module.exports = (function () {
      //    digname: digname of music fan
      //    firstname: fan firstname
      //    added: timestamp when fan was added
-     //    lastheard: latest msg time or added
-     //    common: count of songs you have both rated
+     //    lastcheck: timestamp of last default rating pull check
+     //    lastheard: latest msg or default rating
+     //    common: count of songs you both have
      //    dfltrcv: count of default ratings provided from this fan
      //    dfltsnd: count of default ratings sent to this fan
      //  The common/dfltrcv/dfltsnd fields are computed once when the fan
