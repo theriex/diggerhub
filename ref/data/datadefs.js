@@ -67,8 +67,8 @@ module.exports = (function () {
      //    digname: digname of music fan
      //    firstname: fan firstname
      //    added: timestamp when fan was added
-     //    lastcheck: timestamp of last default rating pull check
-     //    lastheard: latest msg or default rating
+     //    lastpull: ISO timestamp of last default rating pull check
+     //    lastheard: max of latest msg received or latest default rating pulled
      //    common: count of songs you both have
      //    dfltrcv: count of default ratings provided from this fan
      //    dfltsnd: count of default ratings sent to this fan

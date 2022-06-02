@@ -255,7 +255,6 @@ def set_srcrat_from_rating_fields(song):
     song["srcrat"] = ":".join([str(song[v]) for v in rfdvs])
 
 def set_rating_fields_from_source(song, source):
-    song["srcid"] = source["aid"]
     for fld, val in rfdvs.items():
         song[fld] = source.get(fld, val)
     set_srcrat_from_rating_fields(song)
@@ -391,6 +390,7 @@ def user_song_by_songid(digacc, songid):
     if song["aid"] != digacc["dsId"]:
         note_song_recommendation(song, digacc)
         cs = copy_song(song, digacc)
+        cs["srcid"] = song["aid"]
         set_rating_fields_from_source(cs, song)
         song = cs
     return song
@@ -601,7 +601,7 @@ def get_default_ratings_from_fan(digacc, mfid, maxret):
 # digacc's group.  They are counted in mf's dfltsnd.
 def count_collaborations(digacc, mf):
     sql = ("SELECT COUNT(*) AS common FROM Song AS asg, Song AS fsg" +
-           "WHERE asg.aid = " + str(digacc["dsId"]) +
+           " WHERE asg.aid = " + str(digacc["dsId"]) +
            " AND fsg.aid = " + str(mf["dsId"]) +
            " AND asg.smti = fsg.smti AND asg.smar = fsg.smar" +
            " AND asg.smab = fsg.smab")
@@ -673,7 +673,7 @@ def update_song_by_id(digacc, updsong):
 def acct2mf(digacc):
     mf = {"dsId": digacc["dsId"], "digname":digacc["digname"],
           "firstname": digacc["firstname"], "added":dbacc.nowISO(),
-          "lastheard":"", "common":0, "dfltrcv":0, "dfltsnd":0}
+          "lastpull":"", "lastheard":"", "common":0, "dfltrcv":0, "dfltsnd":0}
     return mf
 
 
@@ -830,6 +830,10 @@ def fancollab():
         elif ctype == "get":
             res = get_default_ratings_from_fan(digacc, mfid, maxret)
             fan["dfltrcv"] += len(res)
+            now = dbacc.nowISO()
+            if res:  # have at least one default result
+                fan["lastheard"] = now
+            fan["lastpull"] = now
         elif ctype == "count":
             res = []
             count_collaborations(digacc, fan)
