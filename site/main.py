@@ -82,6 +82,10 @@ def fangrpact():  # params: auth, action, digname
 def fancollab():  # params: auth, mfid, ctype
     return util.secure(appdat.fancollab)
 
+@app.route('/api/fanmsg', methods=['GET', 'POST'])
+def fanmsg():  #params: auth, action, idcsv
+    return util.secure(appdat.fanmsg)
+
 @app.route('/api/musfdat')
 def musfdat():  # params: auth, gid, since
     return util.secure(appdat.musfdat)

@@ -9,6 +9,7 @@ import logging
 import json
 import datetime
 import re
+import urllib.parse
 import py.dbacc as dbacc
 import py.util as util
 
@@ -95,7 +96,7 @@ def reset_dead_spid_if_metadata_changed(updsong, dbsong):
         dbsong["spid"] = ""
 
 
-def standarized_colloquial_match(txt):
+def standardized_colloquial_match(txt):
     scm = txt
     scm = re.sub(r"\(.*", "", scm)  # remove trailing parentheticals
     scm = re.sub(r"\[.*", "", scm)  # remove trailing bracket text
@@ -105,9 +106,9 @@ def standarized_colloquial_match(txt):
 
 
 def rebuild_derived_song_fields(song):
-    song["smti"] = standarized_colloquial_match(song["ti"])
-    song["smar"] = standarized_colloquial_match(song["ar"])
-    song["smab"] = standarized_colloquial_match(song["ab"])
+    song["smti"] = standardized_colloquial_match(song["ti"])
+    song["smar"] = standardized_colloquial_match(song["ar"])
+    song["smab"] = standardized_colloquial_match(song["ab"])
 
 
 def update_song_fields(updsong, dbsong):
@@ -254,9 +255,14 @@ def unset_rating_fields(song):
 def set_srcrat_from_rating_fields(song):
     song["srcrat"] = ":".join([str(song[v]) for v in rfdvs])
 
-def set_rating_fields_from_source(song, source):
+def set_rating_fields_from_source(digacc, song, source):
     for fld, val in rfdvs.items():
         song[fld] = source.get(fld, val)
+    # restrict possibly offensive and/or junk keywords from being copied in
+    # unless the recipient already has that keyword defined.
+    allowkws = list(json.loads(digacc["kwdefs"]))
+    givenkws = source["kws"].split(",")
+    song["kws"] = ",".join([k for k in givenkws if k in allowkws])
     set_srcrat_from_rating_fields(song)
 
 def ratings_changed_from_srcrat(song):
@@ -391,7 +397,7 @@ def user_song_by_songid(digacc, songid):
         note_song_recommendation(song, digacc)
         cs = copy_song(song, digacc)
         cs["srcid"] = song["aid"]
-        set_rating_fields_from_source(cs, song)
+        set_rating_fields_from_source(digacc, cs, song)
         song = cs
     return song
 
@@ -452,24 +458,6 @@ def fetch_matching_songs(digacc, fvs, limit):
     if fvs.get("startsongid"):
         songs.insert(0, user_song_by_songid(digacc, int(fvs["startsongid"])))
     return songs
-
-
-def add_music_fan(digacc, mfacct):
-    musfs = json.loads(digacc.get("musfs") or "[]")
-    for mf in musfs:  # verify and update existing data
-        fstat = mf.get("status")
-        if (not fstat) or (fstat not in ["Active", "Inactive", "Removed"]):
-            mf["status"] = "Inactive"
-    musfs = ([{"dsId": mfacct["dsId"],
-               "email": mfacct["email"],
-               "firstname": mfacct["firstname"],
-               "hashtag": (mfacct.get("hashtag") or ""),
-               "status": "Active"}] +
-             [mf for mf in musfs if mf["dsId"] != mfacct["dsId"]])
-    digacc["musfs"] = json.dumps(musfs)
-    digacc = dbacc.write_entity(digacc, digacc["modified"])
-    logging.info(digacc["email"] + " added fan: " + mfacct["email"])
-    return digacc
 
 
 # Returns a list of saved songs corresponging to the uploaded songs, or
@@ -539,19 +527,6 @@ def append_default_ratings_from_fan(digacc, mf, prcsongs, maxret):
     return True
 
 
-def fill_default_ratings_from_fans(digacc, maxret):
-    prcsongs = []
-    accmod = False
-    musfs = json.loads(digacc.get("musfs") or "[]")
-    for mf in (mf for mf in musfs if mf.get("status") == "Active"):
-        if append_default_ratings_from_fan(digacc, mf, prcsongs, maxret):
-            accmod = True
-    if accmod:  # write updated checksince times for musfs
-        digacc["musfs"] = json.dumps(musfs)
-        digacc = dbacc.write_entity(digacc, digacc["modified"])
-    return [digacc] + prcsongs
-
-
 # For each fan rated song, if the srcrat is the same as the current
 # settings, revert the song to unrated.  Clear srcid and srcrat.  Return a
 # list of all updated Songs.
@@ -586,7 +561,7 @@ def get_default_ratings_from_fan(digacc, mfid, maxret):
     for rat in drs:
         song = dbacc.cfbk("Song", "dsId", rat["dsId"], required=True)
         song["srcid"] = mfid
-        set_rating_fields_from_source(song, rat)
+        set_rating_fields_from_source(digacc, song, rat)
         res.append(dbacc.write_entity(song, song["modified"]))
     logging.info(str(digacc["dsId"]) + " received " + str(len(res)) +
                  " default ratings from " + str(mfid))
@@ -699,6 +674,121 @@ def connect_me(digacc):
         raise ValueError("No listeners found")
     musfs = [acct2mf(fan) for fan in fans]
     return musfs
+
+
+# idcsv is a prioritized list of music fan ids to query for recommendations.
+# Returns at most 5 recommendations.  Matching on smti/smar/smab may miss due to
+# bad metadata, resulting in a recommendation of a song the caller already has.
+# The expectation is the caller will dismiss that recommendation and try again.
+def make_song_recommendations(digacc, idcsv):
+    logging.info("make_song_recommendations for " + digacc["dsId"] +
+                 " from " + idcsv)
+    recs = []
+    for mfid in idcsv.split(","):
+        sql = ("SELECT fsg.dsId, fsg.ti, fsg.ar, fsg.ab, fsg.nt" +
+               " FROM Song AS fsg WHERE fsg.aid = " + mfid +
+               " AND fsg.rv >= 8 AND NOT EXISTS (SELECT dsId FROM DigMsg" +
+               " WHERE msgtype = 'recommendation' AND songid = fsg.dsId)" +
+               " AND NOT EXISTS (SELECT dsId FROM Song AS osg" +
+               " WHERE osg.aid = " + digacc["dsId"] +
+               " AND fsg.smti = osg.smti AND fsg.smar = osg.smar" +
+               " AND fsg.smab = osg.smab)" +
+               " ORDER BY fsg.rv DESC, fsg.lp DESC LIMIT 1")
+        # logging.info("msr sql: " + sql)
+        sidrs = dbacc.custom_query(sql, ["dsId", "ti", "ar", "ab", "nt"])
+        for row in sidrs:
+            sug = {"dsType":"DigMsg", "modified":"", "sndr":int(mfid),
+                   "rcvr":digacc["dsId"], "msgtype":"recommendation",
+                   "status":"open", "songid":row["dsId"], "ti":row["ti"],
+                   "ar":row["ar"], "ab":row["ar"], "nt":row["nt"]}
+            recs.append(dbacc.write_entity(sug))
+        # logging.info("len(recs): " + str(len(recs)));
+        if len(recs) > 4:
+            break
+    return recs
+
+
+# Send details about a recommendation or share.
+def mail_digmsg_details(digacc, msgidstr):
+    subj = "$SNDR $MSGT: $TI"
+    body = """
+You requested $SNDR $MSGT details be sent to you for the song
+
+$TI
+by $AR
+off the album $AB
+
+$COMMENT
+
+Here are some prebuilt search links to help find the recording:
+
+$LINKS
+
+If you did not request this information, or if there is a problem with the content of this message, reply with any descriptive details you can so support can look into it.
+
+"""
+    dm = dbacc.cfbk("DigMsg", "dsId", msgidstr, required=True)
+    sndr = dbacc.cfbk("DigAcc", "dsId", dm["sndr"], required=True)
+    song = dbacc.cfbk("Song", "dsId", dm["songid"], required=True)
+    links = [
+        ("https://bandcamp.com/search?item_type&q=" +
+         (urllib.parse.quote(dm["ti"] + " " + dm["ar"]).replace("%20", "%2B"))),
+        ("https://www.amazon.com/s?k=" +
+         (urllib.parse.quote(dm["ti"] + " " + dm["ar"]).replace("%20", "+"))),
+        ("https://music.youtube.com/search?q=" +
+         (urllib.parse.quote(dm["ti"] + " " + dm["ar"]).replace("%20", "+")))]
+    if song.get("spid", "").startswith("z:"):
+        links.append("https://open.spotify.com/track/" + song["spid"][2:])
+    note = ""
+    if song["nt"]:
+        note = "Note from " + sndr["digname"] + ":\n" + song["nt"]
+    repls = [["$SNDR", sndr["digname"]], ["$MSGT", dm["msgtype"]],
+             ["$COMMENT", note], ["$TI", dm["ti"]], ["$AR", dm["ar"]],
+             ["$AB", dm["ab"]], ["$LINKS", "\n\n".join(links)]]
+    for repl in repls:
+        body = body.replace(repl[0], repl[1])
+        subj = subj.replace(repl[0], repl[1])
+    util.send_mail(digacc["email"], subj, body)
+    dm["procnote"] = "Mail message sent to " + digacc["email"]
+    return dm
+
+
+# Respond to received message.
+def reply_to_digmsg(digacc, idcsv):
+    replies = {  # see top.js mgrs.fma mds for what is being responded to here
+        "recresp": "Glad you liked $SONG!",
+        "discovery": "Now we both have another great track: $SONG",
+        "pathcross": "Listened to $SONG recently also! $LEV track.",
+        "share": "Thanks for sharing $SONG."}
+    dm = dbacc.cfbk("DigMsg", "dsId", idcsv, required=True)
+    reply = replies.get(dm["msgtype"])
+    if not reply:
+        raise ValueError("No known reply for msgtype " + dm["msgtype"])
+    rebuild_derived_song_fields(dm)
+    if "$LEV" in reply:
+        lev = "Good"
+        where = ("WHERE aid = " + str(digacc["dsId"]) +
+                 " AND smti = " + dm["smti"] + " AND smar = " + dm["smar"] +
+                 " AND smab = " + dm["smab"] + " ORDER BY rv DESC")
+        songs = dbacc.query_entity("Song", where)
+        if songs:  # have at least one match
+            mysong = songs[0]
+            if mysong["rv"] > 8:
+                lev = "Great"
+            if mysong["rv"] == 10:
+                lev = "Awesome"
+        reply = reply.replace("$LEV", lev)
+    reply = reply.replace("$SONG", dm["smti"] + " by " + dm["smar"])
+    # endthread references sender's songid. DigAcc may or may not have song.
+    rmsg = {"dsType":"DigMsg", "modified":"", "sndr":digacc["dsId"],
+            "rcvr":dm["sndr"], "msgtype":"endthread", "status":"open",
+            "srcmsg":dm["dsId"], "songid":dm["songid"], "ti":dm["ti"],
+            "ar":dm["ar"], "ab":dm["ar"], "nt":""}
+    dbacc.write_entity(rmsg)  # send reply message
+    dm.procnote = reply
+    dm.status = "replied"
+    dm = dbacc.write_entity(dm)
+    return dm
 
 
 ############################################################
@@ -843,6 +933,35 @@ def fancollab():
     except ValueError as e:
         return util.serve_value_error(e)
     return util.respJSON(res, audience="private")
+
+
+def fanmsg():
+    try:
+        digacc, _ = util.authenticate()
+        action = dbacc.reqarg("action", "string", required=True)
+        idcsv = dbacc.reqarg("idcsv", "string")
+        msgs = []
+        if action == "recommend":
+            msgs = make_song_recommendations(digacc, idcsv)
+        elif action == "dismiss":
+            msg = dbacc.cfbk("DigMsg", "dsId", idcsv, required=True)
+            msg["status"] = "dismissed"
+            msgs.append(dbacc.write_entity(msg, msg["modified"]))
+        elif action == "emdet":
+            msgs.append(mail_digmsg_details(digacc, idcsv))
+        elif action == "reply":
+            msgs.append(reply_to_digmsg(digacc, idcsv))
+        else:  # fetch
+            where = ("WHERE rcvr = " + str(digacc["dsId"]) +
+                     " AND status = 'open'" +
+                     " ORDER BY modified DESC LIMIT 50")
+            msgs = dbacc.query_entity("DigMsg", where)
+        for msg in msgs:
+            rebuild_derived_song_fields(msg)
+    except ValueError as e:
+        return util.serve_value_error(e)
+    return util.respJSON(msgs)
+
 
 
 # gid, since (timestamp). Auth required, need to know who is asking.

@@ -113,12 +113,15 @@ entdefs = {
         "modified": {"pt": "string", "un": False, "dv": ""},
         "batchconv": {"pt": "string", "un": False, "dv": ""},
         "sndr": {"pt": "dbid", "un": False, "dv": 0},
-        "sendername": {"pt": "string", "un": False, "dv": ""},
         "rcvr": {"pt": "dbid", "un": False, "dv": 0},
         "msgtype": {"pt": "string", "un": False, "dv": ""},
         "status": {"pt": "string", "un": False, "dv": ""},
         "srcmsg": {"pt": "dbid", "un": False, "dv": 0},
-        "songid": {"pt": "dbid", "un": False, "dv": 0}
+        "songid": {"pt": "dbid", "un": False, "dv": 0},
+        "ti": {"pt": "string", "un": False, "dv": ""},
+        "ar": {"pt": "string", "un": False, "dv": ""},
+        "ab": {"pt": "string", "un": False, "dv": ""},
+        "nt": {"pt": "string", "un": False, "dv": ""}
     },
     "AppService": {  # Processing service access
         "dsId": {"pt": "dbid", "un": True, "dv": 0},
@@ -636,8 +639,6 @@ def app2db_DigMsg(inst, fill=True):
         cnv["batchconv"] = app2db_fieldval(None, "batchconv", inst)
     if fill or "sndr" in inst:
         cnv["sndr"] = app2db_fieldval("DigMsg", "sndr", inst)
-    if fill or "sendername" in inst:
-        cnv["sendername"] = app2db_fieldval("DigMsg", "sendername", inst)
     if fill or "rcvr" in inst:
         cnv["rcvr"] = app2db_fieldval("DigMsg", "rcvr", inst)
     if fill or "msgtype" in inst:
@@ -648,6 +649,14 @@ def app2db_DigMsg(inst, fill=True):
         cnv["srcmsg"] = app2db_fieldval("DigMsg", "srcmsg", inst)
     if fill or "songid" in inst:
         cnv["songid"] = app2db_fieldval("DigMsg", "songid", inst)
+    if fill or "ti" in inst:
+        cnv["ti"] = app2db_fieldval("DigMsg", "ti", inst)
+    if fill or "ar" in inst:
+        cnv["ar"] = app2db_fieldval("DigMsg", "ar", inst)
+    if fill or "ab" in inst:
+        cnv["ab"] = app2db_fieldval("DigMsg", "ab", inst)
+    if fill or "nt" in inst:
+        cnv["nt"] = app2db_fieldval("DigMsg", "nt", inst)
     return cnv
 
 
@@ -661,12 +670,15 @@ def db2app_DigMsg(inst):
     cnv["modified"] = db2app_fieldval(None, "modified", inst)
     cnv["batchconv"] = db2app_fieldval(None, "batchconv", inst)
     cnv["sndr"] = db2app_fieldval("DigMsg", "sndr", inst)
-    cnv["sendername"] = db2app_fieldval("DigMsg", "sendername", inst)
     cnv["rcvr"] = db2app_fieldval("DigMsg", "rcvr", inst)
     cnv["msgtype"] = db2app_fieldval("DigMsg", "msgtype", inst)
     cnv["status"] = db2app_fieldval("DigMsg", "status", inst)
     cnv["srcmsg"] = db2app_fieldval("DigMsg", "srcmsg", inst)
     cnv["songid"] = db2app_fieldval("DigMsg", "songid", inst)
+    cnv["ti"] = db2app_fieldval("DigMsg", "ti", inst)
+    cnv["ar"] = db2app_fieldval("DigMsg", "ar", inst)
+    cnv["ab"] = db2app_fieldval("DigMsg", "ab", inst)
+    cnv["nt"] = db2app_fieldval("DigMsg", "nt", inst)
     return cnv
 
 
@@ -715,7 +727,7 @@ def dblogmsg(op, entity, res):
         "DigAcc": ["email", "firstname"],
         "Song": ["aid", "ti", "ar"],
         "SKeyMap": ["skey", "spid"],
-        "DigMsg": ["sendername", "msgtype", "songid"],
+        "DigMsg": ["sndr", "msgtype", "rcvr", "songid", "ti"],
         "AppService": ["name"]}
     if res:
         if op != "QRY":  # query is already a list, listify anything else
@@ -911,18 +923,21 @@ def update_existing_SKeyMap(context, fields):
 def insert_new_DigMsg(cnx, cursor, fields):
     fields = app2db_DigMsg(fields)
     stmt = (
-        "INSERT INTO DigMsg (created, modified, sndr, sendername, rcvr, msgtype, status, srcmsg, songid) "
-        "VALUES (%(created)s, %(modified)s, %(sndr)s, %(sendername)s, %(rcvr)s, %(msgtype)s, %(status)s, %(srcmsg)s, %(songid)s)")
+        "INSERT INTO DigMsg (created, modified, sndr, rcvr, msgtype, status, srcmsg, songid, ti, ar, ab, nt) "
+        "VALUES (%(created)s, %(modified)s, %(sndr)s, %(rcvr)s, %(msgtype)s, %(status)s, %(srcmsg)s, %(songid)s, %(ti)s, %(ar)s, %(ab)s, %(nt)s)")
     data = {
         'created': fields.get("created"),
         'modified': fields.get("modified"),
         'sndr': fields.get("sndr", entdefs["DigMsg"]["sndr"]["dv"]),
-        'sendername': fields.get("sendername", entdefs["DigMsg"]["sendername"]["dv"]),
         'rcvr': fields.get("rcvr", entdefs["DigMsg"]["rcvr"]["dv"]),
         'msgtype': fields.get("msgtype", entdefs["DigMsg"]["msgtype"]["dv"]),
         'status': fields.get("status", entdefs["DigMsg"]["status"]["dv"]),
         'srcmsg': fields.get("srcmsg", entdefs["DigMsg"]["srcmsg"]["dv"]),
-        'songid': fields.get("songid", entdefs["DigMsg"]["songid"]["dv"])}
+        'songid': fields.get("songid", entdefs["DigMsg"]["songid"]["dv"]),
+        'ti': fields.get("ti", entdefs["DigMsg"]["ti"]["dv"]),
+        'ar': fields.get("ar", entdefs["DigMsg"]["ar"]["dv"]),
+        'ab': fields.get("ab", entdefs["DigMsg"]["ab"]["dv"]),
+        'nt': fields.get("nt", entdefs["DigMsg"]["nt"]["dv"])}
     cursor.execute(stmt, data)
     fields["dsId"] = cursor.lastrowid
     cnx.commit()
@@ -1127,12 +1142,12 @@ def query_SKeyMap(cnx, cursor, where):
 
 def query_DigMsg(cnx, cursor, where):
     query = "SELECT dsId, created, modified, "
-    query += "sndr, sendername, rcvr, msgtype, status, srcmsg, songid"
+    query += "sndr, rcvr, msgtype, status, srcmsg, songid, ti, ar, ab, nt"
     query += " FROM DigMsg " + where
     cursor.execute(query)
     res = []
-    for (dsId, created, modified, sndr, sendername, rcvr, msgtype, status, srcmsg, songid) in cursor:
-        inst = {"dsType": "DigMsg", "dsId": dsId, "created": created, "modified": modified, "sndr": sndr, "sendername": sendername, "rcvr": rcvr, "msgtype": msgtype, "status": status, "srcmsg": srcmsg, "songid": songid}
+    for (dsId, created, modified, sndr, rcvr, msgtype, status, srcmsg, songid, ti, ar, ab, nt) in cursor:
+        inst = {"dsType": "DigMsg", "dsId": dsId, "created": created, "modified": modified, "sndr": sndr, "rcvr": rcvr, "msgtype": msgtype, "status": status, "srcmsg": srcmsg, "songid": songid, "ti": ti, "ar": ar, "ab": ab, "nt": nt}
         inst = db2app_DigMsg(inst)
         res.append(inst)
     dblogmsg("QRY", "DigMsg", res)

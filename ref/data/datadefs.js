@@ -121,17 +121,19 @@ module.exports = (function () {
 
     {entity:"DigMsg", descr:"Music communications between DigAccs", fields:[
         {f:"sndr", d:"req dbid", descr:"Originating DigAcc for this message"},
-        {f:"sendername", d:"req string", descr:"Sender DigName"},
         {f:"rcvr", d:"req dbid", descr:"Receiving DigAcc for this message"},
         {f:"msgtype", d:"req string", descr:"Message type label"},
-        {f:"status", d:"req string", descr:"open|dismissed"},
+        {f:"status", d:"req string", descr:"open|dismissed|replied"},
+        //procnote: runtime-only server processing message returned to client
+        {f:"emsnds", d:"string", descr:"timestamp csv of detail email sends"},
         {f:"srcmsg", d:"dbid", descr:"Source message if reply msgtype"},
-        {f:"songid", d:"dbid", descr:"Source song for message (*1)"}],
-     //*1 songid: At runtime, ti/ar/ab/el/al/kws/rv/nt fields are joined in
-     //           for reference. Not worth duplicating even though song data
-     //           may change over time.
+        {f:"songid", d:"dbid", descr:"dsId of source song for message"},
+        {f:"ti", d:"req string", c:"title of source song"},
+        {f:"ar", d:"string", c:"artist for source song"},
+        {f:"ab", d:"string", c:"album for source song"},
+        {f:"nt", d:"text", c:"note text from source song"}],
      cache:{minutes:0},
-     logflds:["sendername", "msgtype", "songid"]},
+     logflds:["sndr", "msgtype", "rcvr", "songid", "ti"]},
         
     {entity:"AppService", descr:"Processing service access", fields:[
         {f:"name", d:"string req unique", c:"Name of service"},

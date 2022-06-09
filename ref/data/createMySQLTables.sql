@@ -65,12 +65,15 @@ CREATE TABLE DigMsg (  -- Music communications between DigAccs
   modified VARCHAR(256) NOT NULL,
   batchconv VARCHAR(256),
   sndr BIGINT NOT NULL,
-  sendername VARCHAR(256) NOT NULL,
   rcvr BIGINT NOT NULL,
   msgtype VARCHAR(256) NOT NULL,
   status VARCHAR(256) NOT NULL,
   srcmsg BIGINT,
   songid BIGINT,
+  ti VARCHAR(256) NOT NULL,
+  ar VARCHAR(256),
+  ab VARCHAR(256),
+  nt LONGTEXT,
   PRIMARY KEY (dsId)
 );
 ALTER TABLE DigMsg AUTO_INCREMENT = 2020;
