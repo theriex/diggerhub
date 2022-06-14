@@ -783,12 +783,47 @@ def reply_to_digmsg(digacc, idcsv):
     rmsg = {"dsType":"DigMsg", "modified":"", "sndr":digacc["dsId"],
             "rcvr":dm["sndr"], "msgtype":"endthread", "status":"open",
             "srcmsg":dm["dsId"], "songid":dm["songid"], "ti":dm["ti"],
-            "ar":dm["ar"], "ab":dm["ar"], "nt":""}
+            "ar":dm["ar"], "ab":dm["ab"], "nt":""}
     dbacc.write_entity(rmsg)  # send reply message
     dm.procnote = reply
     dm.status = "replied"
     dm = dbacc.write_entity(dm)
     return dm
+
+
+def broadcast_share_messages(digacc, song):
+    shmsgs = []
+    where = ("WHERE musfs LIKE \"%\\\"dsId\\\":\\\"" + str(digacc["dsId"]) +
+             "\\\"%\"")
+    listeners = dbacc.query_entity("DigAcc", where)
+    for fan in listeners:
+        # new msg instance even if previously shared, responses might differ.
+        msg = {"dsType":"DigMsg", "modified":"", "sndr":digacc["dsId"],
+               "rcvr":fan["dsId"], "msgtype":"share", "status":"open",
+               "songid":song["dsId"], "ti":song["ti"], "ar":song["ar"],
+               "ab":song["ab"], "nt":song["nt"]}
+        shmsgs.append(dbacc.write_entity(msg))
+    return shmsgs
+
+
+def send_share_messages(digacc, idcsv):
+    reactdays = 20  # must wait at least this many days before sharing again
+    song = dbacc.cfbk("Song", "dsId", idcsv, required=True)
+    rmsg = {"dsType":"DigMsg", "modified":"", "sndr":digacc["dsId"],
+            "rcvr":"101", "msgtype":"share", "status":"open",
+            "songid":song["dsId"], "ti":song["ti"], "ar":song["ar"],
+            "ab":song["ab"], "nt":song["nt"]}
+    where = ("WHERE msgtype = \"share\" AND sndr = " + str(digacc["dsId"]) +
+             " AND rcvr = 101 AND songid = " + str(song["dsId"]))
+    pms = dbacc.query_entity("DigMsg", where)
+    if pms:
+        rmsg = pms[0]
+    now = datetime.datetime.utcnow()
+    thresh = dbacc.dt2ISO(now - datetime.timedelta(days=reactdays))
+    if not rmsg["modified"] or rmsg["modified"] < thresh:
+        rmsg = dbacc.write_entity(rmsg, rmsg["modified"])
+        broadcast_share_messages(digacc, song)
+    return rmsg
 
 
 ############################################################
@@ -951,6 +986,8 @@ def fanmsg():
             msgs.append(mail_digmsg_details(digacc, idcsv))
         elif action == "reply":
             msgs.append(reply_to_digmsg(digacc, idcsv))
+        elif action == "share":
+            msgs.append(send_share_messages(digacc, idcsv))
         else:  # fetch
             where = ("WHERE rcvr = " + str(digacc["dsId"]) +
                      " AND status = 'open'" +
