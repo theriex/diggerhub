@@ -754,41 +754,40 @@ If you did not request this information, or if there is a problem with the conte
 
 
 # Respond to received message.
-def reply_to_digmsg(digacc, idcsv):
-    replies = {  # see top.js mgrs.fma mds for what is being responded to here
-        "recresp": "Glad you liked $SONG!",
-        "discovery": "Now we both have another great track: $SONG",
-        "pathcross": "Listened to $SONG recently also! $LEV track.",
-        "share": "Thanks for sharing $SONG."}
-    dm = dbacc.cfbk("DigMsg", "dsId", idcsv, required=True)
-    reply = replies.get(dm["msgtype"])
-    if not reply:
-        raise ValueError("No known reply for msgtype " + dm["msgtype"])
-    rebuild_derived_song_fields(dm)
-    if "$LEV" in reply:
-        lev = "Good"
-        where = ("WHERE aid = " + str(digacc["dsId"]) +
-                 " AND smti = " + dm["smti"] + " AND smar = " + dm["smar"] +
-                 " AND smab = " + dm["smab"] + " ORDER BY rv DESC")
-        songs = dbacc.query_entity("Song", where)
-        if songs:  # have at least one match
-            mysong = songs[0]
-            if mysong["rv"] > 8:
-                lev = "Great"
-            if mysong["rv"] == 10:
-                lev = "Awesome"
-        reply = reply.replace("$LEV", lev)
-    reply = reply.replace("$SONG", dm["smti"] + " by " + dm["smar"])
-    # endthread references sender's songid. DigAcc may or may not have song.
-    rmsg = {"dsType":"DigMsg", "modified":"", "sndr":digacc["dsId"],
-            "rcvr":dm["sndr"], "msgtype":"endthread", "status":"open",
-            "srcmsg":dm["dsId"], "songid":dm["songid"], "ti":dm["ti"],
-            "ar":dm["ar"], "ab":dm["ab"], "nt":""}
-    dbacc.write_entity(rmsg)  # send reply message
-    dm.procnote = reply
-    dm.status = "replied"
-    dm = dbacc.write_entity(dm)
-    return dm
+def reply_to_digmsg(digacc, msgid, msgtype):
+    mtypes = {"recresp": "Recommendation response",
+              "recywel": "You're welcome",
+              "shresp": "Share response"}
+    srcmsg = dbacc.cfbk("DigMsg", "dsId", msgid, required=True)
+    if srcmsg["status"] == "replied":
+        logging.info("reply_to_digmsg " + str(msgid) + " already replied")
+        return srcmsg
+    too_many_messages = False
+    if msgtype == "recresp":
+        now = datetime.datetime.utcnow()
+        time_window_start = dbacc.dt2ISO(now - datetime.timedelta(hours=24))
+        where = ("WHERE msgtype = \"recresp\"" +
+                 " AND sndr = " + str(digacc["dsId"]) +
+                 " AND rcvr = " + str(srcmsg["sndr"]) +
+                 " AND created > \"" + time_window_start + "\"")
+        logging.info(where)
+        prevmsgs = dbacc.query_entity("DigMsg", where)
+        logging.info("reply_to_digmsg " + str(len(prevmsgs)) + " prev recresp")
+        if len(prevmsgs) >= 2:
+            too_many_messages = True
+    if not too_many_messages:
+        rspmsg = {"dsType":"DigMsg", "modified":"", "sndr":digacc["dsId"],
+                  "rcvr":srcmsg["sndr"], "msgtype":msgtype, "status":"open",
+                  "srcmsg":srcmsg["dsId"], "songid":srcmsg["songid"],
+                  "ti":srcmsg["ti"], "ar":srcmsg["ar"], "ab":srcmsg["ab"],
+                  "nt":""}
+        logging.info("reply_to_digmsg sending " + msgtype)
+        dbacc.write_entity(rspmsg)  # send response message
+    srcmsg["status"] = "replied"
+    srcmsg = dbacc.write_entity(srcmsg, srcmsg["modified"])
+    rebuild_derived_song_fields(srcmsg)  # support client song matching
+    srcmsg["procnote"] = mtypes.get(msgtype, "Reply") + " sent"
+    return srcmsg
 
 
 def broadcast_share_messages(digacc, song):
@@ -984,8 +983,12 @@ def fanmsg():
             msgs.append(dbacc.write_entity(msg, msg["modified"]))
         elif action == "emdet":
             msgs.append(mail_digmsg_details(digacc, idcsv))
-        elif action == "reply":
-            msgs.append(reply_to_digmsg(digacc, idcsv))
+        elif action == "thxnrmv":
+            msgs.append(reply_to_digmsg(digacc, idcsv, "recresp"))
+        elif action == "welnrmv":
+            msgs.append(reply_to_digmsg(digacc, idcsv, "recywel"))
+        elif action == "rspnrmv":
+            msgs.append(reply_to_digmsg(digacc, idcsv, "shresp"))
         elif action == "share":
             msgs.append(send_share_messages(digacc, idcsv))
         else:  # fetch
