@@ -3,6 +3,7 @@
 #pylint: disable=invalid-name
 #pylint: disable=logging-not-lazy
 #pylint: disable=too-many-arguments
+#pylint: disable=line-too-long
 
 import logging
 import hmac
@@ -16,12 +17,13 @@ import urllib.parse
 import urllib.request
 import string
 import random
+import datetime
 import flask
 import py.dbacc as dbacc
 import py.mconf as mconf
 
 def version():
-    return "v1.0.4"
+    return "v1.0.5"
 
 
 def srverr(msg, code=400):
@@ -498,6 +500,36 @@ def updacc():
         digacc = dbacc.write_entity(digacc, digacc["modified"])
         runtime_decorate_account(digacc)
         token = token_for_user(digacc)    # return possibly updated token
+    except ValueError as e:
+        return serve_value_error(e)
+    return respJSON([digacc, token], audience="private")
+
+
+# Manual deletion process:
+#  - Verify account firstname is DELETEMEcode where code == actsends code
+#  - Delete all database records and restart server
+#  - Respond to email:
+# Your account and all associated data hase been permanently deleted from DiggerHub. You should probably also delete the Digger app, and all associated local data so you won't have any references to deleted data should you ever decide to use DiggerHub in the future.
+def deleteme():
+    try:
+        digacc, token = authenticate()
+        subj = "Account deletion request confirmation"
+        body = """
+At $TIMESTAMP, you requested, via the Digger app, that your account and all associated data be permanently and irrevocably deleted from DiggerHub.  If you did not make this request, you can safely ignore this message, and you should probably change your password.
+
+To confirm deletion of your account and all your data, go to your account profile and change your first name to DELETEME$WIPEPIN, then reply "Confirm" to this email.  You will get a response email back in a few days after your data has been deleted.
+"""
+        ts = dbacc.nowISO()
+        wipepin = "".join(random.choice(string.digits) for _ in range(6))
+        digacc["actsends"] = ts + ";" + wipepin
+        digacc = dbacc.write_entity(digacc, digacc["modified"])
+        tzoff = dbacc.reqarg("tzoff", "string")
+        if tzoff:  # number of minutes behind UTC
+            loct = dbacc.ISO2dt(ts) - datetime.timedelta(minutes=int(tzoff))
+            ts += " (" + loct.strftime("%A, %d %b %Y %H:%M:%S") + ")"
+        body = body.replace("$TIMESTAMP", ts)
+        body = body.replace("$WIPEPIN", wipepin)
+        send_mail(digacc["email"], subj, body)
     except ValueError as e:
         return serve_value_error(e)
     return respJSON([digacc, token], audience="private")

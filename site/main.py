@@ -30,9 +30,17 @@ app = flask.Flask(__name__)
 #  API:
 #
 
+####### Open site endpoints:
+
 @app.route('/api/version')
 def appversion():
     return util.version()
+
+@app.route('/api/doctext')
+def doctext():  #params: docurl
+    return util.doctext()
+
+####### Account actions:
 
 @app.route('/api/newacct', methods=['GET', 'POST'])
 def newacct():  # params: firstname, email, password
@@ -55,8 +63,14 @@ def mailpwr():  # params: email, returl
     return util.secure(util.mailpwr)
 
 @app.route('/api/emsupp', methods=['GET', 'POST'])
-def emsupp():  #params; auth subj body
+def emsupp():  #params: auth, subj, body
     return util.secure(util.emsupp)
+
+@app.route('/api/deleteme', methods=['GET', 'POST'])
+def deleteme():  #params: auth, tzoff
+    return util.secure(util.deleteme)
+
+####### Local song data and collaboration actions:
 
 @app.route('/api/hubsync', methods=['GET', 'POST'])
 def hubsync():  # params: auth, acct + zero or more songs
@@ -94,6 +108,8 @@ def musfdat():  # params: auth, gid, since
 def songttls():  # params: auth
     return util.secure(appdat.songttls)
 
+####### Spotify song data and collaboration actions:
+
 @app.route('/api/impsptracks', methods=['GET', 'POST'])
 def impsptracks():  # params: auth, items
     return util.secure(appdat.impsptracks)
@@ -109,10 +125,6 @@ def playerr():  # params: auth, type, spid, error
 @app.route('/api/songtip', methods=['GET', 'POST'])
 def songtip():  #parms: auth, songid
     return util.secure(appdat.songtip)
-
-@app.route('/api/doctext')
-def doctext():  #params: docurl
-    return util.doctext()
 
 
 ######################################################################

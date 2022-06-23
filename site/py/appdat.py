@@ -947,7 +947,7 @@ def fancollab():
         maxret = 200
         if ctype == "clear":
             res = clear_default_ratings_from_fan(digacc, mfid, maxret)
-            if res < 200:  # no more default ratings to remove after this
+            if len(res) < 200:  # no more default ratings to remove after this
                 fan["dfltrcv"] = 0
             else: # decrement dfltrcv, floor at zero in case counts ever off
                 fan["dfltrcv"] = max(fan["dfltrcv"] - len(res), 0)
