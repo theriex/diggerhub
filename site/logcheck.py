@@ -77,7 +77,7 @@ def check_log_file(lfp, tfmt, markers, skips):
 def check_log_files():
     appsrch = check_log_file(mconf.logsdir + "plg_application.log",
                              "%Y-%m-%d %H:",
-                             ["ERROR", "WARNING"],
+                             ["ERROR", "WARNING", "ValueError"],
                              [])
     errsrch = check_log_file(mconf.errsdir + "error.log",
                              " %b %d %H:",
