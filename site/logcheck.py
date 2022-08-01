@@ -35,6 +35,15 @@ def check_line_for_errs(summary, line, markers, skips):
                 summary[marker] += " " + line
 
 
+def is_relevant_log_line(lc, srchts, line):
+    # If the relevant timestamp is in the line, then it should be checked.
+    # If you have checked at least one error line and there is an indented
+    # detail line after that matching a search term, then that line should
+    # also be checked.
+    return ((srchts in line) or
+            (line.startswith("  ") and lc > 0))
+
+
 def search_log_file(lfp, srchts, markers, skips):
     """ search the log file path filtering by the search timestamp prefix """
     if not os.path.isfile(lfp):
@@ -46,7 +55,7 @@ def search_log_file(lfp, srchts, markers, skips):
         lc = 0
         with open(lfp) as f:
             for line in f.readlines():
-                if srchts in line:  # relevant log line
+                if is_relevant_log_line(lc, srchts, line):
                     lc += 1
                     check_line_for_errs(summary, line, markers, skips)
         txt = "Checked " + str(lc) + " lines from " + lfp + "\n"
