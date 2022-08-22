@@ -23,7 +23,7 @@ import py.dbacc as dbacc
 import py.mconf as mconf
 
 def version():
-    return "v1.0.6"
+    return "v1.0.7"
 
 
 def srverr(msg, code=400):
