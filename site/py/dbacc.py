@@ -421,7 +421,7 @@ def verify_timestamp_fields(entity, dsId, fields, vck):
     existing = cfbk(entity, "dsId", dsId)
     if not existing:
         raise ValueError("Existing " + entity + " " + str(dsId) + " not found.")
-    if vck != "override" and existing["modified"] != vck:
+    if vck != "override" and existing["modified"] > vck:
         logging.error("verify_timestamp_fields rejecting mod of " + entity +
                       " " + str(dsId) + ". existing: " + existing["modified"] +
                       ", received: " + vck + ".")
