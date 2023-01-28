@@ -29,6 +29,77 @@ INDEXHTML = """
 </head>
 <body id="bodyid">
 <div id="sitebody">
+<div id="outercontentdiv">
+  <div id="homepgcontentdiv">
+    <div id="topsectiondiv">
+     <div id="logodiv"><img src="img/appicon.png"/></div>
+   </div>
+    <div id="hubaccountcontentdiv"></div>
+    <div id="textcontentdiv">
+      <div id="splashdiv">
+        <div id="whatisdiggerdiv">
+<div class="wrapmindiv tinytext">&nbsp;</div><br class="tinytext"/>
+Digger is a music rating and retrieval app for your music collection.  Digger helps you enjoy the music you own.
+
+          <div id="rentvsowndiv">
+<table>
+<tr><th>Music rental:</th><th>Music ownership:</th></tr>
+<tr><td>All you can eat buffet</td><td>Pay as you go</td></tr>
+<tr><td>Musicians get a tiny fraction</td><td>Musicians get most of what you pay</td></tr>
+<tr><td>Regional restrictions</td><td>Listen wherever</td></tr>
+<tr><td>Licensing expires</td><td>Always available</td></tr>
+<tr><td>Suggested songs</td><td>Digger retrieval</td></tr>
+</table>
+          </div>
+        </div>
+        <div id="headertextdiv">
+          <div id="marqueeplaceholderdiv">Digger <i>Hub</i></div></div>
+        <div id="splashblockdiv">
+          <div class="platoptdescdiv">&nbsp;</div>
+          <div class="downloadsdiv">
+            <div><a href="downloads/digger-linux" onclick="app.login.dldet(event);return false">Linux</a></div>
+            <div><a href="downloads/Digger.dmg" onclick="app.login.dldet(event);return false">Mac</a></div>
+            <div><a href="downloads/digger-win.zip" onclick="app.login.dldet(event);return false">Windows</a><br/>
+                 <span>(win8.1+)</span></div>
+          </div>
+          <div class="downloadsdiv">
+            <div><a href="https://github.com/theriex/diggerIOS" onclick="app.login.dldet(event);return false">IOS</a><br/><span>(alpha)</span></div>
+            <div><a href="https://play.google.com/store/apps/details?id=com.diggerhub.digger" onclick="app.login.dldet(event);return false">Android</a></div>
+          </div>
+          <div class="platoptdescdiv">&nbsp;</div>
+        </div>
+        <div id="moreaboutdiggerdiv">
+
+Digger makes it easy to note your impression of any song so it can be
+fetched appropriately for any situation when you are playing music.  For
+playback, Digger works like an automated playlist, fetching and playing
+music matching to your listening context.  Digger helps you get back into
+your collection by pulling good selections you haven't played in a while.
+
+        </div>
+      </div>
+    </div> <!-- textcontentdiv -->
+    <div id="slidesdiv"></div>
+    <div id="usingdiggerdiv">
+
+There is no substitute for what you think.  Noting your own impressions
+might feel strange at first, especially if you are used to having other
+people tell you what to listen to and what you should think of it.  Soon
+you'll wonder why your impressions have been ignored so long. After
+a few albums worth of song ratings, automated retrieval and playback
+will start to improve your life.  Welcome back into your music!
+
+    </div>
+    <div id="taglinediv">
+      Dig into your music collection.
+    </div>
+    <div id="localtestdiv" style="display:none">
+      <iframe title="test to see if local digger server is running" id="diggerlocaliframe" src="http://localhost:6980/version"></iframe>
+    </div>
+    <div id="dloverlaydiv"></div>
+    <div id="hpgoverlaydiv"></div>
+  </div> <!-- homepgcontentdiv -->
+</div> <!-- outercontentdiv -->
 
 <div id="contactdiv">
   <a href="docs/manual.html">Manual</a>
@@ -36,41 +107,6 @@ INDEXHTML = """
   &nbsp; | &nbsp; <a href="docs/privacy.html">Privacy</a>
   &nbsp; | &nbsp; <a href="docs/support.html">Support</a>
 </div>
-
-<div id="topsectiondiv">
-  <div id="logodiv"><img src="img/appicon.png"/></div>
-</div>
-
-<div id="outercontentdiv">
-  <div id="homepgcontentdiv">
-    <div id="textcontentdiv">
-      <div id="splashdiv">
-        <div id="headertextdiv">Digger <i>Hub</i></div>
-        <div id="splashblockdiv">
-          <div id="wsadiv">
-            Digger
-            <a onclick="window.open('docs/websrvapp.html');return false"
-               href="docs/websrvapp.html">webserver app</a>
-          </div>
-          <div id="downloadsdiv">
-            <div><a href="downloads/digger-linux">digger-linux</a></div>
-            <div><a href="downloads/Digger.dmg">Digger.dmg</a></div>
-            <div><a href="downloads/digger-win.zip">digger-win.zip</a><br/>
-                 <span>(win8.1+)</span></div>
-          </div>
-        </div>
-      </div>
-    </div> <!-- textcontentdiv -->
-    <div id="slidesdiv"></div>
-    <div id="taglinediv">
-      Dig into your music collection.
-    </div>
-    <div id="localtestdiv" style="display:none">
-      <iframe title="test to see if local digger server is running" id="diggerlocaliframe" src="http://localhost:6980/version"></iframe>
-    </div>
-    <div id="hpgoverlaydiv"></div>
-  </div> <!-- homepgcontentdiv -->
-</div> <!-- outercontentdiv -->
 
 <script>
   var diggerapp = {

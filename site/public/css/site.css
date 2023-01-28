@@ -29,8 +29,9 @@ button, .buttonstyle { border: 2px solid #666666; border-radius:8px;
   padding:0px 3px; font-size:large; font-weight:bold; }
 .ghostbutton { background:none; }
 
-#outercontentdiv { }
+#outercontentdiv { height:calc(100vh - 30px); overflow:scroll; }
 #homepgcontentdiv { position:relative; }
+#hubaccountcontentdiv { float:right; margin:12px 10px 0px 10px; }
 #contentdiv { position:relative; width:80%; margin:0px auto; }
 #textcontentdiv { margin:0px 10px 10px 10px; }
 #vidcontentdiv { text-align:center; }
@@ -40,7 +41,7 @@ button, .buttonstyle { border: 2px solid #666666; border-radius:8px;
 
 .formbuttonsdiv { text-align:center; margin:5px 0px 0px 0px; }
 .tcgcinactive { opacity:0.5; }
-#contactdiv { position:absolute; bottom:0px; left:0px; width:100%;
+#contactdiv { position:absolute; bottom:0px; left:0px; width:100%; height:30px;
   background:#ffc2a4; font-size:small; text-align:center;
   margin:10px 0px 0px 0px; }
 #contactdiv a { display:inline-block; padding:10px 0px; }
@@ -50,33 +51,49 @@ button, .buttonstyle { border: 2px solid #666666; border-radius:8px;
 /* -------------------- */
 /* splash */
 
-#logodiv { position:absolute; top:30px; left:-12px; }
+#logodiv { float:left; }
 #logodiv img { max-height:64px; }
-#marqueediv { margin-left:32px; font-weight:bold; font-size:large;
-  text-align:center; color:#cf3838; }
+#marqueediv, #marqueeplaceholderdiv { margin-left:32px; font-weight:bold;
+  font-size:large; text-align:center; color:#e0550f; }
 #splashdiv { background-image:url("../img/bglogo.png");
   background-repeat:no-repeat; background-size:contain;
   background-position: 10% 84%; }
 #splashdiv p { padding:5px; margin:5px 0px 18px 0px; }
 #splashdiv div { padding:5px; }
+#splashdiv .wrapmindiv { padding:0px; }
+.wrapmindiv { display:inline-block; width:280px; }
+.tinytext { font-size:x-small; }
+#whatisdiggerdiv, #moreaboutdiggerdiv, #usingdiggerdiv { color:#b76e49;
+  font-size:large; text-shadow: 0.5px 0.5px 1px #773e23; }
+#usingdiggerdiv { padding:5px; margin:0px 10px 10px 10px; }
+#rentvsowndiv { color:#e86826; font-size:medium; display:table; margin:auto; }
+#rentvsowndiv table tr th { font-style:italic; text-align:left; }
+#rentvsowndiv table tr td { padding-right:5px; }
 #spotauthdiv { font-size:small; }
 #splashblockdiv { background-image:url("../img/white60percent.png");
- padding:0px 0px 10px 0px; text-align:center; margin:0px auto; display:table;
- border-radius:14px; }
-#fileorstreamchoicediv { text-align:center; word-spacing:6px; }
-.spchspan { font-size:x-large; font-weight:bold; }
-#downloadsdiv { text-align:center; margin-bottom:20px; }
-#downloadsdiv div { display:inline-block; padding:10px; text-align:center;
-  vertical-align:top; }
-#downloadsdiv div span { font-size:small; color:#999; }
-#wsadiv, #streamcloseline { font-size:small; margin-bottom:20px; }
+  border-radius:14px; text-align:center; margin:0px auto; display:table;
+  min-width:280px; }
+#dloverlaydiv { background:#ffc2a4; border-radius:14px; padding:10px;
+  box-shadow: 2px 3px 4px #2f2b00;
+  position:absolute; top:0px; left:0px; display:none; }
+#dloverxdiv { float:right; }
+#dlovertxtdiv { padding-top:20px; }
+.platoptdescdiv { font-size:small; }
+.downloadsdiv { text-align:center; }
+#splashblockdiv .downloadsdiv div { display:inline-block; padding:5px 14px;
+  text-align:center; vertical-align:top; }
+.downloadsdiv div span { font-size:small; color:#999; }
+.downloadlinkspan { font-size:large; font-weight:bold; display:inline-block;
+  padding:4px 0px; }
+#streamcloseline { font-size:small; margin-bottom:20px; }
 .streamtypespan { font-size:large; font-weight:bold; }
 
 /* -------------------- */
 /* slides */
 
 #slidepgdiv { text-align:center; }
-#slidedispdiv { position:relative; max-width:400px; margin:0px auto; }
+#slidedispdiv { position:relative; max-width:400px; margin:0px auto;
+  padding-bottom:10px; }
 #slidedispdiv img { width:100%; max-width:400px; transition:opacity 0.5s; }
 #prevslide, #currslide { position:absolute; top:0px; left:0px; }
 

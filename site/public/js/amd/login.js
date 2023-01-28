@@ -1,5 +1,5 @@
 /*global app, jt */
-/*jslint browser, white, unordered */
+/*jslint browser, white, unordered, long */
 
 app.login = (function () {
     "use strict";
@@ -28,7 +28,9 @@ app.login = (function () {
         var delim = "..diggerhubauth..";
         var sname = "diggerhubauth";
     return {
-        save: function () {
+        save: function (updauth) {
+            if(updauth) {
+                authobj = updauth; }
             try {
                 jt.cookie(sname, authobj.email + delim + authobj.token,
                           //The cookie is rewritten each login.  Good to
@@ -74,17 +76,16 @@ app.login = (function () {
             if(!ret) {
                 return errf(403, "Cookie read failed"); }
             const ps = {an:ret.authname, at:ret.authtoken};
-            jt.call("POST", app.dr("/api/acctok"), jt.objdata(s),
+            jt.call("POST", app.dr("/api/acctok"), jt.objdata(ps),
                     contf, errf); }
     };  //end mgrs.ap returned functions
     }());
 
 
-    //The hub account display manager handles account access outside of app
-    mgrs.had = (function () {
-        var cred = null;
-    return {
-        initialSignIn: function (contf, errf) {
+    //The hub account manager handles account actions from the hub page.
+    mgrs.hua = (function () {
+        const haid = "hubaccountcontentdiv";
+        function initialSignIn (contf, errf) {
             var auth = null;
             if(app.startParams.an && app.startParams.at) {
                 auth = {an:app.startParams.an, at:app.startParams.at}; }
@@ -96,10 +97,41 @@ app.login = (function () {
                 jt.call("POST", app.dr("/api/acctok"), jt.objdata(auth),
                         contf, errf); }
             else {
-                errf(403, "No authentication parameters given"); } },
+                errf(403, "No authentication parameters given"); } }
+    return {
         signOut: function () {
             authobj = null;
-            mgrs.ap.clear(); },
+            mgrs.ap.clear();
+            setTimeout(function () {
+                app.top.dispatch("afg", "accountFanGroup", "offline", 1); },
+                       400); },
+        initDisplay: function (dispdiv) {
+            dispdiv = dispdiv || haid;
+            app.top.dispatch("afg", "setDisplayDiv", dispdiv);
+            app.top.dispatch("afg", "setInApp", "");
+            initialSignIn(
+                function (accntok) {
+                    app.top.dispatch("hcu", "deserializeAccount", accntok[0]);
+                    app.top.dispatch("aaa", "reflectAccountChangeInRuntime",
+                                     accntok[0], accntok[1]);
+                    authobj = app.top.dispatch("aaa", "getAccount");
+                    mgrs.ap.save();
+                    app.top.dispatch("afg", "accountFanGroup", "personal"); },
+                function () {  //not signed in
+                    app.top.dispatch("afg", "accountFanGroup");
+                    if(jt.byId("newacctb")) { //switch to sign in form to start
+                        app.top.dispatch("afg", "accountFanGroup",
+                                         "offline", 1); } }); }
+    };  //end mgrs.hua returned functions
+    }());
+
+
+
+    //The hub account display manager handles account access outside of the
+    //app and outside of the main hub page.  Essentially an independent
+    //account management interface page.
+    mgrs.had = (function () {
+    return {
         display: function () {
             window.history.replaceState({}, document.title, "/account");
             jt.out("logodiv", "");  //clear overlay
@@ -113,19 +145,82 @@ app.login = (function () {
                      "DiggerHub Account"]]],
                   ["div", {id:"contentdiv"},  //as used in digger app
                    ["div", {id:"haddiv"}, "Starting..."]]]]));
-            app.top.dispatch("afg", "setDisplayDiv", "haddiv");
-            app.top.dispatch("afg", "setInApp", "");
-            mgrs.had.initialSignIn(
-                function (accntok) {
-                    app.top.dispatch("hcu", "deserializeAccount", accntok[0]);
-                    app.top.dispatch("aaa", "reflectAccountChangeInRuntime",
-                                     accntok[0], accntok[1]);
-                    authobj = app.top.dispatch("aaa", "getAccount");
-                    mgrs.ap.save();
-                    app.top.dispatch("afg", "accountFanGroup", "personal"); },
-                function () {  //not signed in
-                    app.top.dispatch("afg", "accountFanGroup"); }); }
+            mgrs.hua.initDisplay("haddiv"); }
     };  //end mgrs.had returned functions
+    }());
+
+
+    //The download manager handles any extra steps related to downloading
+    //the app.
+    mgrs.dld = (function () {
+        const posdiv = "splashblockdiv";
+        const dispdiv = "dloverlaydiv";
+        const templates = {
+            iosp: "ipem(Request early access) to get Digger for free when it is released to the App Store. For advanced details see the link(project page).",
+            droidp: "dpem(Request a promotional link) to get Digger for free, or help bump our download count by link(purchasing Digger).",
+            webapp: "Access Digger through any browser when the local server is running. See the $webappdoc description page for more information, or if you run into any issues or questions after installing. link(Download Digger)" };
+        function iosPromoEmailLink () {
+            const emaddr = app.subPlaceholders(null, null, "SUPPEMAIL");
+            const subj = "Digger for IOS early access";
+            const body = "Hi,\n\nPlease send me a promotional link to download Digger for free on the IOS platform when it is released for early access.\n\nThanks,\n";
+            const link = "mailto:" + emaddr + "?subject=" + jt.dquotenc(subj) +
+                  "&body=" + jt.dquotenc(body);
+            return link; }
+        function droidPromoEmailLink () {
+            const emaddr = app.subPlaceholders(null, null, "SUPPEMAIL");
+            const subj = "Digger for Android promo code";
+            const body = "Hi,\n\nPlease send me a promotional link to download Digger for free on the Android platform.\n\nThanks,\n";
+            const link = "mailto:" + emaddr + "?subject=" + jt.dquotenc(subj) +
+                  "&body=" + jt.dquotenc(body);
+            return link; }
+        function displayOverlay (tid, targ) {
+            var txt = templates[tid];
+            txt = txt.replace(/link\(([^)]*)\)/, function (ignore, linkt) {
+                return jt.tac2html(
+                    ["a", {href:targ,
+                           onclick:"window.open('" + targ + "');return false"},
+                     ["span", {cla:"downloadlinkspan"}, linkt]]); });
+            txt = txt.replace(/dpem\(([^)]*)\)/, function (ignore, linkt) {
+                return jt.tac2html(
+                    ["a", {href:droidPromoEmailLink()}, linkt]); });
+            txt = txt.replace(/ipem\(([^)]*)\)/, function (ignore, linkt) {
+                return jt.tac2html(
+                    ["a", {href:iosPromoEmailLink()}, linkt]); });
+            const wdu = "docs/websrvapp.html";
+            txt = txt.replace("$webappdoc", jt.tac2html(
+                ["a", {href:wdu, 
+                       onclick:"window.open('" + wdu + "');return false"},
+                 "Webserver App"]));
+            txt = jt.tac2html(
+                ["div", {id:"dlovrcontdiv"},
+                 [["div", {id:"dloverxdiv"},
+                   ["a", {href:"#close",
+                          onclick:jt.fs("app.login.closeDLOver()")}, "X"]],
+                  ["div", {id:"dlovertxtdiv"}, txt]]]);
+            const pos = jt.geoPos(jt.byId(posdiv));
+            const dd = jt.byId(dispdiv);
+            dd.style.display = "block";
+            dd.style.left = pos.x + "px";
+            dd.style.top = pos.y + "px";
+            dd.style.height = pos.h + "px";
+            dd.style.width = pos.w + "px";
+            jt.out(dispdiv, txt); }
+    return {
+        closeOverlay: function () {
+            jt.out(dispdiv, "");
+            jt.byId(dispdiv).style.display = "none"; },
+        detail: function (event) {
+            if(event && event.target && event.target.href) {
+                if(event.target.href.includes("diggerIOS")) {
+                    displayOverlay("iosp", event.target,
+                                   iosPromoEmailLink()); }
+                else if(event.target.href.includes("play.google")) {
+                    displayOverlay("droidp", event.target,
+                                   droidPromoEmailLink()); }
+                else { //webapp
+                    displayOverlay("webapp", event.target); } }
+            return false; }
+    };  //end mgrs.dld returned functions
     }());
 
 
@@ -138,7 +233,6 @@ app.login = (function () {
         const mhds = [
             "Music is art",
             "What you listen to matters",
-            "Your collection is you",
             "Your impressions matter",
             "Artists enrich your life",
             "Songs touch your soul"];
@@ -156,7 +250,8 @@ app.login = (function () {
             setTimeout(mgrs.mrq.nextStatement, (mst.fis + mst.dts) * 1000); },
         runMarquee: function () {
             if(jt.byId("marqueediv")) { return; }  //already set up and running
-            jt.out("headertextdiv", jt.tac2html(["div", {id:"marqueediv"}]));
+            jt.out("headertextdiv", jt.tac2html(
+                ["div", {id:"marqueediv"}, "&nbsp;"]));
             mgrs.mrq.nextStatement(); }
     };  //end mgrs.mrq returned functions
     }());
@@ -294,27 +389,33 @@ app.login = (function () {
     }());
 
 
-    //This works in conjunction with the static undecorated form created by
-    //start.py, decorating to provide login without page reload.
-    function initialize () {        
-        app.svc.dispatch("gen", "initplat", "web");  //doc content retrieval
-        Array.from(jt.byId("contactdiv").children).forEach(function (a) {
-            jt.on(a, "click", function (event) {
-                jt.evtend(event);
-                app.displayDoc("hpgoverlaydiv", event.target.href); }); });
-        switch(app.startPath) {
-        case "/account": return mgrs.had.display();
-        case "/songfinder": return mgrs.sgf.display();
-        case "/digger": return app.initDiggerModules();
-        default: jt.log("Standard site homepage display"); }
-        mgrs.mrq.runMarquee();
-        mgrs.sld.runSlideshow();
-    }
+    //The general manager handles top level page setup and actions
+    mgrs.gen = (function () {
+    return {
+        initialize: function () {
+            app.svc.dispatch("gen", "initplat", "web");  //doc content retrieval
+            Array.from(jt.byId("contactdiv").children).forEach(function (a) {
+                jt.on(a, "click", function (event) {
+                    jt.evtend(event);
+                    app.displayDoc("hpgoverlaydiv", event.target.href); }); });
+            switch(app.startPath) {
+            case "/account": return mgrs.had.display();
+            case "/songfinder": return mgrs.sgf.display();
+            case "/digger": return app.initDiggerModules();
+            default: jt.log("Standard site homepage display"); }
+            app.overlaydiv = "hpgoverlaydiv";
+            mgrs.hua.initDisplay();
+            setTimeout(mgrs.mrq.runMarquee, 12000);
+            mgrs.sld.runSlideshow(); }
+    };  //end mgrs.gen returned functions
+    }());
 
 
 return {
-    init: function () { initialize(); },
+    init: function () { mgrs.gen.initialize(); },
     getAuth: function () { return authobj; },
+    dldet: function (event) { return mgrs.dld.detail(event); },
+    closeDLOver: function () { return mgrs.dld.closeOverlay(); },
     dispatch: function (mgrname, fname, ...args) {
         return mgrs[mgrname][fname].apply(app.login, args); }
 };  //end of returned functions
