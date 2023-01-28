@@ -6,7 +6,7 @@
 import logging
 import py.util as util
 
-CACHE_BUST_PARAM = "v=221206"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=230128"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
