@@ -144,12 +144,13 @@ def write_song(updsong, digacc, forcenew=False):
     if not song:  # create new
         song = {"dsType":"Song", "aid":digacc["dsId"]}
     else: # updating existing song instance
-        if not updsong.get("dsId"):  # initial data sync
+        # updsong not from db, and no rating info to save. Client data sync.
+        if not updsong.get("dsId") and is_unrated_song(updsong):
             song["path"] = updsong["path"]  # echo path for client lookup
             return song  # return without write to avoid sync date churn
+        # hub push before receive should prevent client from sending old data
+        # but losing all rating info is particularly bad so avoid attempt.
         if is_unrated_song(updsong) and not is_unrated_song(song):
-            # hub push before hub receive should prevent this case, but
-            # rebuilding local data might trigger it.
             song["path"] = updsong["path"]
             updsong = song  # ignore updsong values to avoid information loss
             logging.info("write_song not unrating " + song_string(song))
