@@ -47,7 +47,7 @@ Digger is a music rating and retrieval app for your music collection.  Digger he
 <tr><td>All you can eat buffet</td><td>Pay as you go</td></tr>
 <tr><td>Musicians get a tiny fraction</td><td>Musicians get most of what you pay</td></tr>
 <tr><td>Regional restrictions</td><td>Listen wherever</td></tr>
-<tr><td>Licensing expires</td><td>Always available</td></tr>
+<tr><td>Licensing expires</td><td>Always yours</td></tr>
 <tr><td>Suggested songs</td><td>Digger retrieval</td></tr>
 </table>
           </div>

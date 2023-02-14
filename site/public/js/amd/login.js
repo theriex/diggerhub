@@ -157,7 +157,7 @@ app.login = (function () {
         const dispdiv = "dloverlaydiv";
         const templates = {
             iosp: "ipem(Request early access) to get Digger for free when it is released to the App Store. For advanced details see the link(project page).",
-            droidp: "dpem(Request a promotional link) to get Digger for free, or help bump our download count by link(purchasing Digger).",
+            droidp: "Request a dpem(promotional link) and get Digger for free! Or help support development and link(buy Digger).",
             webapp: "Access Digger through any browser when the local server is running. See the $webappdoc description page for more information, or if you run into any issues or questions after installing. link(Download Digger)" };
         function iosPromoEmailLink () {
             const emaddr = app.subPlaceholders(null, null, "SUPPEMAIL");

@@ -73,8 +73,8 @@ button, .buttonstyle { border: 2px solid #666666; border-radius:8px;
 #splashblockdiv { background-image:url("../img/white60percent.png");
   border-radius:14px; text-align:center; margin:0px auto; display:table;
   min-width:280px; }
-#dloverlaydiv { background:#ffc2a4; border-radius:14px; padding:10px;
-  box-shadow: 2px 3px 4px #2f2b00;
+#dloverlaydiv { background:white; border-radius:14px; padding:10px;
+  border:2px solid #333; box-shadow: 2px 3px 4px #2f2b00;
   position:absolute; top:0px; left:0px; display:none; }
 #dloverxdiv { float:right; }
 #dlovertxtdiv { padding-top:20px; }
