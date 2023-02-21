@@ -31,7 +31,7 @@ button, .buttonstyle { border: 2px solid #666666; border-radius:8px;
 
 #outercontentdiv { height:calc(100vh - 30px); overflow:scroll; }
 #homepgcontentdiv { position:relative; }
-#hubaccountcontentdiv { float:right; margin:12px 10px 0px 10px; }
+#hubaccountcontentdiv { margin:12px 10px 0px 10px; width:340px; }
 #contentdiv { position:relative; width:80%; margin:0px auto; }
 #textcontentdiv { margin:0px 10px 10px 10px; }
 #vidcontentdiv { text-align:center; }
@@ -60,13 +60,12 @@ button, .buttonstyle { border: 2px solid #666666; border-radius:8px;
   background-position: 10% 84%; }
 #splashdiv p { padding:5px; margin:5px 0px 18px 0px; }
 #splashdiv div { padding:5px; }
-#splashdiv .wrapmindiv { padding:0px; }
-.wrapmindiv { display:inline-block; width:280px; }
-.tinytext { font-size:x-small; }
-#whatisdiggerdiv, #moreaboutdiggerdiv, #usingdiggerdiv { color:#b76e49;
-  font-size:large; text-shadow: 0.5px 0.5px 1px #773e23; }
+#whatisdiggerdiv, #moreaboutdiggerdiv, #usingdiggerdiv { color:#663922;
+  font-size:large; text-shadow: 0.5px 0.5px 1px #37190a; }
+#moreaboutdiggerdiv { margin-top:24px; }
 #usingdiggerdiv { padding:5px; margin:0px 10px 10px 10px; }
-#rentvsowndiv { color:#e86826; font-size:medium; display:table; margin:auto; }
+#rentvsowndiv { color:#af3c01; font-size:medium; display:table; margin:auto;
+  margin-top:10px; }
 #rentvsowndiv table tr th { font-style:italic; text-align:left; }
 #rentvsowndiv table tr td { padding-right:5px; }
 #spotauthdiv { font-size:small; }

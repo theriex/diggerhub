@@ -32,13 +32,12 @@ INDEXHTML = """
 <div id="outercontentdiv">
   <div id="homepgcontentdiv">
     <div id="topsectiondiv">
-     <div id="logodiv"><img src="img/appicon.png"/></div>
-   </div>
-    <div id="hubaccountcontentdiv"></div>
+      <div id="logodiv"><img src="img/appicon.png"/></div>
+      <div id="hubaccountcontentdiv"></div>
+    </div>
     <div id="textcontentdiv">
       <div id="splashdiv">
         <div id="whatisdiggerdiv">
-<div class="wrapmindiv tinytext">&nbsp;</div><br class="tinytext"/>
 Digger is a music rating and retrieval app for your music collection.  Digger helps you enjoy the music you own.
 
           <div id="rentvsowndiv">
@@ -70,11 +69,11 @@ Digger is a music rating and retrieval app for your music collection.  Digger he
         </div>
         <div id="moreaboutdiggerdiv">
 
-Digger makes it easy to note your impression of any song so it can be
-fetched appropriately for any situation when you are playing music.  For
-playback, Digger works like an automated playlist, fetching and playing
-music matching to your listening context.  Digger helps you get back into
-your collection by pulling good selections you haven't played in a while.
+Digger makes it easy to rate songs so they can be fetched appropriately in a
+wide range of situations.  When you are playing music, Digger works like an
+automatic playlist, fetching and playing songs matching your listening
+context.  Digger helps you get back into your music collection by selecting
+good music you haven't played in a while.
 
         </div>
       </div>
@@ -82,12 +81,16 @@ your collection by pulling good selections you haven't played in a while.
     <div id="slidesdiv"></div>
     <div id="usingdiggerdiv">
 
-There is no substitute for what you think.  Noting your own impressions
-might feel strange at first, especially if you are used to having other
-people tell you what to listen to and what you should think of it.  Soon
-you'll wonder why your impressions have been ignored so long. After
-a few albums worth of song ratings, automated retrieval and playback
-will start to improve your life.  Welcome back into your music!
+There is no substitute for your personal impressions.  Noting what you think
+of a song while it is playing might seem daunting at first, but it's a
+natural extension to listening, and with every rating personal retrieval
+grows as a new capability of your music collection.  Digger gets music
+playing based on what you are currently in the mood for, and you've already
+described what that might be.
+
+<p>It's called Digger because it digs through the stacks in your library
+(oldest first) pulling music appropriate for your listening context across a
+balance of artists. </p>
 
     </div>
     <div id="taglinediv">

@@ -116,7 +116,7 @@ app.login = (function () {
                                      accntok[0], accntok[1]);
                     authobj = app.top.dispatch("aaa", "getAccount");
                     mgrs.ap.save();
-                    app.top.dispatch("afg", "accountFanGroup", "personal"); },
+                    app.top.dispatch("afg", "accountFanGroup", "groups", 2); },
                 function () {  //not signed in
                     app.top.dispatch("afg", "accountFanGroup");
                     if(jt.byId("newacctb")) { //switch to sign in form to start
@@ -397,6 +397,9 @@ app.login = (function () {
             Array.from(jt.byId("contactdiv").children).forEach(function (a) {
                 jt.on(a, "click", function (event) {
                     jt.evtend(event);
+                    const ocd = jt.byId("outercontentdiv");
+                    if(ocd) {
+                        ocd.scrollTo(0, 0); }
                     app.displayDoc("hpgoverlaydiv", event.target.href); }); });
             switch(app.startPath) {
             case "/account": return mgrs.had.display();
