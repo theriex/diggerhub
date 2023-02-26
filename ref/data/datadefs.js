@@ -132,6 +132,8 @@ module.exports = (function () {
         {f:"ar", d:"string", c:"artist for source song"},
         {f:"ab", d:"string", c:"album for source song"},
         {f:"nt", d:"text", c:"note text from source song"}],
+     //*1 msgtype: "share", "shresp", "recommendation", "recresp", "recywel"
+     //*2 status: "open", "replied", "dismissed"
      cache:{minutes:0},
      logflds:["sndr", "msgtype", "rcvr", "songid", "ti"]},
         

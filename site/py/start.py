@@ -6,7 +6,7 @@
 import logging
 import py.util as util
 
-CACHE_BUST_PARAM = "v=230214"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=230226"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -44,7 +44,7 @@ Digger is a music rating and retrieval app for your music collection.  Digger he
 <table>
 <tr><th>Music rental:</th><th>Music ownership:</th></tr>
 <tr><td>All you can eat buffet</td><td>Pay as you go</td></tr>
-<tr><td>Musicians get a tiny fraction</td><td>Musicians get most of what you pay</td></tr>
+<tr><td>Musicians get a tiny fraction</td><td>Musicians get a decent percentage</td></tr>
 <tr><td>Regional restrictions</td><td>Listen wherever</td></tr>
 <tr><td>Licensing expires</td><td>Always yours</td></tr>
 <tr><td>Suggested songs</td><td>Digger retrieval</td></tr>
@@ -81,16 +81,60 @@ good music you haven't played in a while.
     <div id="slidesdiv"></div>
     <div id="usingdiggerdiv">
 
-There is no substitute for your personal impressions.  Noting what you think
-of a song while it is playing might seem daunting at first, but it's a
-natural extension to listening, and with every rating personal retrieval
-grows as a new capability of your music collection.  Digger gets music
-playing based on what you are currently in the mood for, and you've already
-described what that might be.
+There is no substitute for what you feel.  Digger makes it easy to capture
+your impressions as you listen, linking what you feel with the music in your
+collection.  Personal music retrieval becomes more powerful With every song
+you rate.  Sync your music across multiple devices with DiggerHub.
+
+<h2>Hub Connect</h2>
+
+<p>If you listen to music on more than one device, or if you want to
+collaborate on music with friends with other music fans using Digger, you
+can sign in on DiggerHub through the app to keep your ratings in sync and
+collaborate with others.</p>
+
+<h3>This song is fantastic!</h3>
+
+<p>Click the Digger "share" button to copy the song Title, Artist, Album,
+Keywords, Approachability and Energy Level, along with your saved personal
+comment.  Send that to anyone any way you like, sharing great music improves
+anyone's day and helps them get to know you better. <p>
+
+<h3>Collaboration</h3>
+
+<p>Your impressions let you easily collaborate with friends and fellow music
+fans whose tastes you trust. Under the "fans" section of your profile,
+you'll find these interactive displays: </p>
+
+<div id="collabdiv">
+
+<h4>Connect</h4>
+<img src="docs/collab/connect.png"/>
+<p>Find friends and music fans by their Digger name. If you haven't added
+any friends yet, and you want to get a feel for how things work, you can
+click "Connect Me" to add whoever the hub picks for you. </p>
+
+<h4>Match</h4>
+<img src="docs/collab/match.png"/>
+<p>See how much music you have in common. If you have songs in your
+collection that you haven't rated yet, your friends provide default rating
+information you can use for contextual retrieval.  The "rcv" tab shows how
+many default ratings you've received.  The "snd" tab shows how many default
+ratings they have received from you.  If you remove a friend, their default
+ratings are also removed.  When you play a song, any default rating
+information for that song becomes yours. </p>
+
+<h4>Messages</h4>
+<img src="docs/collab/messages.png"/>
+<p>See what your friends have shared recently and get automatic
+recommendations from your friends that match your current listening
+parameters. </p>
+
+</div>
 
 <p>It's called Digger because it digs through the stacks in your library
-(oldest first) pulling music appropriate for your listening context across a
-balance of artists. </p>
+(oldest first) pulling music across a balance of artists matching what you
+want to hear. </p>
 
     </div>
     <div id="taglinediv">

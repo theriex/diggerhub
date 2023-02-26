@@ -47,6 +47,7 @@ button, .buttonstyle { border: 2px solid #666666; border-radius:8px;
 #contactdiv a { display:inline-block; padding:10px 0px; }
 #taglinediv { text-align:center; margin:10px 0px; font-style:italic;
   font-weight:bold; }
+h2 { text-align:center; }
 
 /* -------------------- */
 /* splash */
@@ -97,6 +98,12 @@ button, .buttonstyle { border: 2px solid #666666; border-radius:8px;
 #prevslide, #currslide { position:absolute; top:0px; left:0px; }
 
 #suppdiv, #principdiv { text-align:left; max-width:600px; margin:auto; }
+#collabdiv h4 { text-align:center; text-shadow:none; margin-bottom:4px;
+  font-style:italic; }
+#collabdiv img { max-width:340px; display:block; margin:auto;
+  border:1px solid #333; box-shadow:1px 1px 1px #2f2b00; }
+#collabdiv p { max-width:600px; text-align:center; margin:8px auto 24px;
+  text-shadow:none; font-size:medium; font-style:italic; }
 
 
 /* -------------------- */
