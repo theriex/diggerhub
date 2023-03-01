@@ -73,15 +73,30 @@ def is_unrated_song(song):
     return unrated
 
 
-# The default mySQL isolation level of repeatable read means it is possible
-# to read an older instance from the database query cache despite the
-# instance having been updated and committed.
-def max_modified_value(sa, sb):
-    sam = sa.get("modified", "")
-    sbm = sb.get("modified", "")
-    if sam > sbm:
-        return sam
-    return sbm
+# Related situational notes:
+# - If a client is started up on a new platform where the songs have not
+#   been synced to the server yet, then they start playing what appears to
+#   be an unrated song and they make changes to it, then hubsync pulls down
+#   the previously saved song, their rating info will be replaced or merged
+#   with the server info so it is not lost.  No version mismatch.
+def choose_modified_value(updsong, dbsong):
+    # If the client has changed ti/ar/ab values for a song, it may now be
+    # mapped to a different existing database instance.  The modified value
+    # for the previous instance is not useful.
+    if updsong["dsId"] != dbsong["dsId"]:
+        retmod = dbsong.get("modified", "")
+        logging.info("choose_modified_value remap " + str(updsong["dsId"]) +
+                     "-->" + str(dbsong["dsId"]) + " modified: " + retmod)
+        return retmod
+    # The default mySQL isolation level of repeatable read means it is
+    # possible to read an older instance from the database query cache
+    # despite the instance having been updated and committed.  Use the
+    # maximum available modified value since that is likely correct.
+    updmod = updsong.get("modified", "")
+    dbmod = dbsong.get("modified", "")
+    if updmod > dbmod:
+        return updmod
+    return dbmod
 
 
 # If the song spid was previously mapped successfully, then leave it to
@@ -142,9 +157,9 @@ def write_song(updsong, digacc, forcenew=False):
     if not forcenew:
         song = find_song(updsong)
     if not song:  # create new
-        song = {"dsType":"Song", "aid":digacc["dsId"]}
+        song = {"dsType":"Song", "aid":digacc["dsId"], "modified":""}
     else: # updating existing song instance
-        # updsong not from db, and no rating info to save. Client data sync.
+        # updsong not from db, and no rating info to save: Client data sync.
         if not updsong.get("dsId") and is_unrated_song(updsong):
             song["path"] = updsong["path"]  # echo path for client lookup
             return song  # return without write to avoid sync date churn
@@ -154,7 +169,7 @@ def write_song(updsong, digacc, forcenew=False):
             song["path"] = updsong["path"]
             updsong = song  # ignore updsong values to avoid information loss
             logging.info("write_song not unrating " + song_string(song))
-        song["modified"] = max_modified_value(updsong, song)
+        song["modified"] = choose_modified_value(updsong, song)
     update_song_fields(updsong, song)
     updsong = dbacc.write_entity(song, song.get("modified") or "")
     return updsong
