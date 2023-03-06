@@ -67,6 +67,7 @@ module.exports = (function () {
      //    digname: digname of music fan
      //    firstname: fan firstname
      //    added: timestamp when fan was added
+     //    lastcommon: ISO timestamp of last common ratings check
      //    lastpull: ISO timestamp of last default rating pull check
      //    lastheard: max of latest msg received or latest default rating pulled
      //    common: count of songs you both have
@@ -125,7 +126,6 @@ module.exports = (function () {
         {f:"msgtype", d:"req string", descr:"Message type label"},
         {f:"status", d:"req string", descr:"open|dismissed|replied"},
         //procnote: runtime-only server processing message returned to client
-        {f:"emsnds", d:"string", descr:"timestamp csv of detail email sends"},
         {f:"srcmsg", d:"dbid", descr:"Source message if reply msgtype"},
         {f:"songid", d:"dbid", descr:"dsId of source song for message"},
         {f:"ti", d:"req string", c:"title of source song"},

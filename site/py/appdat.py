@@ -602,6 +602,7 @@ def count_collaborations(digacc, mf):
     drs = dbacc.custom_query(sql, ["common"])
     for row in drs:
         mf["common"] = row["common"]
+    mf["lastcommon"] = dbacc.nowISO()
     sql = ("SELECT COUNT(*) AS dfltsnd FROM Song" +
            " WHERE aid = " + str(mf["dsId"]) +     # their songs
            " AND srcid = " + str(digacc["dsId"]))  # you provided default rating
@@ -667,7 +668,8 @@ def update_song_by_id(digacc, updsong):
 def acct2mf(digacc):
     mf = {"dsId": digacc["dsId"], "digname":digacc["digname"],
           "firstname": digacc["firstname"], "added":dbacc.nowISO(),
-          "lastpull":"", "lastheard":"", "common":0, "dfltrcv":0, "dfltsnd":0}
+          "lastcommon":"", "lastpull":"", "lastheard":"",
+          "common":0, "dfltrcv":0, "dfltsnd":0}
     return mf
 
 
@@ -678,15 +680,15 @@ def connect_me(digacc):
     since = dbacc.dt2ISO(now - datetime.timedelta(days=180))
     sql = ("SELECT aid, count(dsId) AS scount FROM Song" +
            " WHERE modified >= \"" + since + "\"" +
-           " AND aid != " + digacc["dsId"] +
-           " AND aid NOT IN " +
+           " AND aid != " + str(digacc["dsId"]) +
+           " AND aid IN (SELECT dsId FROM DigAcc WHERE digname IS NOT NULL)" +
+           " AND aid NOT IN" +
            " (SELECT dsId FROM DigAcc WHERE status = \"nongrata\")" +
            " GROUP BY aid ORDER BY scount DESC LIMIT 5")
     tls = dbacc.custom_query(sql, ["aid", "count"])
     logging.info("top listeners: " + json.dumps(tls))
     aids = [str(tl["aid"]) for tl in tls]
     where = ("WHERE dsId != " + str(digacc["dsId"]) +
-             " AND digname IS NOT NULL" +
              " AND dsId IN (" + (", ".join(aids)) + ")")
     fans = dbacc.query_entity("DigAcc", where)
     if not fans:
@@ -981,7 +983,9 @@ def fancollab():
             res = []
             count_collaborations(digacc, fan)
         digacc["musfs"] = json.dumps(musfs)
-        digacc = dbacc.write_entity(digacc, digacc["modified"])
+        # even though digacc was just retrieved above, it is still possible to
+        # fail with an outdated version check due to mysql repeatable read.
+        digacc = dbacc.write_entity(digacc, "override")
         res.insert(0, digacc)
     except ValueError as e:
         return util.serve_value_error(e)

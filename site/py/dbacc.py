@@ -219,13 +219,16 @@ class EntityCache():
                     self.entities.pop(oldkey, None)
     def cache_clean(self):
         now = nowISO()
-        for key, value in self.entities.items():
+        keys = list(self.entities.keys())  # hold keys since dict changing
+        for key in keys:
             if key.endswith("_cleanup"):
-                ttl = value.split(",")[0][4:]
-                if ttl < now:
-                    kcs = key.split("_")
-                    inst = {"dsType": kcs[0], "dsId": kcs[1]}
-                    self.cache_remove(inst)
+                value = self.entities.get(key, None)
+                if value:
+                    ttl = value.split(",")[0][4:]
+                    if ttl < now:
+                        kcs = key.split("_")
+                        inst = {"dsType": kcs[0], "dsId": kcs[1]}
+                        self.cache_remove(inst)
     def log_cache_entries(self):
         txt = "EntityCache entities:\n"
         for key, _ in self.entities.items():
@@ -421,7 +424,7 @@ def verify_timestamp_fields(entity, dsId, fields, vck):
     existing = cfbk(entity, "dsId", dsId)
     if not existing:
         raise ValueError("Existing " + entity + " " + str(dsId) + " not found.")
-    if vck != "override" and existing["modified"] > vck:
+    if vck != "override" and existing["modified"] != vck:
         logging.error("verify_timestamp_fields rejecting mod of " + entity +
                       " " + str(dsId) + ". existing: " + existing["modified"] +
                       ", received: " + vck + ".")
