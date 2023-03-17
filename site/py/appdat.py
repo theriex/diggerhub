@@ -82,11 +82,13 @@ def is_unrated_song(song):
 def choose_modified_value(updsong, dbsong):
     # If the client has changed ti/ar/ab values for a song, it may now be
     # mapped to a different existing database instance.  The modified value
-    # for the previous instance is not useful.
-    if updsong["dsId"] != dbsong["dsId"]:
+    # for the previous instance is not useful.  updsong may not have dsId
+    upid = str(updsong.get("dsId", "NoID"))
+    dbid = str(dbsong["dsId"])
+    if upid != dbid:
         retmod = dbsong.get("modified", "")
-        logging.info("choose_modified_value remap " + str(updsong["dsId"]) +
-                     "-->" + str(dbsong["dsId"]) + " modified: " + retmod)
+        logging.info("choose_modified_value remap " + upid + "-->" + dbid +
+                     " modified: " + retmod)
         return retmod
     # The default mySQL isolation level of repeatable read means it is
     # possible to read an older instance from the database query cache
