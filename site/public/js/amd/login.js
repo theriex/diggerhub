@@ -156,8 +156,8 @@ app.login = (function () {
         const posdiv = "splashblockdiv";
         const dispdiv = "dloverlaydiv";
         const templates = {
-            iosp: "ipem(Request early access) to get Digger for free when it is released to the App Store. For advanced details see the link(project page).",
-            droidp: "Request a dpem(promotional link) and get Digger for free! Or help support ongoing Android development and link(buy Digger).",
+            iosp: "ipem(Request early access) to get Digger at no cost when it is released to the App Store. For full project details see the link(IOS project page).",
+            droidp: "Request a dpem(promotional link) to get Digger at no cost, or help support ongoing development and link(buy Digger for Android).",
             webapp: "Access Digger through any browser when the local server is running. See the $webappdoc description page for more information, or if you run into any issues or questions after installing. link(Download Digger)" };
         function iosPromoEmailLink () {
             const emaddr = app.subPlaceholders(null, null, "SUPPEMAIL");

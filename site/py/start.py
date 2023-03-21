@@ -6,7 +6,7 @@
 import logging
 import py.util as util
 
-CACHE_BUST_PARAM = "v=230317"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=230321"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -44,7 +44,7 @@ Digger is a music rating and retrieval app for your music collection.  Digger he
 <table>
 <tr><th>Music rental:</th><th>Music ownership:</th></tr>
 <tr><td>All you can eat buffet</td><td>Pay as you go</td></tr>
-<tr><td>Musicians get a tiny fraction</td><td>Musicians get a decent percentage</td></tr>
+<tr><td>Musicians get a tiny fraction</td><td>Musicians get a percentage</td></tr>
 <tr><td>Regional restrictions</td><td>Listen wherever</td></tr>
 <tr><td>Licensing expires</td><td>Always yours</td></tr>
 <tr><td>Suggested songs</td><td>Digger retrieval</td></tr>
@@ -62,7 +62,7 @@ Digger is a music rating and retrieval app for your music collection.  Digger he
                  <span>(win8.1+)</span></div>
           </div>
           <div class="downloadsdiv">
-            <div><a href="https://github.com/theriex/diggerIOS" onclick="app.login.dldet(event);return false">IOS</a><br/><span>(alpha)</span></div>
+            <div><a href="https://github.com/theriex/diggerIOS" onclick="app.login.dldet(event);return false">IOS</a><br/><span>(beta)</span></div>
             <div><a href="https://play.google.com/store/apps/details?id=com.diggerhub.digger" onclick="app.login.dldet(event);return false">Android</a></div>
           </div>
           <div class="platoptdescdiv">&nbsp;</div>
@@ -84,13 +84,13 @@ good music you haven't played in a while.
 There is no substitute for what you feel.  Digger makes it easy to capture
 your impressions as you listen, linking what you feel with the music in your
 collection.  Personal music retrieval becomes more powerful With every song
-you rate.  Sync your music across multiple devices with DiggerHub.
+you rate.  Sync your music across multiple devices through DiggerHub.
 
 <h2>Hub Connect</h2>
 
 <p>If you listen to music on more than one device, or if you want to
 collaborate on music with friends with other music fans using Digger, you
-can sign in on DiggerHub through the app to keep your ratings in sync and
+can sign in on DiggerHub in the app to keep your ratings in sync and
 collaborate with others.</p>
 
 <h3>This song is fantastic!</h3>
@@ -133,7 +133,7 @@ parameters. </p>
 </div>
 
 <p>It's called Digger because it digs through the stacks in your library
-(oldest first) pulling music across a balance of artists matching what you
+(oldest first) pulling music across multiple artists matching what you
 want to hear. </p>
 
     </div>
