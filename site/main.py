@@ -80,13 +80,9 @@ def hubsync():  # params: auth, acct + zero or more songs
 def songfetch():  # params: auth, fvs
     return util.secure(appdat.songfetch)
 
-@app.route('/api/songupd', methods=['GET', 'POST'])
-def songupd():  # params: auth, song
-    return util.secure(appdat.songupd)
-
-@app.route('/api/multiupd', methods=['GET', 'POST'])
+@app.route('/api/savesongs', methods=['GET', 'POST'])
 def multipupd():  # params: auth, songs
-    return util.secure(appdat.multiupd)
+    return util.secure(appdat.savesongs)
 
 @app.route('/api/fangrpact', methods=['GET', 'POST'])
 def fangrpact():  # params: auth, action, digname

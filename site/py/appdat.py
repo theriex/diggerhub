@@ -113,6 +113,7 @@ def reset_dead_spid_if_metadata_changed(updsong, dbsong):
         dbsong["spid"] = ""
 
 
+# See related app deck.js simplifiedMatch used for dupe checking.
 def standardized_colloquial_match(txt):
     scm = txt
     scm = re.sub(r"\(.*", "", scm)  # remove trailing parentheticals
@@ -659,7 +660,8 @@ def fetchcreate_song_from_spid(digacc, updsong):
 def update_song_by_id(digacc, updsong):
     logging.info("update_song_by_id updsong " + updsong["dsId"])
     if updsong["aid"] != digacc["dsId"]:
-        raise ValueError("Song author id mismatch")
+        raise ValueError("Rating author id mismatch Song " +
+                         str(updsong["dsId"]))
     dbsong = dbacc.cfbk("Song", "dsId", updsong["dsId"], required=True)
     update_song_fields(updsong, dbsong)
     if updsong.get("spid"):
@@ -886,45 +888,29 @@ def songfetch():
     return util.respJSON(songs)
 
 
-# The song is passed in JSON format because string fields like the title can
-# trigger modsec rules if unencoded. 30oct21-ep
-def songupd():
-    try:
-        digacc, _ = util.authenticate()
-        songdat = dbacc.reqarg("songdat", "json", required=True)
-        song = json.loads(songdat)
-        unescape_song_fields(song)
-        dsId = song.get("dsId")
-        if not dsId:
-            raise ValueError("dsId required")
-        if dsId.startswith("fr"):  # song suggested from music fan
-            song = fetchcreate_song_from_fan(digacc, song)
-        elif dsId.startswith("spotify"):  # song direct play from Spotify
-            song = fetchcreate_song_from_spid(digacc, song)
-        else: # standard update from web player
-            song = update_song_by_id(digacc, song)
-        # always write song to reflect the modified time and any mod fields
-        song = dbacc.write_entity(song, song["modified"])
-    except ValueError as e:
-        return util.serve_value_error(e)
-    return util.respJSON([song])
-
-
-def multiupd():
+def savesongs():
     try:
         digacc, _ = util.authenticate()
         songs = json.loads(dbacc.reqarg("songs", "json", required=True))
-        flds = ["lp"]  # can expand as needed, support known needs only
+        upds = []
         for idx, song in enumerate(songs):
-            if song["aid"] != digacc["dsId"]:
-                raise ValueError("Song author id mismatch")
-            dbsong = dbacc.cfbk("Song", "dsId", song["dsId"], required=True)
-            for fld in flds:
-                dbsong[fld] = song[fld]
-            songs[idx] = dbacc.write_entity(dbsong, dbsong["modified"])
+            unescape_song_fields(song)
+            dsId = song.get("dsId")
+            if not dsId:  # assigned during hub sync
+                raise ValueError("Missing dsId for " + song["ti"])
+            logging.info("savesongs " + str(idx) + " Song " + str(dsId) +
+                         " " + song["ti"])
+            if dsId.startswith("fr"):  # song suggested from music fan
+                song = fetchcreate_song_from_fan(digacc, song)
+            elif dsId.startswith("spotify"):  # song direct play from Spotify
+                song = fetchcreate_song_from_spid(digacc, song)
+            else: # standard update from web player
+                song = update_song_by_id(digacc, song)
+            # always write song to reflect the modified time and any mod fields
+            upds.append(dbacc.write_entity(song, song["modified"]))
     except ValueError as e:
         return util.serve_value_error(e)
-    return util.respJSON(songs)
+    return util.respJSON(upds)
 
 
 def fangrpact():
