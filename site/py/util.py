@@ -515,9 +515,14 @@ def deleteme():
         digacc, token = authenticate()
         subj = "Account deletion request confirmation"
         body = """
-At $TIMESTAMP, you requested, via the Digger app, that your account and all associated data be permanently and irrevocably deleted from DiggerHub.  If you did not make this request, you can safely ignore this message, and you should probably change your password.
+At $TIMESTAMP, you requested, via the Digger app, that your account and all associated data be permanently and irrevocably deleted from DiggerHub.  If you did not make this request, you can safely ignore this message, but you might want to change your password.
 
-To confirm deletion of your account and all your data, go to your account profile and change your first name to DELETEME$WIPEPIN, then reply "Confirm" to this email.  You will get a response email back in a few days after your data has been deleted.
+To permanently delete your account and all data
+1. In your account profile, change your first name to DELETEME$WIPEPIN
+2. Sign out
+3. Reply "Confirm" to this email
+
+You will get a response email back in a few days after your data has been deleted.  If you want to join DiggerHub again in the future you will need to create a new account.
 """
         ts = dbacc.nowISO()
         wipepin = "".join(random.choice(string.digits) for _ in range(6))
