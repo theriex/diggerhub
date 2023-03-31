@@ -6,7 +6,7 @@
 import logging
 import py.util as util
 
-CACHE_BUST_PARAM = "v=230321"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=230331"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -62,7 +62,7 @@ Digger is a music rating and retrieval app for your music collection.  Digger he
                  <span>(win8.1+)</span></div>
           </div>
           <div class="downloadsdiv">
-            <div><a href="https://github.com/theriex/diggerIOS" onclick="app.login.dldet(event);return false">IOS</a><br/><span>(beta)</span></div>
+            <div><a href="https://apps.apple.com/app/id6446126460" onclick="app.login.dldet(event);return false">IOS</a></div>
             <div><a href="https://play.google.com/store/apps/details?id=com.diggerhub.digger" onclick="app.login.dldet(event);return false">Android</a></div>
           </div>
           <div class="platoptdescdiv">&nbsp;</div>

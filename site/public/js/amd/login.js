@@ -156,20 +156,20 @@ app.login = (function () {
         const posdiv = "splashblockdiv";
         const dispdiv = "dloverlaydiv";
         const templates = {
-            iosp: "ipem(Request early access) to get Digger at no cost when it is released to the App Store. For full project details see the link(IOS project page).",
-            droidp: "Request a dpem(promotional link) to get Digger at no cost, or help support ongoing development and link(buy Digger for Android).",
+            iosp: "ipem(Request a promotional code) to evaluate Digger at no cost, or help support ongoing development and link(buy Digger for IOS).",
+            droidp: "Request a dpem(promotional link) to evaluate Digger at no cost, or help support ongoing development and link(buy Digger for Android).",
             webapp: "Access Digger through any browser when the local server is running. See the $webappdoc description page for more information, or if you run into any issues or questions after installing. link(Download Digger)" };
         function iosPromoEmailLink () {
             const emaddr = app.subPlaceholders(null, null, "SUPPEMAIL");
-            const subj = "Digger for IOS early access";
-            const body = "Hi,\n\nPlease send me a promotional link to download Digger for free on the IOS platform when it is released for early access.\n\nThanks,\n";
+            const subj = "Digger for IOS promo code";
+            const body = "Hi,\n\nI'd like to help evaluate Digger for IOS. Please send me a promotional code to get Digger at no cost from the App Store.\n\nThanks,\n";
             const link = "mailto:" + emaddr + "?subject=" + jt.dquotenc(subj) +
                   "&body=" + jt.dquotenc(body);
             return link; }
         function droidPromoEmailLink () {
             const emaddr = app.subPlaceholders(null, null, "SUPPEMAIL");
             const subj = "Digger for Android promo code";
-            const body = "Hi,\n\nPlease send me a promotional link to download Digger for free on the Android platform.\n\nThanks,\n";
+            const body = "Hi,\n\nPI'd like to help evaluate Digger for Android. Please send me a promotional link to get Digger at no cost from Google Play.\n\nThanks,\n";
             const link = "mailto:" + emaddr + "?subject=" + jt.dquotenc(subj) +
                   "&body=" + jt.dquotenc(body);
             return link; }
@@ -211,7 +211,7 @@ app.login = (function () {
             jt.byId(dispdiv).style.display = "none"; },
         detail: function (event) {
             if(event && event.target && event.target.href) {
-                if(event.target.href.includes("diggerIOS")) {
+                if(event.target.href.includes("apple")) {
                     displayOverlay("iosp", event.target,
                                    iosPromoEmailLink()); }
                 else if(event.target.href.includes("play.google")) {
