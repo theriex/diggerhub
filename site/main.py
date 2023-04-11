@@ -124,7 +124,7 @@ def songtip():  #parms: auth, songid
 
 
 ######################################################################
-#  General site endpoints
+#  General site access
 #
 
 @app.route('/', defaults={'path': ''})

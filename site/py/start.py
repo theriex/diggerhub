@@ -6,7 +6,7 @@
 import logging
 import py.util as util
 
-CACHE_BUST_PARAM = "v=230331"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=230411"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -69,11 +69,10 @@ Digger is a music rating and retrieval app for your music collection.  Digger he
         </div>
         <div id="moreaboutdiggerdiv">
 
-Digger makes it easy to rate songs so they can be fetched appropriately in a
-wide range of situations.  When you are playing music, Digger works like an
-automatic playlist, fetching and playing songs matching your listening
-context.  Digger helps you get back into your music collection by selecting
-good music you haven't played in a while.
+Digger makes it easy to play music in a wide range of listening situations.
+Your music collection becomes a continuous automated playlist where you
+filter what you want to hear, and rate what you are currently listening to.
+Digger helps you get back into your music.
 
         </div>
       </div>
@@ -83,22 +82,24 @@ good music you haven't played in a while.
 
 There is no substitute for what you feel.  Digger makes it easy to capture
 your impressions as you listen, linking what you feel with the music in your
-collection.  Personal music retrieval becomes more powerful With every song
-you rate.  Sync your music across multiple devices through DiggerHub.
+collection.  As you rate songs, personal retrieval reflects what you would
+choose to play.  Sync your music across devices via DiggerHub.
 
 <h2>Hub Connect</h2>
 
 <p>If you listen to music on more than one device, or if you want to
-collaborate on music with friends with other music fans using Digger, you
-can sign in on DiggerHub in the app to keep your ratings in sync and
-collaborate with others.</p>
+collaborate on music with friends with other music fans using Digger, sign
+in on DiggerHub with the app to keep your ratings in sync and collaborate with
+others.</p>
 
-<h3>This song is fantastic!</h3>
+<h3>Sharing</h3>
+
+<p><em>"This song is amazing!"</em></p>
 
 <p>Click the Digger "share" button to copy the song Title, Artist, Album,
 Keywords, Approachability and Energy Level, along with your saved personal
-comment.  Send that to anyone any way you like, sharing great music improves
-anyone's day and helps them get to know you better. <p>
+comment.  Send to anyone however you like.  Sharing great music improves
+anyone's day and helps friends know you better. <p>
 
 <h3>Collaboration</h3>
 
@@ -132,9 +133,8 @@ parameters. </p>
 
 </div>
 
-<p>It's called Digger because it digs through the stacks in your library
-(oldest first) pulling music across multiple artists matching what you
-want to hear. </p>
+<p>Digger digs through the stacks in your library (oldest first) pulling
+music across artists matching what you want to hear. </p>
 
     </div>
     <div id="taglinediv">

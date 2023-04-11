@@ -150,6 +150,37 @@ app.login = (function () {
     }());
 
 
+    //The marketing message display manager handles special case displays
+    //like promo code redemption.
+    mgrs.mmd = (function () {
+        function displayContent (html) {
+            const contactdiv = jt.byId("contactdiv");
+            if(contactdiv) {
+                contactdiv.style.display = "none"; }
+            jt.out("homepgcontentdiv", jt.tac2html(
+                [["div", {id:"logodiv"},
+                  ["a", {href:"/"},
+                   ["img", {src:"img/appicon.png"}]]],
+                 ["div", {id:"mmdcontentdiv"},
+                  html]])); }
+    return {
+        iosappstore: function () {
+            window.history.replaceState({}, document.title, "/iosappstore");
+            if(!app.startParams.code) {
+                return displayContent("No App Store code given. Check the link from the email you received."); }
+            displayContent(jt.tac2html(
+                ["div", {id:"iosappstorediv"},
+                 ["To redeem your App Store code for Digger:",
+                  ["ol", {cla:"mktmsglist"},
+                   [["li", "Open your profile in the App Store"],
+                    ["li", "Select \"Redeem Gift Card or Code\""],
+                    ["li", "Use your camera to read the boxed code below:"]]],
+                  ["div", {cla:"appstorecodebox"},
+                   app.startParams.code]]])); }
+    };  //end mgrs.mmd returned functions
+    }());
+
+
     //The download manager handles any extra steps related to downloading
     //the app.
     mgrs.dld = (function () {
@@ -402,6 +433,7 @@ app.login = (function () {
                         ocd.scrollTo(0, 0); }
                     app.displayDoc("hpgoverlaydiv", event.target.href); }); });
             switch(app.startPath) {
+            case "/iosappstore": return mgrs.mmd.iosappstore();
             case "/account": return mgrs.had.display();
             case "/songfinder": return mgrs.sgf.display();
             case "/digger": return app.initDiggerModules();
