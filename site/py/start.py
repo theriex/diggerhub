@@ -77,7 +77,9 @@ Digger helps you get back into your music.
         </div>
       </div>
     </div> <!-- textcontentdiv -->
-    <div id="slidesdiv"></div>
+    <div id="slidesdiv">
+      <div id="slidedispdiv"><img src="docs/slideshow/slide0.png"/></div>
+    </div>
     <div id="usingdiggerdiv">
 
 There is no substitute for what you feel.  Digger makes it easy to capture
