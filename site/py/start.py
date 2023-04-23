@@ -6,7 +6,7 @@
 import logging
 import py.util as util
 
-CACHE_BUST_PARAM = "v=230418"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=230423"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -29,85 +29,84 @@ INDEXHTML = """
 </head>
 <body id="bodyid">
 <div id="sitebody">
+<div id="sitebodycontent">
 <div id="outercontentdiv">
   <div id="homepgcontentdiv">
     <div id="topsectiondiv">
       <div id="logodiv"><img src="img/appicon.png"/></div>
       <div id="hubaccountcontentdiv"></div>
     </div>
-    <div id="textcontentdiv">
-      <div id="splashdiv">
-        <div id="whatisdiggerdiv">
-Digger is a music rating and retrieval app for your music collection.  Digger helps you enjoy the music you own.
+    <div class="textcontentdiv boxedcontentdiv">
 
-          <div id="rentvsowndiv">
-<table>
-<tr><th>Music rental:</th><th>Music ownership:</th></tr>
-<tr><td>All you can eat buffet</td><td>Pay as you go</td></tr>
-<tr><td>Musicians get a tiny fraction</td><td>Musicians get a percentage</td></tr>
-<tr><td>Regional restrictions</td><td>Listen wherever</td></tr>
-<tr><td>Licensing expires</td><td>Always yours</td></tr>
-<tr><td>Suggested songs</td><td>Digger retrieval</td></tr>
-</table>
-          </div>
-        </div>
-        <div id="headertextdiv">
-          <div id="marqueeplaceholderdiv">Digger <i>Hub</i></div></div>
-        <div id="splashblockdiv">
-          <div class="platoptdescdiv">&nbsp;</div>
-          <div class="downloadsdiv">
-            <div><a href="downloads/digger-linux" onclick="app.login.dldet(event);return false">Linux</a></div>
-            <div><a href="downloads/Digger.dmg" onclick="app.login.dldet(event);return false">Mac</a></div>
-            <div><a href="downloads/digger-win.zip" onclick="app.login.dldet(event);return false">Windows</a><br/>
-                 <span>(win8.1+)</span></div>
-          </div>
-          <div class="downloadsdiv">
-            <div><a href="https://apps.apple.com/app/id6446126460" onclick="app.login.dldet(event);return false">IOS</a></div>
-            <div><a href="https://play.google.com/store/apps/details?id=com.diggerhub.digger" onclick="app.login.dldet(event);return false">Android</a></div>
-          </div>
-          <div class="platoptdescdiv">&nbsp;</div>
-        </div>
-        <div id="moreaboutdiggerdiv">
+<p>You've spent years listening to music, and you're going to spend years
+more.  Isn't it time you started managing your impressions like you manage
+your song files? </p>
 
-Digger makes it easy to play music in a wide range of listening situations.
-Your music collection becomes a continuous automated playlist where you
-filter what you want to hear, and rate what you are currently listening to.
-Digger helps you get back into your music.
+<p>Your library doesn't want to sit around waiting for you to select things.
+Describe what you want to hear, and record what you think while it's playing.
+Your collection will autoplay great music.</p>
 
         </div>
       </div>
-    </div> <!-- textcontentdiv -->
+
     <div id="slidesdiv">
       <div id="slidedispdiv"><img src="docs/slideshow/slide0.png"/></div>
     </div>
-    <div id="usingdiggerdiv">
 
-There is no substitute for what you feel.  Digger makes it easy to capture
-your impressions as you listen, linking what you feel with the music in your
-collection.  As you rate songs, personal retrieval reflects what you would
-choose to play.  Sync your music across devices via DiggerHub.
+    <div class="textcontentdiv">
 
-<h2>Hub Connect</h2>
+Digger works alongside your music software and does not modify your song
+files.
 
-<p>If you listen to music on more than one device, or if you want to
-collaborate on music with friends with other music fans using Digger, sign
-in on DiggerHub with the app to keep your ratings in sync and collaborate with
-others.</p>
+    </div>
 
-<h3>Sharing</h3>
+    <div id="downloadsdiv" class="boxedcontentdiv">
+      <div class="platoptdescdiv">Get Digger for</div>
+      <div class="downloadsline">
+        <div><a href="downloads/digger-linux" onclick="app.login.dldet(event);return false">Linux</a></div>
+        <div><a href="downloads/Digger.dmg" onclick="app.login.dldet(event);return false">Mac</a></div>
+        <div><a href="downloads/digger-win.zip" onclick="app.login.dldet(event);return false">Windows</a><br/>
+             <span>(win8.1+)</span></div>
+      </div>
+      <div class="downloadsline">
+        <div><a href="https://apps.apple.com/app/id6446126460" onclick="app.login.dldet(event);return false">IOS</a></div>
+        <div><a href="https://play.google.com/store/apps/details?id=com.diggerhub.digger" onclick="app.login.dldet(event);return false">Android</a></div>
+      </div>
+      <div class="platoptdescdiv">&nbsp;</div>
+    </div>
+
+
+    <div class="textcontentdiv">
+
+<p>To sync your ratings across devices, or collaborate with other music
+fans, sign in on DiggerHub through the app.</p>
+
+    </div>
+
+<h3>Share</h3>
+
+
+    <div class="textcontentdiv boxedcontentdiv">
 
 <p><em>"This song is amazing!"</em></p>
 
-<p>Click the Digger "share" button to copy the song Title, Artist, Album,
-Keywords, Approachability and Energy Level, along with your saved personal
-comment.  Send to anyone however you like.  Sharing great music improves
-anyone's day and helps friends know you better. <p>
+<p>Share <img class="featureico" src="img/share.png"/> the song
+<em>Title</em>, <em>Artist</em>, <em>Album</em>, your <em>Keywords</em>,
+<em>Approachability</em> and <em>Energy Level</em>, along with your personal
+comment <img class="featureico" src="img/comment.png"/>.  Send to anyone
+however you like. </p>
 
-<h3>Collaboration</h3>
+    </div>
 
-<p>Your impressions let you easily collaborate with friends and fellow music
-fans whose tastes you trust. Under the "fans" section of your profile,
-you'll find these interactive displays: </p>
+<h3>Collaborate</h3>
+
+
+    <div class="textcontentdiv">
+
+<p>Your music ratings extend beyond automated retrieval to form a foundation
+for detailed interaction with other music fans.</p>
+
+    </div>
 
 <div id="collabdiv">
 
@@ -135,8 +134,29 @@ parameters. </p>
 
 </div>
 
-<p>Digger digs through the stacks in your library (oldest first) pulling
-music across artists matching what you want to hear. </p>
+
+    <div class="textcontentdiv">
+
+Only renting your music?  Consider treating yourself to a new album purchase
+this week from an artist who appreciates your support.
+
+    </div>
+
+    <div id="rentvsowndiv">
+<table>
+<tr><th>Music rental</th><th><span class="versusspan">vs</span><th>Music ownership</th></tr>
+<tr><td>Buffet</td><td></td><td>A la carte</td></tr>
+<tr><td>Musicians get a tiny fraction</td><td></td><td>Musicians get a percentage</td></tr>
+<tr><td>Regional restrictions</td><td></td><td>Listen wherever</td></tr>
+<tr><td>Licensing expires</td><td></td><td>Always yours</td></tr>
+<tr><td>Offline?</td><td></td><td>Always available</td></tr>
+<tr><td>Suggested songs</td><td></td><td>Digger retrieval</td></tr>
+</table>
+    </div>
+
+    <div id="headertextdiv">
+      <div id="marqueeplaceholderdiv">Digger <i>Hub</i></div></div>
+    </div>
 
     </div>
     <div id="taglinediv">
@@ -147,6 +167,7 @@ music across artists matching what you want to hear. </p>
     </div>
     <div id="dloverlaydiv"></div>
     <div id="hpgoverlaydiv"></div>
+
   </div> <!-- homepgcontentdiv -->
 </div> <!-- outercontentdiv -->
 
@@ -178,6 +199,7 @@ music across artists matching what you want to hear. </p>
 </script>
 
 </div> <!-- sitebody -->
+</div> <!-- sitebodycontent -->
 </body>
 </html>
 """

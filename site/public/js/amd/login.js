@@ -323,7 +323,7 @@ app.login = (function () {
                 [["div", {id:"slidepgdiv"},
                   ["span", {id:"slidepgindspan"}]],
                  ["div", {id:"slidedispdiv"},
-                  [["img", {src:srcp.replace(/\$I/g, 0)}],
+                  [["img", {src:srcp.replace(/\$I/g, 0)}],  //use space
                    ["img", {id:"prevslide", src:srcp.replace(/\$I/g, 0)}],
                    ["img", {id:"currslide", src:srcp.replace(/\$I/g, 0)}]]]]));
             setTimeout(mgrs.sld.nextSlide, 12000); }

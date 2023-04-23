@@ -13,6 +13,11 @@ body {
 #sitebody {
   background:#ffc2a4;
   background:linear-gradient(#ffc2a4, #ff9c6b);
+}
+#sitebodycontent {
+  background-image:url("../img/bglogo.png");
+  background-repeat:no-repeat; background-size:contain;
+  background-position: 5% 5%;
   min-height:100vh;
   position:relative;
 }
@@ -29,16 +34,16 @@ button, .buttonstyle { border: 2px solid #666666; border-radius:8px;
   padding:0px 3px; font-size:large; font-weight:bold; }
 .ghostbutton { background:none; }
 
+h2 { text-align:center; }
+h3 { font-weight:normal; text-align:center; }
+
+/* -------------------- */
+/* layout */
+
 #outercontentdiv { height:calc(100vh - 30px); overflow:scroll; }
 #homepgcontentdiv { position:relative; }
 #hubaccountcontentdiv { margin:12px 10px 0px 10px; width:340px; }
 #contentdiv { position:relative; width:80%; margin:0px auto; }
-#textcontentdiv { margin:0px 10px 10px 10px; }
-#vidcontentdiv { text-align:center; }
-
-/* -------------------- */
-/* general */
-
 .formbuttonsdiv { text-align:center; margin:5px 0px 0px 0px; }
 .tcgcinactive { opacity:0.5; }
 #contactdiv { position:absolute; bottom:0px; left:0px; width:100%; height:30px;
@@ -47,45 +52,60 @@ button, .buttonstyle { border: 2px solid #666666; border-radius:8px;
 #contactdiv a { display:inline-block; padding:10px 0px; }
 #taglinediv { text-align:center; margin:10px 0px; font-style:italic;
   font-weight:bold; }
-h2 { text-align:center; }
-h3 { font-weight:normal; text-align:center; }
-
-/* -------------------- */
-/* splash */
-
 #logodiv { float:left; }
 #logodiv img { max-height:64px; }
-#marqueediv, #marqueeplaceholderdiv { margin-left:32px; font-weight:bold;
-  font-size:large; text-align:center; color:#e0550f; }
-#splashdiv { background-image:url("../img/bglogo.png");
-  background-repeat:no-repeat; background-size:contain;
-  background-position: 10% 84%; }
-#splashdiv p { padding:5px; margin:5px 0px 18px 0px; }
-#splashdiv div { padding:5px; }
-#whatisdiggerdiv, #moreaboutdiggerdiv, #usingdiggerdiv { color:#663922;
+
+/* -------------------- */
+/* general */
+
+.textcontentdiv { margin:0px 10px 10px 10px; padding:10px; color:#663922;
   font-size:large; text-shadow: 0.5px 0.5px 1px #37190a; }
-#moreaboutdiggerdiv { margin-top:24px; }
-#usingdiggerdiv { padding:5px; margin:0px 10px 10px 10px; }
-#rentvsowndiv { color:#af3c01; font-size:medium; display:table; margin:auto;
-  margin-top:10px; }
-#rentvsowndiv table tr th { font-style:italic; text-align:left; }
-#rentvsowndiv table tr td { padding-right:5px; }
-#spotauthdiv { font-size:small; }
-#splashblockdiv { background-image:url("../img/white60percent.png");
-  border-radius:14px; text-align:center; margin:0px auto; display:table;
-  min-width:280px; }
+.boxedcontentdiv { background-image:url("../img/white60percent.png");
+  border-radius:14px; }
+
+/* -------------------- */
+/* app */
+
+#downloadsdiv { text-align:center; margin:0px auto 20px; display:table;
+  min-width:280px; padding:5px 0px; }
+.downloadsline div { display:inline-block; padding:5px 14px;
+  text-align:center; vertical-align:top; }
+.downloadsline div span { font-size:small; color:#999; }
+.downloadlinkspan { font-size:large; font-weight:bold; display:inline-block;
+  padding:4px 0px; }
 #dloverlaydiv { background:#ffd2bc; border-radius:14px; padding:10px;
   border:2px solid #333; box-shadow: 2px 3px 4px #2f2b00;
   position:absolute; top:0px; left:0px; display:none; }
 #dloverxdiv { float:right; }
 #dlovertxtdiv { padding-top:20px; }
-.platoptdescdiv { font-size:small; }
-.downloadsdiv { text-align:center; }
-#splashblockdiv .downloadsdiv div { display:inline-block; padding:5px 14px;
-  text-align:center; vertical-align:top; }
-.downloadsdiv div span { font-size:small; color:#999; }
-.downloadlinkspan { font-size:large; font-weight:bold; display:inline-block;
-  padding:4px 0px; }
+.platoptdescdiv { font-size:small; padding:5px 0px 10px; }
+.featureico { height:30px; max-height:30px; }
+
+/* -------------------- */
+/* hub */
+
+/* -------------------- */
+/* extra */
+
+#marqueediv, #marqueeplaceholderdiv { margin-left:32px; font-weight:bold;
+  font-size:large; text-align:center; color:#e0550f; }
+#splashdiv p { padding:5px; margin:5px 0px 18px 0px; }
+#splashdiv div { padding:10px; }
+#whatisdiggerdiv, #moreaboutdiggerdiv, #usingdiggerdiv {  }
+#whatisdiggerdiv {  }
+#moreaboutdiggerdiv { margin-top:24px; }
+#usingdiggerdiv { padding:5px; margin:0px 10px 10px 10px; }
+#rentvsowndiv { color:#af3c01; font-size:medium; display:table; 
+  margin:10px auto; }
+#rentvsowndiv table tr th { font-style:italic; text-align:left; }
+#rentvsowndiv table tr th:first-child { text-align:right; }
+#rentvsowndiv table tr td { padding-right:5px; }
+#rentvsowndiv table tr td:first-child { text-align:right; }
+.versusspan { font-style:small; font-style:italic; font-weight:normal; }
+#spotauthdiv { font-size:small; }
+#splashblockdiv { background-image:url("../img/white60percent.png");
+  border-radius:14px; text-align:center; margin:0px auto; display:table;
+  min-width:280px; }
 #streamcloseline { font-size:small; margin-bottom:20px; }
 .streamtypespan { font-size:large; font-weight:bold; }
 
@@ -94,7 +114,7 @@ h3 { font-weight:normal; text-align:center; }
 
 #slidepgdiv { text-align:center; }
 #slidedispdiv { position:relative; max-width:400px; margin:0px auto;
-  padding-bottom:10px; }
+  padding:0px; } /* overlays are absolute positioned, so no pad */
 #slidedispdiv img { width:100%; max-width:400px; transition:opacity 0.5s; }
 #prevslide, #currslide { position:absolute; top:0px; left:0px; }
 
