@@ -184,7 +184,7 @@ app.login = (function () {
     //The download manager handles any extra steps related to downloading
     //the app.
     mgrs.dld = (function () {
-        const posdiv = "splashblockdiv";
+        const posdiv = "downloadsdiv";
         const dispdiv = "dloverlaydiv";
         const templates = {
             iosp: "ipem(Request a promotional code) to evaluate Digger at no cost, or help support ongoing development and link(buy Digger for IOS).",
@@ -428,9 +428,9 @@ app.login = (function () {
             Array.from(jt.byId("contactdiv").children).forEach(function (a) {
                 jt.on(a, "click", function (event) {
                     jt.evtend(event);
-                    const ocd = jt.byId("outercontentdiv");
-                    if(ocd) {
-                        ocd.scrollTo(0, 0); }
+                    const sd = jt.byId("docdispxdiv");
+                    if(sd) {
+                        sd.scrollIntoView(); }
                     app.displayDoc("hpgoverlaydiv", event.target.href); }); });
             switch(app.startPath) {
             case "/iosappstore": return mgrs.mmd.iosappstore();

@@ -1,62 +1,34 @@
-html {
-  min-height: 100%; margin:0; padding:0; border:0;
-}
+/* See digger.css for overriding main element definitions including */
+/* A:link/visited/active/hover img button etc */
+html { border:0; }
+body { padding:0; border:0; }
 
-body {
-  margin:0; padding:0; border:0;
-  color:#111111;
-  height: 100%;
-  font-family: "Open Sans", "Helvetica", sans-serif;
-  font-size:large;
-}
-
-#sitebody {
-  background:#ffc2a4;
-  background:linear-gradient(#ffc2a4, #ff9c6b);
-}
-#sitebodycontent {
+/* hub site defs. */
+#sitebodycontentdiv { position:relative; } /*zero height anchor div*/
+#sitecontentdiv, #hpgoverlaydiv { position:absolute; top:0px; left:0px;
+  max-height:100vh; overflow:scroll; }
+#sitecontentdiv { background:#ffc2a4;
+  background:linear-gradient(#ffc2a4, #ff9c6b); }
+#sitecontentinnerdiv { 
   background-image:url("../img/bglogo.png");
   background-repeat:no-repeat; background-size:contain;
-  background-position: 5% 5%;
-  min-height:100vh;
-  position:relative;
-}
-
-A:link {text-decoration:none; color:#0590b8; }
-A:visited {text-decoration:none; color:#0590b8; }
-A:active {text-decoration:none; color:#0590b8; }
-A:hover {text-decoration:underline; color:#3bd4ff; }
-
-img { border:0px; vertical-align:middle; }
-
-button, .buttonstyle { border: 2px solid #666666; border-radius:8px;
-  cursor:pointer; background:#ffe155; box-shadow:1px 1px 1px #2f2b00;
-  padding:0px 3px; font-size:large; font-weight:bold; }
-.ghostbutton { background:none; }
+  background-position: 5% 60px;
+  background-attachment: fixed; }
+#logodiv { float:left; }
+#logodiv img { max-height:64px; }
+/* top.js adds float:right; if screen is wide enough. Otherwise pads it. */
+#hubaccountcontentdiv { margin:12px 10px 0px 10px; width:340px; }
 
 h2 { text-align:center; }
 h3 { font-weight:normal; text-align:center; }
 
-/* -------------------- */
-/* layout */
-
-#outercontentdiv { height:calc(100vh - 30px); overflow:scroll; }
-#homepgcontentdiv { position:relative; }
-#hubaccountcontentdiv { margin:12px 10px 0px 10px; width:340px; }
-#contentdiv { position:relative; width:80%; margin:0px auto; }
-.formbuttonsdiv { text-align:center; margin:5px 0px 0px 0px; }
 .tcgcinactive { opacity:0.5; }
-#contactdiv { position:absolute; bottom:0px; left:0px; width:100%; height:30px;
-  background:#ffc2a4; font-size:small; text-align:center;
-  margin:10px 0px 0px 0px; }
+
+#contactdiv { width:100%; height:30px; background:#ffc2a4;
+  font-size:small; text-align:center; margin:10px 0px 0px 0px; }
 #contactdiv a { display:inline-block; padding:10px 0px; }
 #taglinediv { text-align:center; margin:10px 0px; font-style:italic;
-  font-weight:bold; }
-#logodiv { float:left; }
-#logodiv img { max-height:64px; }
-
-/* -------------------- */
-/* general */
+  font-weight:bold; color:#ffc2a4; padding-bottom:30px; }
 
 .textcontentdiv { margin:0px 10px 10px 10px; padding:10px; color:#663922;
   font-size:large; text-shadow: 0.5px 0.5px 1px #37190a; }
@@ -82,13 +54,10 @@ h3 { font-weight:normal; text-align:center; }
 .featureico { height:30px; max-height:30px; }
 
 /* -------------------- */
-/* hub */
-
-/* -------------------- */
 /* extra */
 
-#marqueediv, #marqueeplaceholderdiv { margin-left:32px; font-weight:bold;
-  font-size:large; text-align:center; color:#e0550f; }
+#marqueediv, #marqueeplaceholderdiv { font-size:large; font-weight:bold;
+  text-align:center; color:#e0550f; }
 #splashdiv p { padding:5px; margin:5px 0px 18px 0px; }
 #splashdiv div { padding:10px; }
 #whatisdiggerdiv, #moreaboutdiggerdiv, #usingdiggerdiv {  }
@@ -175,3 +144,4 @@ h3 { font-weight:normal; text-align:center; }
 /* -------------------- */
 /* docs */
 #hpgoverlaydiv { position:absolute; top:0px; left:0px; width:100%; }
+#docdispbodydiv { min-height:100%; max-height:100%; }
