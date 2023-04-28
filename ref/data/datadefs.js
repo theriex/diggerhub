@@ -62,6 +62,7 @@ module.exports = (function () {
      //    songcounts: fetched, posschg, totals
      //    xps: playlist exports by platform, then by playlist name
      //    spimport: counts of imported library tracks and when
+     //    sumact: activity summary info sendon day, lastsend timestamp
      //*3 musfs: Music fan instances
      //    dsId: id of music fan
      //    digname: digname of music fan
