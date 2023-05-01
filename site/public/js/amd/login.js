@@ -262,11 +262,10 @@ app.login = (function () {
             fos:1.2,   //fade-out seconds
             dts:8};    //text display time seconds
         const mhds = [
-            "Music is art",
-            "What you listen to matters",
-            "Your impressions matter",
-            "Artists enrich your life",
-            "Songs touch your soul"];
+            "Autoplay your music collection",
+            "Record your impressions",
+            "Your music, your ratings",
+            "What you listen to matters"];
         var idx = 0;
     return {
         nextStatement: function () {

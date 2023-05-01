@@ -6,7 +6,7 @@
 import logging
 import py.util as util
 
-CACHE_BUST_PARAM = "v=230425"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=230501"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -78,8 +78,7 @@ more.  Isn't it time you started managing your impressions like you manage
 your song files? </p>
 
 <p>Your library doesn't want to sit around waiting for you to select things.
-Describe what you want to hear, and record what you think while it's playing.
-Your collection will autoplay great music.</p>
+Autoplay your music collection.</p>
 </div>
 
 <div id="slidesdiv">
@@ -107,8 +106,8 @@ files.
 </div>
 
 <div class="textcontentdiv">
-<p>To sync your ratings across devices, or collaborate with other music
-fans, sign in on DiggerHub through the app.</p>
+<p>To sync your ratings across devices and collaborate with fellow music
+fans, sign in on DiggerHub with the app.</p>
 </div>
 
 <h3>Share</h3>
@@ -126,8 +125,8 @@ however you like. </p>
 <h3>Collaborate</h3>
 
 <div class="textcontentdiv">
-<p>Your music ratings extend beyond automated retrieval to form a foundation
-for detailed interaction with other music fans.</p>
+<p>Your automatic music retrieval ratings can be used to collaborate with
+fellow music fans.</p>
 </div>
 
 <div id="collabdiv">
@@ -155,14 +154,14 @@ parameters. </p>
 </div>
 
 <div class="textcontentdiv">
-Just renting your music?  Consider treating yourself to a new album purchase
-this week.
+Only renting your music? Consider treating yourself to a new album purchase
+this week.  Put it on your phone for easy access.
 </div>
 
 <div id="rentvsowndiv">
 <table>
-<tr><th>Music rental</th><th><span class="versusspan">vs</span><th>Music ownership</th></tr>
-<tr><td>Buffet</td><td></td><td>A la carte</td></tr>
+<tr><th>Compare music rental</th><th><span class="versusspan">vs</span><th>music ownership</th></tr>
+<tr><td>All you can eat buffet</td><td></td><td>Pay as you go</td></tr>
 <tr><td>Musicians get a tiny fraction</td><td></td><td>Musicians get a percentage</td></tr>
 <tr><td>Regional restrictions</td><td></td><td>Listen wherever</td></tr>
 <tr><td>Licensing expires</td><td></td><td>Always yours</td></tr>
@@ -172,7 +171,7 @@ this week.
 </div>
 
 <div id="headertextdiv">
-  <div id="marqueeplaceholderdiv">Own your impressions.</div>
+  <div id="marqueeplaceholderdiv">Autoplay your music collection.</div>
 </div>
 
 <div id="taglinediv">
