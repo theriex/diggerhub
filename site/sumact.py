@@ -36,7 +36,8 @@ def send_user_summary():
                  usersum["acct"]["email"] + ": " +
                  str(usersum["count"]) + "\n")
     if runinfo["mode"] in ["all", "summary"]:
-        util.send_mail("support@diggerhub.com", subj, body)
+        util.send_mail("support@diggerhub.com", subj, body,
+                       domain="diggerhub.com")
     else:
         logging.info("User summary:\n" + body)
 
@@ -61,9 +62,9 @@ def send_activity_summary(user, settings, songsum):
     body += "\n"
     body += "Let your friends know what they're missing.\n\n"
     if runinfo["mode"] == "all":
-        util.send_mail(user["email"], subj, body)
+        util.send_mail(user["email"], subj, body, domain="diggerhub.com")
         settings["sumact"]["lastsend"] = dbacc.nowISO()
-        user.settings = json.dumps(settings)
+        user["settings"] = json.dumps(settings)
         dbacc.write_entity(user, vck=user["modified"])
     else:
         logging.info("Summary for " + str(user["dsId"]) + "\n" + body)
