@@ -31,9 +31,9 @@ h3 { font-weight:normal; text-align:center; }
   font-weight:bold; color:#ffc2a4; padding-bottom:30px; }
 
 .textcontentdiv { margin:0px 10px 10px 10px; padding:10px; color:#663922;
-  font-size:large; text-shadow: 0.5px 0.5px 1px #37190a; }
+  font-size:large; text-shadow: 0.5px 0.5px 1px #37190a; text-align:center; }
 .boxedcontentdiv { background-image:url("../img/white60percent.png");
-  border-radius:14px; }
+  border-radius:14px; text-align:left; }
 
 /* -------------------- */
 /* app */

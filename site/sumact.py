@@ -27,8 +27,10 @@ dfltact = {"lastsend": "1970-01-01T00:00:00Z", "sendon": "Wednesday"}
 
 
 def send_user_summary():
-    subj = "DiggerHub user activity summary"
-    body = "Active users:\n"
+    subj = "DiggerHub user activity summary for " + runinfo["tdow"]
+    body = "No user summaries sent"
+    if len(runinfo["usums"]) > 0:
+        body = "User summaries sent to:\n"
     for usersum in runinfo["usums"]:
         body += (usersum["acct"]["dsId"] + " " +
                  usersum["acct"]["digname"] + " " +

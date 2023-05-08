@@ -6,7 +6,7 @@
 import logging
 import py.util as util
 
-CACHE_BUST_PARAM = "v=230501"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=230508"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -77,7 +77,7 @@ FLOWCONTENTHTML = """
 more.  Isn't it time you started managing your impressions like you manage
 your song files? </p>
 
-<p>Your library doesn't want to sit around waiting for you to select things.
+<p>Your library doesn't want to sit around waiting for you.
 Autoplay your music collection.</p>
 </div>
 
@@ -154,8 +154,8 @@ parameters. </p>
 </div>
 
 <div class="textcontentdiv">
-Only renting your music? Consider treating yourself to a new album purchase
-this week.  Put it on your phone for easy access.
+Renting your music? Feel better purchasing an album
+this week and put it on your phone for easy access.
 </div>
 
 <div id="rentvsowndiv">
