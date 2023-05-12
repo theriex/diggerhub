@@ -123,6 +123,23 @@ entdefs = {
         "ab": {"pt": "string", "un": False, "dv": ""},
         "nt": {"pt": "string", "un": False, "dv": ""}
     },
+    "SASum": {  # Song activity summary, e.g. weekly top20
+        "dsId": {"pt": "dbid", "un": True, "dv": 0},
+        "created": {"pt": "string", "un": False, "dv": ""},
+        "modified": {"pt": "string", "un": False, "dv": ""},
+        "batchconv": {"pt": "string", "un": False, "dv": ""},
+        "aid": {"pt": "dbid", "un": False, "dv": 0},
+        "digname": {"pt": "string", "un": False, "dv": ""},
+        "sumtype": {"pt": "string", "un": False, "dv": ""},
+        "songs": {"pt": "string", "un": False, "dv": ""},
+        "easiest": {"pt": "string", "un": False, "dv": ""},
+        "hardest": {"pt": "string", "un": False, "dv": ""},
+        "chillest": {"pt": "string", "un": False, "dv": ""},
+        "ampest": {"pt": "string", "un": False, "dv": ""},
+        "start": {"pt": "string", "un": False, "dv": ""},
+        "end": {"pt": "string", "un": False, "dv": ""},
+        "ttlsongs": {"pt": "int", "un": False, "dv": 0}
+    },
     "AppService": {  # Processing service access
         "dsId": {"pt": "dbid", "un": True, "dv": 0},
         "created": {"pt": "string", "un": False, "dv": ""},
@@ -141,6 +158,7 @@ entkeys = {
     "Song": [],
     "SKeyMap": ["skey"],
     "DigMsg": [],
+    "SASum": [],
     "AppService": ["name"]
 }
 
@@ -150,6 +168,7 @@ cachedefs = {
     "Song": {"minutes": 0, "manualadd": False},
     "SKeyMap": {"minutes": 0, "manualadd": False},
     "DigMsg": {"minutes": 0, "manualadd": False},
+    "SASum": {"minutes": 30, "manualadd": False},
     "AppService": {"minutes": 240, "manualadd": False}
 }
 
@@ -685,6 +704,67 @@ def db2app_DigMsg(inst):
     return cnv
 
 
+# Convert the given SASum inst dict from app values to db values.  Removes
+# the dsType field to avoid trying to write it to the db.
+def app2db_SASum(inst, fill=True):
+    cnv = {}
+    cnv["dsId"] = None
+    if "dsId" in inst:
+        cnv["dsId"] = app2db_fieldval(None, "dsId", inst)
+    if fill or "created" in inst:
+        cnv["created"] = app2db_fieldval(None, "created", inst)
+    if fill or "modified" in inst:
+        cnv["modified"] = app2db_fieldval(None, "modified", inst)
+    if fill or "batchconv" in inst:
+        cnv["batchconv"] = app2db_fieldval(None, "batchconv", inst)
+    if fill or "aid" in inst:
+        cnv["aid"] = app2db_fieldval("SASum", "aid", inst)
+    if fill or "digname" in inst:
+        cnv["digname"] = app2db_fieldval("SASum", "digname", inst)
+    if fill or "sumtype" in inst:
+        cnv["sumtype"] = app2db_fieldval("SASum", "sumtype", inst)
+    if fill or "songs" in inst:
+        cnv["songs"] = app2db_fieldval("SASum", "songs", inst)
+    if fill or "easiest" in inst:
+        cnv["easiest"] = app2db_fieldval("SASum", "easiest", inst)
+    if fill or "hardest" in inst:
+        cnv["hardest"] = app2db_fieldval("SASum", "hardest", inst)
+    if fill or "chillest" in inst:
+        cnv["chillest"] = app2db_fieldval("SASum", "chillest", inst)
+    if fill or "ampest" in inst:
+        cnv["ampest"] = app2db_fieldval("SASum", "ampest", inst)
+    if fill or "start" in inst:
+        cnv["start"] = app2db_fieldval("SASum", "start", inst)
+    if fill or "end" in inst:
+        cnv["end"] = app2db_fieldval("SASum", "end", inst)
+    if fill or "ttlsongs" in inst:
+        cnv["ttlsongs"] = app2db_fieldval("SASum", "ttlsongs", inst)
+    return cnv
+
+
+# Convert the given SASum inst dict from db values to app values.  Adds the
+# dsType field for general app processing.
+def db2app_SASum(inst):
+    cnv = {}
+    cnv["dsType"] = "SASum"
+    cnv["dsId"] = db2app_fieldval(None, "dsId", inst)
+    cnv["created"] = db2app_fieldval(None, "created", inst)
+    cnv["modified"] = db2app_fieldval(None, "modified", inst)
+    cnv["batchconv"] = db2app_fieldval(None, "batchconv", inst)
+    cnv["aid"] = db2app_fieldval("SASum", "aid", inst)
+    cnv["digname"] = db2app_fieldval("SASum", "digname", inst)
+    cnv["sumtype"] = db2app_fieldval("SASum", "sumtype", inst)
+    cnv["songs"] = db2app_fieldval("SASum", "songs", inst)
+    cnv["easiest"] = db2app_fieldval("SASum", "easiest", inst)
+    cnv["hardest"] = db2app_fieldval("SASum", "hardest", inst)
+    cnv["chillest"] = db2app_fieldval("SASum", "chillest", inst)
+    cnv["ampest"] = db2app_fieldval("SASum", "ampest", inst)
+    cnv["start"] = db2app_fieldval("SASum", "start", inst)
+    cnv["end"] = db2app_fieldval("SASum", "end", inst)
+    cnv["ttlsongs"] = db2app_fieldval("SASum", "ttlsongs", inst)
+    return cnv
+
+
 # Convert the given AppService inst dict from app values to db values.  Removes
 # the dsType field to avoid trying to write it to the db.
 def app2db_AppService(inst, fill=True):
@@ -731,6 +811,7 @@ def dblogmsg(op, entity, res):
         "Song": ["aid", "ti", "ar"],
         "SKeyMap": ["skey", "spid"],
         "DigMsg": ["sndr", "msgtype", "rcvr", "songid", "ti"],
+        "SASum": ["aid", "sumtype", "start", "end", "ttlsongs"],
         "AppService": ["name"]}
     if res:
         if op != "QRY":  # query is already a list, listify anything else
@@ -979,6 +1060,64 @@ def update_existing_DigMsg(context, fields):
     return result
 
 
+# Write a new SASum row, using the given field values or defaults.
+def insert_new_SASum(cnx, cursor, fields):
+    fields = app2db_SASum(fields)
+    stmt = (
+        "INSERT INTO SASum (created, modified, aid, digname, sumtype, songs, easiest, hardest, chillest, ampest, start, end, ttlsongs) "
+        "VALUES (%(created)s, %(modified)s, %(aid)s, %(digname)s, %(sumtype)s, %(songs)s, %(easiest)s, %(hardest)s, %(chillest)s, %(ampest)s, %(start)s, %(end)s, %(ttlsongs)s)")
+    data = {
+        'created': fields.get("created"),
+        'modified': fields.get("modified"),
+        'aid': fields.get("aid", entdefs["SASum"]["aid"]["dv"]),
+        'digname': fields.get("digname", entdefs["SASum"]["digname"]["dv"]),
+        'sumtype': fields.get("sumtype", entdefs["SASum"]["sumtype"]["dv"]),
+        'songs': fields.get("songs", entdefs["SASum"]["songs"]["dv"]),
+        'easiest': fields.get("easiest", entdefs["SASum"]["easiest"]["dv"]),
+        'hardest': fields.get("hardest", entdefs["SASum"]["hardest"]["dv"]),
+        'chillest': fields.get("chillest", entdefs["SASum"]["chillest"]["dv"]),
+        'ampest': fields.get("ampest", entdefs["SASum"]["ampest"]["dv"]),
+        'start': fields.get("start", entdefs["SASum"]["start"]["dv"]),
+        'end': fields.get("end", entdefs["SASum"]["end"]["dv"]),
+        'ttlsongs': fields.get("ttlsongs", entdefs["SASum"]["ttlsongs"]["dv"])}
+    cursor.execute(stmt, data)
+    fields["dsId"] = cursor.lastrowid
+    cnx.commit()
+    fields = db2app_SASum(fields)
+    dblogmsg("ADD", "SASum", fields)
+    return fields
+
+
+# Update the specified SASum row with the given field values.
+def update_existing_SASum(context, fields):
+    fields = app2db_SASum(fields, fill=False)
+    dsId = int(fields["dsId"])  # Verify int value
+    stmt = ""
+    for field in fields:  # only updating the fields passed in
+        if stmt:
+            stmt += ", "
+        stmt += field + "=(%(" + field + ")s)"
+    stmt = "UPDATE SASum SET " + stmt + " WHERE dsId=" + str(dsId)
+    if context["vck"] != "override":
+        stmt += " AND modified=\"" + context["vck"] + "\""
+    data = {}
+    for field in fields:
+        data[field] = fields[field]
+    context["cursor"].execute(stmt, data)
+    if context["cursor"].rowcount < 1 and context["vck"] != "override":
+        logging.error(stmt + " " + json.dumps(data))
+        entcache.cache_clean()  # out of sync, clear it all
+        raise ValueError("SASum" + str(dsId) + " update received outdated version check value " + context["vck"] + ".")
+    context["cnx"].commit()
+    result = context["existing"]
+    for field in fields:
+        result[field] = fields[field]
+    result = db2app_SASum(result)
+    dblogmsg("UPD", "SASum", result)
+    entcache.cache_put(result)
+    return result
+
+
 # Write a new AppService row, using the given field values or defaults.
 def insert_new_AppService(cnx, cursor, fields):
     fields = app2db_AppService(fields)
@@ -1055,6 +1194,8 @@ def write_entity(inst, vck="1234-12-12T00:00:00Z"):
                     return update_existing_SKeyMap(context, inst)
                 if entity == "DigMsg":
                     return update_existing_DigMsg(context, inst)
+                if entity == "SASum":
+                    return update_existing_SASum(context, inst)
                 if entity == "AppService":
                     return update_existing_AppService(context, inst)
                 raise ValueError("Cannot modify unknown entity dsType " +
@@ -1069,6 +1210,8 @@ def write_entity(inst, vck="1234-12-12T00:00:00Z"):
                 return insert_new_SKeyMap(cnx, cursor, inst)
             if entity == "DigMsg":
                 return insert_new_DigMsg(cnx, cursor, inst)
+            if entity == "SASum":
+                return insert_new_SASum(cnx, cursor, inst)
             if entity == "AppService":
                 return insert_new_AppService(cnx, cursor, inst)
             raise ValueError("Cannot create unknown entity dsType " +
@@ -1157,6 +1300,20 @@ def query_DigMsg(cnx, cursor, where):
     return res
 
 
+def query_SASum(cnx, cursor, where):
+    query = "SELECT dsId, created, modified, "
+    query += "aid, digname, sumtype, songs, easiest, hardest, chillest, ampest, start, end, ttlsongs"
+    query += " FROM SASum " + where
+    cursor.execute(query)
+    res = []
+    for (dsId, created, modified, aid, digname, sumtype, songs, easiest, hardest, chillest, ampest, start, end, ttlsongs) in cursor:
+        inst = {"dsType": "SASum", "dsId": dsId, "created": created, "modified": modified, "aid": aid, "digname": digname, "sumtype": sumtype, "songs": songs, "easiest": easiest, "hardest": hardest, "chillest": chillest, "ampest": ampest, "start": start, "end": end, "ttlsongs": ttlsongs}
+        inst = db2app_SASum(inst)
+        res.append(inst)
+    dblogmsg("QRY", "SASum", res)
+    return res
+
+
 def query_AppService(cnx, cursor, where):
     query = "SELECT dsId, created, modified, "
     query += "name, ckey, csec, data"
@@ -1190,6 +1347,8 @@ def query_entity(entity, where):
                 return query_SKeyMap(cnx, cursor, where)
             if entity == "DigMsg":
                 return query_DigMsg(cnx, cursor, where)
+            if entity == "SASum":
+                return query_SASum(cnx, cursor, where)
             if entity == "AppService":
                 return query_AppService(cnx, cursor, where)
         except mysql.connector.Error as e:
@@ -1240,6 +1399,13 @@ def visible_DigMsg_fields(obj, audience):
     return filtobj
 
 
+def visible_SASum_fields(obj, audience):
+    filtobj = {}
+    for fld, val in obj.items():
+        filtobj[fld] = val
+    return filtobj
+
+
 def visible_AppService_fields(obj, audience):
     filtobj = {}
     for fld, val in obj.items():
@@ -1260,6 +1426,8 @@ def visible_fields(obj, audience="public"):
         return visible_SKeyMap_fields(obj, audience)
     if obj["dsType"] == "DigMsg":
         return visible_DigMsg_fields(obj, audience)
+    if obj["dsType"] == "SASum":
+        return visible_SASum_fields(obj, audience)
     if obj["dsType"] == "AppService":
         return visible_AppService_fields(obj, audience)
     raise ValueError("Unknown object dsType: " + obj["dsType"])

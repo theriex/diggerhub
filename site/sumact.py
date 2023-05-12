@@ -3,6 +3,8 @@
 #pylint: disable=wrong-import-position
 #pylint: disable=missing-function-docstring
 #pylint: disable=logging-not-lazy
+#pylint: disable=consider-using-from-import
+#pylint: disable=invalid-name
 import py.mconf as mconf
 import logging
 import logging.handlers
@@ -51,9 +53,42 @@ def song_ident_text(song):
     return text
 
 
+def trim_song_fields_for_reporting(song):
+    song["path"] = ""
+    song["smti"] = ""
+    song["smar"] = ""
+    song["smab"] = ""
+    return song
+
+
+def write_song_activity_summary(user, songsum):
+    digname = user.get("digname")
+    if not digname:
+        return ""
+    sasum = {"dsType":"SASum", "aid":user["dsId"], "digname":digname,
+             "sumtype":"wt20","start":songsum["sincets"], "end":dbacc.nowISO(),
+             "ttlsongs":songsum["ttlsongs"]}
+    for song in songsum["top20"]:
+        trim_song_fields_for_reporting(song)
+    sasum["songs"] = json.dumps(songsum["top20"])
+    flds = ["easiest", "hardest", "chillest", "ampest"]
+    for fld in flds:
+        sasum[fld] = json.dumps(trim_song_fields_for_reporting(songsum[fld]))
+    dbacc.write_entity(sasum)
+    ts = sasum["end"][0:10]
+    pl = "https://diggerhub.com/plink/wt20/" + digname + "/" + ts
+    return pl
+
+
 def send_activity_summary(user, settings, songsum):
+    plink = write_song_activity_summary(user, songsum)
+    if not plink:
+        plink = "Set a digname for your account to publish weekly summaries"
     subj = "DiggerHub weekly activity summary"
-    body = "Top Songs:\n\n"
+    body = "Your weekly activity summary\n"
+    body += plink + "\n"
+    body += str(songsum["ttlsongs"]) + " songs synchronized to DiggerHub\n"
+    body += "Top Songs:\n\n"
     for idx, song in enumerate(songsum["top20"]):
         body += str(idx + 1) + ": " + song_ident_text(song) + "\n"
     body += "\n"
@@ -104,7 +139,7 @@ def check_user_activity(user, settings):
         logging.info(errpre + " not enough elapsed time since " + lastsendts)
         return
     usum = {"acct": user, "count": 0}
-    songsum = {"top20":[]}
+    songsum = {"sincets":sincets, "top20":[]}
     songs = dbacc.query_entity("Song", "WHERE aid = " + user["dsId"] +
                                " AND modified > \"" + sincets + "\"" +
                                " ORDER BY rv DESC, modified DESC")
@@ -125,6 +160,7 @@ def check_user_activity(user, settings):
     if usum["count"] < 3:
         logging.info(errpre + " not enough songs (" + str(usum["count"]) + ")")
         return
+    songsum["ttlsongs"] = usum["count"]
     send_activity_summary(user, settings, songsum)
 
 

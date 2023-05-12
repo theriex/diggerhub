@@ -137,6 +137,21 @@ module.exports = (function () {
      //*2 status: "open", "replied", "dismissed"
      cache:{minutes:0},
      logflds:["sndr", "msgtype", "rcvr", "songid", "ti"]},
+
+    {entity:"SASum", descr:"Song activity summary, e.g. weekly top20", fields:[
+        {f:"aid", d:"req dbid", c:"the account this summary is for"},
+        {f:"digname", d:"string", c:"handle for lookup"},
+        {f:"sumtype", d:"req string", descr:"Summary type label"},
+        {f:"songs", d:"jsarr", descr:"Songs in this summary"},
+        {f:"easiest", d:"json", descr:"Easiest song in time period"},
+        {f:"hardest", d:"json", descr:"Hardest song in time period"},
+        {f:"chillest", d:"json", descr:"Chillest song in time period"},
+        {f:"ampest", d:"json", descr:"Ampest song in time period"},
+        {f:"start", d:"isodate", descr:"Start timestamp for summary"},
+        {f:"end", d:"isodate", descr:"End timestamp for summary"},
+        {f:"ttlsongs", d:"int", descr:"Count of songs considered for summary"}],
+     cache:{minutes:30},  //relatively small records, read-only data
+     logflds:["aid", "sumtype", "start", "end", "ttlsongs"]},
         
     {entity:"AppService", descr:"Processing service access", fields:[
         {f:"name", d:"string req unique", c:"Name of service"},

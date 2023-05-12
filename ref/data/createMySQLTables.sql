@@ -78,6 +78,26 @@ CREATE TABLE DigMsg (  -- Music communications between DigAccs
 );
 ALTER TABLE DigMsg AUTO_INCREMENT = 2020;
 
+CREATE TABLE SASum (  -- Song activity summary, e.g. weekly top20
+  dsId BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE,
+  created VARCHAR(256) NOT NULL,
+  modified VARCHAR(256) NOT NULL,
+  batchconv VARCHAR(256),
+  aid BIGINT NOT NULL,
+  digname VARCHAR(256),
+  sumtype VARCHAR(256) NOT NULL,
+  songs LONGTEXT,
+  easiest LONGTEXT,
+  hardest LONGTEXT,
+  chillest LONGTEXT,
+  ampest LONGTEXT,
+  start VARCHAR(256),
+  end VARCHAR(256),
+  ttlsongs INT,
+  PRIMARY KEY (dsId)
+);
+ALTER TABLE SASum AUTO_INCREMENT = 2020;
+
 CREATE TABLE AppService (  -- Processing service access
   dsId BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE,
   created VARCHAR(256) NOT NULL,

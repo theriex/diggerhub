@@ -17,7 +17,7 @@ app.refmgr = (function () {
 
     var cache = {};
 
-    var persistentTypes = ["DigAcc", "Song", "SKeyMap", "DigMsg", "AppService"];
+    var persistentTypes = ["DigAcc", "Song", "SKeyMap", "DigMsg", "SASum", "AppService"];
 
 
     //All json fields are initialized to {} so they can be accessed directly.
@@ -60,6 +60,13 @@ app.refmgr = (function () {
             break;
         case "DigMsg":
             break;
+        case "SASum":
+            reconstituteFieldJSONArray("songs", obj);
+            reconstituteFieldJSONObject("easiest", obj);
+            reconstituteFieldJSONObject("hardest", obj);
+            reconstituteFieldJSONObject("chillest", obj);
+            reconstituteFieldJSONObject("ampest", obj);
+            break;
         case "AppService":
             break;
         }
@@ -83,6 +90,13 @@ app.refmgr = (function () {
             break;
         case "DigMsg":
             break;
+        case "SASum":
+            obj.songs = JSON.stringify(obj.songs);
+            obj.easiest = JSON.stringify(obj.easiest);
+            obj.hardest = JSON.stringify(obj.hardest);
+            obj.chillest = JSON.stringify(obj.chillest);
+            obj.ampest = JSON.stringify(obj.ampest);
+            break;
         case "AppService":
             break;
         }
@@ -102,6 +116,8 @@ app.refmgr = (function () {
         case "SKeyMap":
             break;
         case "DigMsg":
+            break;
+        case "SASum":
             break;
         case "AppService":
             break;
