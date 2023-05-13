@@ -6,7 +6,7 @@ body { padding:0; border:0; }
 /* hub site defs. */
 #sitebodycontentdiv { position:relative; } /*zero height anchor div*/
 #sitecontentdiv, #hpgoverlaydiv { position:absolute; top:0px; left:0px;
-  max-height:100vh; overflow:scroll; }
+  right:0px; max-height:100vh; overflow:scroll; }
 #sitecontentdiv { background:#ffc2a4;
   background:linear-gradient(#ffc2a4, #ff9c6b); }
 #sitecontentinnerdiv { 
@@ -145,3 +145,11 @@ h3 { font-weight:normal; text-align:center; }
 /* docs */
 #hpgoverlaydiv { position:absolute; top:0px; left:0px; width:100%; }
 #docdispbodydiv { min-height:100%; max-height:100%; }
+
+/* -------------------- */
+/* reports */
+
+#reportoutercontentdiv { min-height:90vh; }
+#reportinnercontentdiv { padding:10px; }  /* adjusted in login.js */
+.weekrangediv { margin-bottom:10px; }
+.weekrangediv .datevalspan { font-size:small; font-family:monospace; }

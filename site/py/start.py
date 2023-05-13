@@ -2,11 +2,13 @@
 #pylint: disable=line-too-long
 #pylint: disable=logging-not-lazy
 #pylint: disable=missing-function-docstring
+#pylint: disable=consider-using-from-import
 
 import logging
 import py.util as util
+import py.dbacc as dbacc
 
-CACHE_BUST_PARAM = "v=230511"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=230513"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -67,6 +69,18 @@ $FLOWCONTENTHTML
   &nbsp; | &nbsp; <a href="docs/terms.html">Terms</a>
   &nbsp; | &nbsp; <a href="docs/privacy.html">Privacy</a>
   &nbsp; | &nbsp; <a href="docs/support.html">Support</a>
+</div>
+"""
+
+REPORTFRAMEHTML = """
+<div id="topsectiondiv">
+  <div id="logodiv"><a href="https://diggerhub.com">
+    <img src="$RELROOTimg/appicon.png"/></a></div>
+</div>
+<div id="reportoutercontentdiv">
+  <div id="reportinnercontentdiv">
+    $REPORTHTML
+  </div>
 </div>
 """
 
@@ -181,25 +195,85 @@ this week and put it on your phone for easy access.
 <div id="dloverlaydiv"></div>
 """
 
-# path is everything after the root url slash.
+def fail404():
+    return util.srverr("Page not found", 404)
+
+
+def replace_and_respond(stinf):
+    html = INDEXHTML
+    for dcode, value in stinf["replace"].items():
+        html = html.replace(dcode, value)
+    return util.respond(html)
+
+
+def song_html(song):
+    if not isinstance(song, dict):
+        song = util.load_json_or_default(song, {})
+    html = "<span class=\"dstispan\" style=\"font-weight:bold;\">"
+    html += song["ti"] + "</span> - "
+    html += "<span class=\"dsarspan\">" + song["ar"] + "</span> - "
+    html += "<span class=\"dsabspan\">" + song.get("ab", "") + "</span>"
+    return html
+
+
+def weekly_top20(stinf):
+    pes = stinf["rawpath"].split("/")
+    if len(pes) < 4:
+        return fail404()
+    digname = pes[2]
+    endts = pes[3]
+    where = ("WHERE sumtype = \"wt20\"" +
+             " AND digname = \"" + digname + "\"" +
+             " AND end LIKE(\"" + endts + "%\")" +
+             " ORDER BY modified DESC LIMIT 1")
+    sasums = dbacc.query_entity("SASum", where)
+    if len(sasums) <= 0:
+        return fail404()
+    sasum = sasums[0]
+    html = "<h1>Weekly Top 20 for " + sasum["digname"] + "</h1>\n"
+    html += ("<div class=\"weekrangediv\"><span class=\"datevalspan\">" +
+             sasum["start"][0:10] + "</span> - <span class=\"datevalspan\">" +
+             sasum["end"][0:10] + "</span></div>\n")
+    html += str(sasum["ttlsongs"]) + " songs synchronized to DiggerHub\n"
+    html += "<p>Top Songs:</p>\n<ol>\n"
+    for song in util.load_json_or_default(sasum["songs"], []):
+        html += "<li>" + song_html(song) + "\n"
+    html += "</ol>\n\n"
+    html += "Easiest: " + song_html(sasum["easiest"]) + "<br/>"
+    html += "Hardest: " + song_html(sasum["hardest"]) + "<br/>"
+    html += "Most Chill: " + song_html(sasum["chillest"]) + "<br/>"
+    html += "Most Amped: " + song_html(sasum["ampest"]) + "<br/>"
+    stinf["replace"]["$CONTENTHTML"] = REPORTFRAMEHTML
+    stinf["replace"]["$REPORTHTML"] = html
+    stinf["replace"]["$RELROOT"] = stinf["replace"]["$RDR"]
+    return replace_and_respond(stinf)
+
+
+def mainpage(stinf):
+    stinf["replace"]["$CONTENTHTML"] = CONTENTHTML
+    stinf["replace"]["$FLOWCONTENTHTML"] = FLOWCONTENTHTML
+    return replace_and_respond(stinf)
+
+
+# path is everything after the root url slash.  js/css etc need to be found
+# relative to the specified path.
 def startpage(path, refer):
-    reldocroot = path.split("/")[0]
-    if reldocroot:
-        reldocroot = "../"
+    reldocroot = path.split("/")[0]  # "" if empty path
+    if reldocroot:  # have at least one level of subdirectory specified
+        reldocroot = "".join(["../" for elem in path.split("/")])
     stinf = {
         "rawpath": path,
         "path": path.lower(),
         "refer": refer or "",
         "replace": {
+            "$SITEPIC": "$RDRimg/appicon.png?" + CACHE_BUST_PARAM,
             "$RDR": reldocroot,
             "$CBPARAM": CACHE_BUST_PARAM,
-            "$SITEPIC": "img/appicon.png?" + CACHE_BUST_PARAM,
-            "$TITLE": "DiggerHub",
-            "$CONTENTHTML": CONTENTHTML,
-            "$FLOWCONTENTHTML": FLOWCONTENTHTML}}
+            "$TITLE": "DiggerHub"}}
     if stinf["refer"]:
         logging.info("startpage referral: " + refer)
-    html = INDEXHTML
-    for dcode, value in stinf["replace"].items():
-        html = html.replace(dcode, value)
-    return util.respond(html)
+    if not reldocroot:
+        return mainpage(stinf)
+    if stinf["path"].startswith("plink/wt20/"):
+        return weekly_top20(stinf)
+    return fail404()

@@ -107,6 +107,7 @@ app.login = (function () {
                        400); },
         initDisplay: function (dispdiv) {
             dispdiv = dispdiv || haid;
+            if(!jt.byId(dispdiv)) { return; }  //no account access
             app.top.dispatch("afg", "setDisplayDiv", dispdiv);
             app.top.dispatch("afg", "setInApp", "");
             initialSignIn(
@@ -270,6 +271,7 @@ app.login = (function () {
     return {
         nextStatement: function () {
             const md = jt.byId("marqueediv");
+            if(!md) { return; }
             md.style.transition = "opacity " + mst.fos + "s";
             md.style.opacity = 0.0;
             setTimeout(function () {
@@ -280,6 +282,7 @@ app.login = (function () {
             setTimeout(mgrs.mrq.nextStatement, (mst.fis + mst.dts) * 1000); },
         runMarquee: function () {
             if(jt.byId("marqueediv")) { return; }  //already set up and running
+            if(!jt.byId("headertextdiv")) { return; }  //no space to run in
             jt.out("headertextdiv", jt.tac2html(
                 ["div", {id:"marqueediv"}, "&nbsp;"]));
             mgrs.mrq.nextStatement(); }
@@ -421,23 +424,33 @@ app.login = (function () {
 
     //The general manager handles top level page setup and actions
     mgrs.gen = (function () {
+        function adjustReportDisplay () {
+            const ricd = jt.byId("reportinnercontentdiv");
+            if(ricd && ricd.offsetWidth > 600) {
+                ricd.style.display = "table";
+                ricd.style.margin = "0px auto"; } }
     return {
         initialize: function () {
             app.svc.dispatch("gen", "initplat", "web");  //doc content retrieval
-            Array.from(jt.byId("contactdiv").children).forEach(function (a) {
-                jt.on(a, "click", function (event) {
-                    jt.evtend(event);
-                    const sd = jt.byId("docdispxdiv");
-                    if(sd) {
-                        sd.scrollIntoView(); }
-                    app.displayDoc("hpgoverlaydiv", event.target.href); }); });
+            const contactdiv = jt.byId("contactdiv");
+            if(contactdiv) {
+                Array.from(contactdiv.children).forEach(function (a) {
+                    jt.on(a, "click", function (event) {
+                        jt.evtend(event);
+                        const sd = jt.byId("docdispxdiv");
+                        if(sd) {
+                            sd.scrollIntoView(); }
+                        app.displayDoc("hpgoverlaydiv",
+                                       event.target.href); }); }); }
+            app.overlaydiv = "hpgoverlaydiv";
+            if(app.startPath.startsWith("/plink")) {
+                return adjustReportDisplay(); }
             switch(app.startPath) {
             case "/iosappstore": return mgrs.mmd.iosappstore();
             case "/account": return mgrs.had.display();
             case "/songfinder": return mgrs.sgf.display();
             case "/digger": return app.initDiggerModules();
             default: jt.log("Standard site homepage display"); }
-            app.overlaydiv = "hpgoverlaydiv";
             mgrs.hua.initDisplay();
             setTimeout(mgrs.mrq.runMarquee, 12000);
             mgrs.sld.runSlideshow(); }
