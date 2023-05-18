@@ -149,7 +149,12 @@ h3 { font-weight:normal; text-align:center; }
 /* -------------------- */
 /* reports */
 
+#reptoplinediv { height:52px; font-size:48px; font-weight:bold;
+  padding:10px 0px 0px 70px; margin-top:-10px; }
+#reptitlelinediv { font-size:20px; font-style:italic; }
 #reportoutercontentdiv { min-height:90vh; }
 #reportinnercontentdiv { padding:10px; }  /* adjusted in login.js */
-.weekrangediv { margin-bottom:10px; }
-.weekrangediv .datevalspan { font-size:small; font-family:monospace; }
+.datevalspan { font-size:small; }
+.repsummarylabelspan { padding-right:5px; font-size:medium; font-style:italic;
+  font-weight:bold; }
+#repsongtotaldiv { font-size:small; padding:10px 0px; text-align:center; }

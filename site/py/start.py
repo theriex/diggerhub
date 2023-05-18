@@ -3,10 +3,13 @@
 #pylint: disable=logging-not-lazy
 #pylint: disable=missing-function-docstring
 #pylint: disable=consider-using-from-import
+#pylint: disable=wrong-import-order
 
 import logging
 import py.util as util
 import py.dbacc as dbacc
+import io
+from PIL import Image, ImageDraw, ImageFont
 
 CACHE_BUST_PARAM = "v=230513"  # Updated via ../../build/cachev.js
 
@@ -216,7 +219,54 @@ def song_html(song):
     return html
 
 
-def weekly_top20(stinf):
+def weekly_top20_page(stinf, sasum):
+    months = ["", "January", "February", "March", "April", "May", "June",
+              "July", "August", "September", "October", "November", "December"]
+    month = months[int(sasum["end"][5:7])]
+    html = "<div id=\"reptoplinediv\">" + sasum["digname"] + "</div>\n"
+    html += ("<div id=\"reptitlelinediv\">Weekly Top 20 - " +
+             "<span class=\"datevalspan\">" + "September" + " " + 
+             sasum["end"][8:10] + "</span></div>\n")
+    html += "<ol>\n"
+    for song in util.load_json_or_default(sasum["songs"], []):
+        html += "<li>" + song_html(song) + "\n"
+    html += "</ol>\n\n"
+    # html += "<div id=\"repextrafieldsdiv\">"
+    labs = [{"name":"Easiest", "fld":"easiest"},
+            {"name":"Hardest", "fld":"hardest"},
+            {"name":"Most Chill", "fld":"chillest"},
+            {"name":"Most Amped", "fld":"ampest"}]
+    for lab in labs:
+        html += ("<span class=\"repsummarylabelspan\">" + lab["name"] +
+                 ":</span>" + song_html(sasum[lab["fld"]]) + "<br/>")
+    html += ("<div id=\"repsongtotaldiv\">" + str(sasum["ttlsongs"]) +
+             " songs synchronized to DiggerHub</div>\n")
+    stinf["replace"]["$CONTENTHTML"] = REPORTFRAMEHTML
+    stinf["replace"]["$REPORTHTML"] = html
+    stinf["replace"]["$RELROOT"] = stinf["replace"]["$RDR"]
+    diop = stinf["path"].replace("plink", "dio") + "/wt20img.png"
+    stinf["replace"]["$SITEPIC"] = "/" + diop
+    return replace_and_respond(stinf)
+
+
+def weekly_top20_image(stinf, sasum):
+    songs = util.load_json_or_default(sasum["songs"], [])
+    songs = songs[0:16]  # limited vertical space
+    mtxt = ""
+    for idx, song in enumerate(songs):
+        mtxt += str(idx + 1) + ". " + song["ti"] + " - " + song["ar"] + "\n"
+    mtxt += "..."
+    img = Image.open("public/img/ogimg.png")
+    draw = ImageDraw.Draw(img)
+    # image size may be reduced at least 3x, aim for minimum 10px font size
+    draw.font = ImageFont.truetype("Lato-Bold.ttf", 30)
+    draw.multiline_text((90, 20), mtxt, (16, 16, 16))
+    bbuf = io.BytesIO()
+    img.save(bbuf, format="PNG")
+    return util.respond(bbuf.getvalue(), mimetype="image/png");
+
+
+def weekly_top20(stinf, rtype="page"):
     pes = stinf["rawpath"].split("/")
     if len(pes) < 4:
         return fail404()
@@ -230,23 +280,9 @@ def weekly_top20(stinf):
     if len(sasums) <= 0:
         return fail404()
     sasum = sasums[0]
-    html = "<h1>Weekly Top 20 for " + sasum["digname"] + "</h1>\n"
-    html += ("<div class=\"weekrangediv\"><span class=\"datevalspan\">" +
-             sasum["start"][0:10] + "</span> - <span class=\"datevalspan\">" +
-             sasum["end"][0:10] + "</span></div>\n")
-    html += str(sasum["ttlsongs"]) + " songs synchronized to DiggerHub\n"
-    html += "<p>Top Songs:</p>\n<ol>\n"
-    for song in util.load_json_or_default(sasum["songs"], []):
-        html += "<li>" + song_html(song) + "\n"
-    html += "</ol>\n\n"
-    html += "Easiest: " + song_html(sasum["easiest"]) + "<br/>"
-    html += "Hardest: " + song_html(sasum["hardest"]) + "<br/>"
-    html += "Most Chill: " + song_html(sasum["chillest"]) + "<br/>"
-    html += "Most Amped: " + song_html(sasum["ampest"]) + "<br/>"
-    stinf["replace"]["$CONTENTHTML"] = REPORTFRAMEHTML
-    stinf["replace"]["$REPORTHTML"] = html
-    stinf["replace"]["$RELROOT"] = stinf["replace"]["$RDR"]
-    return replace_and_respond(stinf)
+    if rtype == "image":
+        return weekly_top20_image(stinf, sasum)
+    return weekly_top20_page(stinf, sasum)
 
 
 def mainpage(stinf):
@@ -274,6 +310,9 @@ def startpage(path, refer):
         logging.info("startpage referral: " + refer)
     if not reldocroot:
         return mainpage(stinf)
+    # path for dynamic images needs to not contain static directory ident
+    if stinf["path"].startswith("dio/wt20/"):
+        return weekly_top20(stinf, rtype="image")
     if stinf["path"].startswith("plink/wt20/"):
-        return weekly_top20(stinf)
+        return weekly_top20(stinf, rtype="page")
     return fail404()
