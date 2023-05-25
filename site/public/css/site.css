@@ -82,6 +82,8 @@ h3 { font-weight:normal; text-align:center; }
 /* -------------------- */
 /* slides */
 
+.sldimg, .sldselimg { max-height:30px; margin:0px 16px 8px 0px; }
+.sldimg { opacity:0.3; }
 #slidepgdiv { text-align:center; }
 #slidedispdiv { position:relative; max-width:400px; margin:0px auto;
   padding:0px; } /* overlays are absolute positioned, so no pad */

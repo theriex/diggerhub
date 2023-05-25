@@ -105,6 +105,15 @@ with your song files? </p>
 </div>
 
 <div id="slidesdiv">
+  <div id="slidepgdiv">
+    <span id="slidepgindspan">
+      <img class="sldselimg" src="docs/slideshow/slide0.png"/>
+      <img class="sldimg" src="docs/slideshow/slide1.png"/>
+      <img class="sldimg" src="docs/slideshow/slide2.png"/>
+      <img class="sldimg" src="docs/slideshow/slide3.png"/>
+      <img class="sldimg" src="docs/slideshow/slide4.png"/>
+    </span>
+  </div>
   <div id="slidedispdiv"><img src="docs/slideshow/slide0.png"/></div>
 </div>
 

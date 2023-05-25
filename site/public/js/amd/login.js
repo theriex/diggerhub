@@ -292,22 +292,25 @@ app.login = (function () {
 
     //The slides manager handles displaying how the app works
     mgrs.sld = (function () {
-        const slides = [9200, 2800, 2200, 2800, 2800];
+        const slides = [9200, 2800, 2200, 3400, 2800];
         const srcp = "docs/slideshow/slide$I.png";
         var idx = 0;
         var tmo = null;
     return {
         nextSlide: function (slideindex) {
+            var waitdur = 8000;
             clearTimeout(tmo);
             const previdx = idx;
             if(slideindex >= 0) {
                 idx = slideindex; }
             else {
-                idx = (idx + 1) % slides.length; }
+                idx = (idx + 1) % slides.length;
+                waitdur = slides[idx]; }
             jt.out("slidepgindspan", jt.tac2html(
                 slides.map((ignore /*millis*/, i) =>
                     ["a", {href:"#slide" + i, onclick:mdfs("sld.nextSlide", i)},
-                     ((i === idx)? "&#x2b24;" : "&#x25ef;")])));
+                     ["img", {cla:((i === idx)? "sldselimg" : "sldimg"),
+                              src:srcp.replace(/\$I/g, i)}]])));
             jt.byId("prevslide").src = srcp.replace(/\$I/g, previdx);
             const currslide = jt.byId("currslide");
             currslide.style.opacity = 0.0;
@@ -316,9 +319,8 @@ app.login = (function () {
                 currslide.style.opacity = 1.0; }, 500);  //match css transition
             if(slideindex >= 0 && tmo) { //pause on specific slide
                 clearTimeout(tmo);
-                tmo = null;
-                return; }
-            tmo = setTimeout(mgrs.sld.nextSlide, slides[idx]); },
+                tmo = null; }
+            tmo = setTimeout(mgrs.sld.nextSlide, waitdur); },
         runSlideshow: function () {
             if(!jt.byId("slidesdiv")) { return; }
             jt.out("slidesdiv", jt.tac2html(
@@ -328,7 +330,7 @@ app.login = (function () {
                   [["img", {src:srcp.replace(/\$I/g, 0)}],  //use space
                    ["img", {id:"prevslide", src:srcp.replace(/\$I/g, 0)}],
                    ["img", {id:"currslide", src:srcp.replace(/\$I/g, 0)}]]]]));
-            setTimeout(mgrs.sld.nextSlide, 12000); }
+            mgrs.sld.nextSlide(0); }
     };  //end mgrs.sld returned functions
     }());
 
