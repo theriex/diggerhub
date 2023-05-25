@@ -11,7 +11,7 @@ import py.dbacc as dbacc
 import io
 from PIL import Image, ImageDraw, ImageFont
 
-CACHE_BUST_PARAM = "v=230513"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=230525"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -90,12 +90,18 @@ REPORTFRAMEHTML = """
 FLOWCONTENTHTML = """
 
 <div class="textcontentdiv boxedcontentdiv">
-<p>You've spent years listening to music, and you're going to spend years
-more.  Isn't it time you started managing your impressions like you manage
-your song files? </p>
 
-<p>Your library doesn't want to sit around waiting for you.
-Autoplay your music collection.</p>
+<p>Digger is a parametric retrieval interface to fetch situational music
+using your own song impressions.  Digger can fetch appropriate music across
+genres, styles, artists, artists spanning genres, and time periods,
+preferring what you've least recently listened to.  Works with any size
+music collection, any number of song ratings. </p>
+
+<p>You've spent years listening to music, and you're going to spend years
+more.  Isn't it time you started managing your music impressions together
+with your song files? </p>
+
+<p>Your library doesn't want to sit around waiting.  Autoplay it.</p>
 </div>
 
 <div id="slidesdiv">
@@ -120,6 +126,10 @@ files.
     <div><a href="https://play.google.com/store/apps/details?id=com.diggerhub.digger" onclick="app.login.dldet(event);return false">Android</a></div>
   </div>
   <div class="platoptdescdiv">&nbsp;</div>
+</div>
+
+<div id="headertextdiv">
+  <div id="marqueeplaceholderdiv">Autoplay your music collection.</div>
 </div>
 
 <div class="textcontentdiv">
@@ -166,14 +176,13 @@ information for that song becomes yours. </p>
 <h4>Messages</h4>
 <img src="docs/collab/messages.png"/>
 <p>See what your friends have shared recently and get automatic
-recommendations from your friends that match your current listening
+recommendations from your friends matching your current listening
 parameters. </p>
 </div>
 
-<div class="textcontentdiv">
-Renting your music? Feel better purchasing an album
-this week and put it on your phone for easy access.
-</div>
+<div class="textcontentdiv"> Only renting your music? Improve your life and the
+life of an artist by purchasing an album this week and downloading it to
+your phone.  </div>
 
 <div id="rentvsowndiv">
 <table>
@@ -185,10 +194,6 @@ this week and put it on your phone for easy access.
 <tr><td>Offline?</td><td></td><td>Always available</td></tr>
 <tr><td>Suggested songs</td><td></td><td>Digger retrieval</td></tr>
 </table>
-</div>
-
-<div id="headertextdiv">
-  <div id="marqueeplaceholderdiv">Autoplay your music collection.</div>
 </div>
 
 <div id="taglinediv">
@@ -225,7 +230,7 @@ def weekly_top20_page(stinf, sasum):
     month = months[int(sasum["end"][5:7])]
     html = "<div id=\"reptoplinediv\">" + sasum["digname"] + "</div>\n"
     html += ("<div id=\"reptitlelinediv\">Weekly Top 20 - " +
-             "<span class=\"datevalspan\">" + "September" + " " + 
+             "<span class=\"datevalspan\">" + month + " " + 
              sasum["end"][8:10] + "</span></div>\n")
     html += "<ol>\n"
     for song in util.load_json_or_default(sasum["songs"], []):
@@ -249,7 +254,7 @@ def weekly_top20_page(stinf, sasum):
     return replace_and_respond(stinf)
 
 
-def weekly_top20_image(stinf, sasum):
+def weekly_top20_image(sasum):
     songs = util.load_json_or_default(sasum["songs"], [])
     songs = songs[0:16]  # limited vertical space
     mtxt = ""
@@ -263,7 +268,7 @@ def weekly_top20_image(stinf, sasum):
     draw.multiline_text((90, 20), mtxt, (16, 16, 16))
     bbuf = io.BytesIO()
     img.save(bbuf, format="PNG")
-    return util.respond(bbuf.getvalue(), mimetype="image/png");
+    return util.respond(bbuf.getvalue(), mimetype="image/png")
 
 
 def weekly_top20(stinf, rtype="page"):
@@ -281,7 +286,7 @@ def weekly_top20(stinf, rtype="page"):
         return fail404()
     sasum = sasums[0]
     if rtype == "image":
-        return weekly_top20_image(stinf, sasum)
+        return weekly_top20_image(sasum)
     return weekly_top20_page(stinf, sasum)
 
 

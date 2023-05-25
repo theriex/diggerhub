@@ -66,7 +66,8 @@ h3 { font-weight:normal; text-align:center; }
 #usingdiggerdiv { padding:5px; margin:0px 10px 10px 10px; }
 #rentvsowndiv { color:#af3c01; font-size:medium; display:table; 
   margin:10px auto; }
-#rentvsowndiv table tr th { font-style:italic; text-align:left; }
+#rentvsowndiv table tr th { font-style:italic; text-align:left;
+  padding:0px 0px 8px 8px; }
 #rentvsowndiv table tr th:first-child { text-align:right; }
 #rentvsowndiv table tr td { padding-right:5px; }
 #rentvsowndiv table tr td:first-child { text-align:right; }
