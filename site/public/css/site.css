@@ -20,7 +20,7 @@ body { padding:0; border:0; }
 #hubaccountcontentdiv { margin:12px 10px 0px 10px; width:340px; }
 
 h2 { text-align:center; }
-h3 { font-weight:normal; text-align:center; }
+h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
 
 .tcgcinactive { opacity:0.5; }
 
@@ -30,8 +30,10 @@ h3 { font-weight:normal; text-align:center; }
 #taglinediv { text-align:center; margin:10px 0px; font-style:italic;
   font-weight:bold; color:#ffc2a4; padding-bottom:30px; }
 
+.textsectionspacerdiv { height:42px; }
 .textcontentdiv { margin:0px 10px 10px 10px; padding:10px; color:#663922;
   font-size:large; text-shadow: 0.5px 0.5px 1px #37190a; text-align:center; }
+.textcontentdiv p { margin:0px 0px 18px 0px; }
 .boxedcontentdiv { background-image:url("../img/white60percent.png");
   border-radius:14px; text-align:left; }
 

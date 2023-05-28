@@ -11,7 +11,7 @@ import py.dbacc as dbacc
 import io
 from PIL import Image, ImageDraw, ImageFont
 
-CACHE_BUST_PARAM = "v=230525"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=230528"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -20,7 +20,7 @@ INDEXHTML = """
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <meta name="robots" content="noodp" />
-  <meta name="description" content="Digger saves your music ratings and plays music from your collection matching what you want to hear. People use Digger to automate their music library." />
+  <meta name="description" content="$DESCR" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="mobile-web-app-capable" content="yes" />
   <link rel="icon" href="$SITEPIC">
@@ -91,17 +91,21 @@ FLOWCONTENTHTML = """
 
 <div class="textcontentdiv boxedcontentdiv">
 
-<p>Digger is a parametric retrieval interface to fetch situational music
-using your own song impressions.  Digger can fetch appropriate music across
-genres, styles, artists, artists spanning genres, and time periods,
-preferring what you've least recently listened to.  Works with any size
-music collection, any number of song ratings. </p>
+<p>What if you could play music based on what you thought of it?</p>
 
-<p>You've spent years listening to music, and you're going to spend years
-more.  Isn't it time you started managing your music impressions together
-with your song files? </p>
+<p>Digger is a parametric retrieval app to play music matching your
+listening context.  Digger prefers what you've least recently heard, and can
+fetch across genres, styles, time periods and artists in your music
+library. </p>
 
-<p>Your library doesn't want to sit around waiting.  Autoplay it.</p>
+<p>When a currently playing song grabs you, tune it to reflect why it's
+exceptional.  Exceptional songs drive advanced retrieval filtering, letting
+you to fetch and autoplay great music across a wide range of listening
+contexts.  Default filtering matches everything else, helping you enjoy your
+whole music collection anytime. </p>
+
+<p>Dig into your music. </p>
+
 </div>
 
 <div id="slidesdiv">
@@ -117,6 +121,7 @@ with your song files? </p>
   <div id="slidedispdiv"><img src="docs/slideshow/slide0.png"/></div>
 </div>
 
+<div class="textsectionspacerdiv"></div>
 <div class="textcontentdiv">
 Digger works alongside your music software and does not modify your song
 files.
@@ -141,6 +146,7 @@ files.
   <div id="marqueeplaceholderdiv">Autoplay your music collection.</div>
 </div>
 
+<div class="textsectionspacerdiv"></div>
 <div class="textcontentdiv">
 <p>To sync your ratings across devices and collaborate with fellow music
 fans, sign in on DiggerHub with the app.</p>
@@ -161,8 +167,7 @@ however you like. </p>
 <h3>Collaborate</h3>
 
 <div class="textcontentdiv">
-<p>Your automatic music retrieval ratings can be used to collaborate with
-fellow music fans.</p>
+<p>Your song ratings can be used to collaborate with fellow music fans.</p>
 </div>
 
 <div id="collabdiv">
@@ -189,6 +194,7 @@ recommendations from your friends matching your current listening
 parameters. </p>
 </div>
 
+<div class="textsectionspacerdiv"></div>
 <div class="textcontentdiv"> Only renting your music? Improve your life and the
 life of an artist by purchasing an album this week and downloading it to
 your phone.  </div>
@@ -237,10 +243,10 @@ def weekly_top20_page(stinf, sasum):
     months = ["", "January", "February", "March", "April", "May", "June",
               "July", "August", "September", "October", "November", "December"]
     month = months[int(sasum["end"][5:7])]
+    moday = month + " " + sasum["end"][8:10]
     html = "<div id=\"reptoplinediv\">" + sasum["digname"] + "</div>\n"
     html += ("<div id=\"reptitlelinediv\">Weekly Top 20 - " +
-             "<span class=\"datevalspan\">" + month + " " + 
-             sasum["end"][8:10] + "</span></div>\n")
+             "<span class=\"datevalspan\">" + moday + "</span></div>\n")
     html += "<ol>\n"
     for song in util.load_json_or_default(sasum["songs"], []):
         html += "<li>" + song_html(song) + "\n"
@@ -255,6 +261,9 @@ def weekly_top20_page(stinf, sasum):
                  ":</span>" + song_html(sasum[lab["fld"]]) + "<br/>")
     html += ("<div id=\"repsongtotaldiv\">" + str(sasum["ttlsongs"]) +
              " songs synchronized to DiggerHub</div>\n")
+    stinf["replace"]["$TITLE"] = sasum["digname"] + " Weekly Top 20 " + moday
+    stinf["replace"]["$DESCR"] = ("Top 20 songs from " + sasum["digname"] +
+                                  " for week ending " + moday)
     stinf["replace"]["$CONTENTHTML"] = REPORTFRAMEHTML
     stinf["replace"]["$REPORTHTML"] = html
     stinf["replace"]["$RELROOT"] = stinf["replace"]["$RDR"]
@@ -319,7 +328,8 @@ def startpage(path, refer):
             "$SITEPIC": "$RDRimg/appicon.png?" + CACHE_BUST_PARAM,
             "$RDR": reldocroot,
             "$CBPARAM": CACHE_BUST_PARAM,
-            "$TITLE": "DiggerHub"}}
+            "$TITLE": "DiggerHub",
+            "$DESCR": "Digger saves your song ratings and plays music from your collection matching what you want to hear. People use Digger to automate their music library."}}
     if stinf["refer"]:
         logging.info("startpage referral: " + refer)
     if not reldocroot:
