@@ -11,7 +11,7 @@ import py.dbacc as dbacc
 import io
 from PIL import Image, ImageDraw, ImageFont
 
-CACHE_BUST_PARAM = "v=230605"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=230610"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -71,7 +71,7 @@ $FLOWCONTENTHTML
   <a href="docs/manual.html">Manual</a>
   &nbsp; | &nbsp; <a href="docs/terms.html">Terms</a>
   &nbsp; | &nbsp; <a href="docs/privacy.html">Privacy</a>
-  &nbsp; | &nbsp; <a href="docs/support.html">Support</a>
+  &nbsp; | &nbsp; <a href="docs/about.html">About</a>
 </div>
 """
 
@@ -93,15 +93,15 @@ FLOWCONTENTHTML = """
 
 <p>What if you could play music based on what you thought of it?</p>
 
-<p>Digger is a parametric retrieval app to play music matching your
-listening context.  Digger prefers what you've least recently heard, and can
-fetch across genres, styles, time periods and artists in your music
-library. </p>
+<p>Digger is a parametric retrieval app for your music that plays songs
+matching your listening context.  Autoplay prefers what you've least
+recently heard, and can fetch across genres, styles, time periods and
+artists in your music library. </p>
 
-<p>When a currently playing song grabs you, tune it to reflect why it's
-exceptional.  Exceptional songs drive advanced retrieval filtering, letting
-you to fetch and autoplay great music across a wide range of listening
-contexts.  Default filtering matches everything else, helping you enjoy your
+<p>Whenever the currently playing song grabs you, tune its rating to reflect
+why it's exceptional.  Exceptional songs drive advanced retrieval filtering,
+so you can easily fetch great music across a wide range of listening
+contexts.  Default filtering matches everything else, so you can enjoy your
 whole music collection anytime. </p>
 
 <p>Dig into your music. </p>
@@ -143,76 +143,7 @@ files.
 </div>
 
 <div id="headertextdiv">
-  <div id="marqueeplaceholderdiv">Autoplay your music collection.</div>
-</div>
-
-<div class="textsectionspacerdiv"></div>
-<div class="textcontentdiv">
-<p>To sync your ratings across devices and collaborate with fellow music
-fans, sign in on DiggerHub with the app.</p>
-</div>
-
-<h3>Share</h3>
-
-<div class="textcontentdiv boxedcontentdiv">
-<p><em>"This song is amazing!"</em></p>
-
-<p>Share <img class="featureico" src="img/share.png"/> the song
-<em>Title</em>, <em>Artist</em>, <em>Album</em>, your <em>Keywords</em>,
-<em>Approachability</em> and <em>Energy Level</em>, along with your personal
-comment <img class="featureico" src="img/comment.png"/>.  Send to anyone
-however you like. </p>
-</div>
-
-<h3>Collaborate</h3>
-
-<div class="textcontentdiv">
-<p>Your song ratings can be used to collaborate with fellow music fans.</p>
-</div>
-
-<div id="collabdiv">
-<h4>Connect</h4>
-<img src="docs/collab/connect.png"/>
-<p>Find friends and music fans by their Digger name. If you haven't added
-any friends yet, and you want to get a feel for how things work, you can
-click "Connect Me" to add whoever the hub picks for you. </p>
-
-<h4>Match</h4>
-<img src="docs/collab/match.png"/>
-<p>See how much music you have in common. If you have songs in your
-collection that you haven't rated yet, your friends provide default rating
-information you can use for contextual retrieval.  The "rcv" tab shows how
-many default ratings you've received.  The "snd" tab shows how many default
-ratings they have received from you.  If you remove a friend, their default
-ratings are also removed.  When you play a song, any default rating
-information for that song becomes yours. </p>
-
-<h4>Messages</h4>
-<img src="docs/collab/messages.png"/>
-<p>See what your friends have shared recently and get automatic
-recommendations from your friends matching your current listening
-parameters. </p>
-</div>
-
-<div class="textsectionspacerdiv"></div>
-<div class="textcontentdiv"> Only renting your music? Improve your life and the
-life of an artist by purchasing an album this week and downloading it to
-your phone.  </div>
-
-<div id="rentvsowndiv">
-<table>
-<tr><th>Compare music rental</th><th><span class="versusspan">vs</span><th>music ownership</th></tr>
-<tr><td>All you can eat buffet</td><td></td><td>Pay as you go</td></tr>
-<tr><td>Musicians get a tiny fraction</td><td></td><td>Musicians get a percentage</td></tr>
-<tr><td>Regional restrictions</td><td></td><td>Listen wherever</td></tr>
-<tr><td>Licensing expires</td><td></td><td>Always yours</td></tr>
-<tr><td>Offline?</td><td></td><td>Always available</td></tr>
-<tr><td>Suggested songs</td><td></td><td>Digger retrieval</td></tr>
-</table>
-</div>
-
-<div id="taglinediv">
-  Dig into your music collection.
+  <div id="marqueeplaceholderdiv">&nbsp;</div>
 </div>
 
 <div id="dloverlaydiv"></div>

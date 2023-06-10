@@ -264,9 +264,10 @@ app.login = (function () {
             dts:8};    //text display time seconds
         const mhds = [
             "Autoplay your music collection",
+            "Buy an album this week",
             "Record your impressions",
-            "Your music, your ratings",
-            "What you listen to matters"];
+            "Connect to DiggerHub with the app",
+            ];
         var idx = 0;
     return {
         nextStatement: function () {
