@@ -128,6 +128,18 @@ def get_modified_since_timestamp(settings):
     return lastsendts, dbacc.dt2ISO(today - datetime.timedelta(days=7))
 
 
+def already_listed(song, songsum):
+    for t20song in songsum["top20"]:
+        if t20song["path"] == song["path"]:
+            # This can happen if the song metadata was changed, leading to
+            # the song now mapping to a different dsId
+            return True
+        if t20song["ti"] == song["ti"] and t20song["ar"] == song["ar"]:
+            # Too similar to list as separate entries in the top 20
+            return True
+    return False
+
+
 def check_user_activity(user, settings):
     errpre = "check_user_activity skipping DigAcc" + str(user["dsId"])
     senddow = send_day_of_week(settings)
@@ -145,7 +157,7 @@ def check_user_activity(user, settings):
                                " ORDER BY rv DESC, modified DESC")
     for song in songs:
         usum["count"] += 1
-        if len(songsum["top20"]) < 20:
+        if len(songsum["top20"]) < 20 and not already_listed(song, songsum):
             songsum["top20"].append(song)
         if not songsum.get("easiest") or song["al"] < songsum["easiest"]["al"]:
             songsum["easiest"] = song
