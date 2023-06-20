@@ -11,7 +11,7 @@ import py.dbacc as dbacc
 import io
 from PIL import Image, ImageDraw, ImageFont
 
-CACHE_BUST_PARAM = "v=230610"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=230620"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -91,14 +91,14 @@ FLOWCONTENTHTML = """
 
 <div class="textcontentdiv boxedcontentdiv">
 
-<p>What if you could play music based on what you thought of it?</p>
+<p>A better way to play your music.</p>
 
-<p>Digger is a parametric retrieval app for your music that plays songs
-matching your listening context.  Autoplay prefers what you've least
-recently heard, and can fetch across genres, styles, time periods and
-artists in your music library. </p>
+<p>Digger is a parametric retrieval app that plays songs matching your
+listening context.  Autoplay prefers what you've least recently heard, and
+can fetch across genres, styles, time periods and artists in your music
+library. </p>
 
-<p>Whenever the currently playing song grabs you, tune its rating to reflect
+<p>Whenever a currently playing song grabs you, tune its rating to reflect
 why it's exceptional.  Exceptional songs drive advanced retrieval filtering,
 so you can easily fetch great music across a wide range of listening
 contexts.  Default filtering matches everything else, so you can enjoy your
