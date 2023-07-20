@@ -158,7 +158,7 @@ app.login = (function () {
             const contactdiv = jt.byId("contactdiv");
             if(contactdiv) {
                 contactdiv.style.display = "none"; }
-            jt.out("homepgcontentdiv", jt.tac2html(
+            jt.out("sitecontentdiv", jt.tac2html(
                 [["div", {id:"logodiv"},
                   ["a", {href:"/"},
                    ["img", {src:"img/appicon.png"}]]],

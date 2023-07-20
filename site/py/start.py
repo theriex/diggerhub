@@ -263,7 +263,7 @@ def startpage(path, refer):
             "$DESCR": "Digger saves your song ratings and plays music from your collection matching what you want to hear. People use Digger to automate their music library."}}
     if stinf["refer"]:
         logging.info("startpage referral: " + refer)
-    if not reldocroot:
+    if not reldocroot or stinf["path"].startswith("iosappstore"):
         return mainpage(stinf)
     # path for dynamic images needs to not contain static directory ident
     if stinf["path"].startswith("dio/wt20/"):
