@@ -11,7 +11,7 @@ import py.dbacc as dbacc
 import io
 from PIL import Image, ImageDraw, ImageFont
 
-CACHE_BUST_PARAM = "v=230720"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=230822"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -64,7 +64,6 @@ INDEXHTML = """
 CONTENTHTML = """
 <div id="topsectiondiv">
   <div id="logodiv"><img src="img/appicon.png"/></div>
-  <div id="hubaccountcontentdiv"></div>
 </div>
 $FLOWCONTENTHTML
 <div id="contactdiv">
@@ -89,13 +88,46 @@ REPORTFRAMEHTML = """
 
 FLOWCONTENTHTML = """
 
-<div class="textcontentdiv boxedcontentdiv">
+<div id="toptextdiv" class="textcontentdiv boxedcontentdiv">
 
-<p>A better way to play your music.</p>
+<p>The next song to play from your collection is the one matching your mood that you haven't heard in a while. </p>
 
-<p>Digger is a parametric retrieval app that plays songs matching your
-listening context.  Autoplay prefers what you've least recently heard, and
-can fetch across genres, styles, time periods and artists in your music
+<p>Digger knows which song that is because you told it last time you played it. </p>
+
+</div>
+
+
+<div class="textcontentdiv">
+Digger works alongside your music software and does not modify your song
+files.
+</div>
+
+<div id="downloadsignincontdiv">
+  <div id="downloadsdiv" class="boxedcontentdiv">
+    <div class="platoptdescdiv">Get Digger for</div>
+    <div class="downloadsline">
+      <div><a href="downloads/digger-linux" onclick="app.login.dldet(event);return false">Linux</a></div>
+      <div><a href="downloads/Digger.dmg" onclick="app.login.dldet(event);return false">Mac</a></div>
+      <div><a href="downloads/digger-win.zip" onclick="app.login.dldet(event);return false">Windows</a><br/>
+           <span>(win8.1+)</span></div>
+    </div>
+    <div class="downloadsline">
+      <div><a href="https://apps.apple.com/app/id6446126460" onclick="app.login.dldet(event);return false">IOS</a></div>
+      <div><a href="https://play.google.com/store/apps/details?id=com.diggerhub.digger" onclick="app.login.dldet(event);return false">Android</a></div>
+    </div>
+    <div class="platoptdescdiv">&nbsp;</div>
+  </div>
+  <div id="hubaccountcontentdiv" class="boxedcontentdiv"></div>
+</div>
+
+<div class="textsectionspacerdiv"></div>
+<div class="textcontentdiv">
+
+<p>Rediscover your music collection.</p>
+
+<p>Digger is a parametric retrieval app to autoplay songs matching your
+listening context.  It prefers what you've least recently heard, and it can
+fetch across genres, styles, time periods and artists in your music
 library. </p>
 
 <p>Whenever a currently playing song grabs you, tune its rating to reflect
@@ -119,27 +151,6 @@ whole music collection anytime. </p>
     </span>
   </div>
   <div id="slidedispdiv"><img src="docs/slideshow/slide0.png"/></div>
-</div>
-
-<div class="textsectionspacerdiv"></div>
-<div class="textcontentdiv">
-Digger works alongside your music software and does not modify your song
-files.
-</div>
-
-<div id="downloadsdiv" class="boxedcontentdiv">
-  <div class="platoptdescdiv">Get Digger for</div>
-  <div class="downloadsline">
-    <div><a href="downloads/digger-linux" onclick="app.login.dldet(event);return false">Linux</a></div>
-    <div><a href="downloads/Digger.dmg" onclick="app.login.dldet(event);return false">Mac</a></div>
-    <div><a href="downloads/digger-win.zip" onclick="app.login.dldet(event);return false">Windows</a><br/>
-         <span>(win8.1+)</span></div>
-  </div>
-  <div class="downloadsline">
-    <div><a href="https://apps.apple.com/app/id6446126460" onclick="app.login.dldet(event);return false">IOS</a></div>
-    <div><a href="https://play.google.com/store/apps/details?id=com.diggerhub.digger" onclick="app.login.dldet(event);return false">Android</a></div>
-  </div>
-  <div class="platoptdescdiv">&nbsp;</div>
 </div>
 
 <div id="headertextdiv">

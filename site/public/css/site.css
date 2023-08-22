@@ -16,8 +16,6 @@ body { padding:0; border:0; }
   background-attachment: fixed; }
 #logodiv { float:left; }
 #logodiv img { max-height:64px; }
-/* top.js adds float:right; if screen is wide enough. Otherwise pads it. */
-#hubaccountcontentdiv { margin:12px 10px 0px 10px; width:340px; }
 
 h2 { text-align:center; }
 h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
@@ -29,6 +27,7 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
 #contactdiv a { display:inline-block; padding:10px 0px; }
 
 .textsectionspacerdiv { height:42px; }
+#toptextdiv { min-height:100px; }
 .textcontentdiv { margin:0px 10px 10px 10px; padding:10px; color:#663922;
   font-size:large; text-shadow: 0.5px 0.5px 1px #37190a; text-align:center; }
 .textcontentdiv p { margin:0px 0px 18px 0px; }
@@ -38,13 +37,18 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
 /* -------------------- */
 /* app */
 
-#downloadsdiv { text-align:center; margin:0px auto 20px; display:table;
+#downloadsignincontdiv { text-align:center; }
+#downloadsdiv { text-align:center; display:inline-block;
   min-width:280px; padding:5px 0px; }
 .downloadsline div { display:inline-block; padding:5px 14px;
   text-align:center; vertical-align:top; }
 .downloadsline div span { font-size:small; color:#999; }
 .downloadlinkspan { font-size:large; font-weight:bold; display:inline-block;
   padding:4px 0px; }
+/* top.js adds float:right; if screen is wide enough. Otherwise pads it. */
+#hubaccountcontentdiv { margin:0px 10px; width:340px;
+  display:inline-block; padding:8px; }
+
 #dloverlaydiv { background:#ffd2bc; border-radius:14px; padding:10px;
   border:2px solid #333; box-shadow: 2px 3px 4px #2f2b00;
   position:absolute; top:0px; left:0px; display:none; }

@@ -455,7 +455,7 @@ app.login = (function () {
             case "/digger": return app.initDiggerModules();
             default: jt.log("Standard site homepage display"); }
             mgrs.hua.initDisplay();
-            setTimeout(mgrs.mrq.runMarquee, 12000);
+            //setTimeout(mgrs.mrq.runMarquee, 12000);
             mgrs.sld.runSlideshow(); }
     };  //end mgrs.gen returned functions
     }());
