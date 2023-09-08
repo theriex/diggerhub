@@ -120,7 +120,7 @@ def send_day_of_week(settings):
     return senddow
 
 
-def get_modified_since_timestamp(settings):
+def get_played_since_timestamp(settings):
     lastsendts = settings["sumact"].get("lastsend", dfltact["lastsend"])
     today = dayonly(datetime.datetime.utcnow())
     if lastsendts > dbacc.dt2ISO(today - datetime.timedelta(days=2)):
@@ -146,15 +146,15 @@ def check_user_activity(user, settings):
     if runinfo["tdow"] != senddow:
         logging.info(errpre +" sendon " + senddow)
         return
-    lastsendts, sincets = get_modified_since_timestamp(settings)
+    lastsendts, sincets = get_played_since_timestamp(settings)
     if not sincets:
         logging.info(errpre + " not enough elapsed time since " + lastsendts)
         return
     usum = {"acct": user, "count": 0}
     songsum = {"sincets":sincets, "top20":[]}
     songs = dbacc.query_entity("Song", "WHERE aid = " + user["dsId"] +
-                               " AND modified > \"" + sincets + "\"" +
-                               " ORDER BY rv DESC, modified DESC")
+                               " AND lp > \"" + sincets + "\"" +
+                               " ORDER BY rv DESC, lp DESC")
     for song in songs:
         usum["count"] += 1
         if len(songsum["top20"]) < 20 and not already_listed(song, songsum):
