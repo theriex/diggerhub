@@ -190,7 +190,7 @@ app.login = (function () {
         const templates = {
             iosp: "ipem(Request a promotional code) to evaluate Digger at no cost, or help support ongoing development and link(buy Digger for IOS).",
             droidp: "Request a dpem(promotional link) to evaluate Digger at no cost, or help support ongoing development and link(buy Digger for Android).",
-            webapp: "Access Digger through any browser when the local server is running. See the $webappdoc description page for more information, or if you run into any issues or questions after installing. link(Download Digger)" };
+            webapp: "Access Digger with any browser while the local Digger server is running. See the $webappdoc description page for details. link(Download Digger)" };
         function iosPromoEmailLink () {
             const emaddr = app.subPlaceholders(null, null, "SUPPEMAIL");
             const subj = "Digger for IOS promo code";

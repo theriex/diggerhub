@@ -123,20 +123,16 @@ files.
 <div class="textsectionspacerdiv"></div>
 <div class="textcontentdiv">
 
-<p>Rediscover your music collection.</p>
-
-<p>Digger is a parametric retrieval app to autoplay songs matching your
-listening context.  It prefers what you've least recently heard, and it can
-fetch across genres, styles, time periods and artists in your music
-library. </p>
-
-<p>Whenever a currently playing song grabs you, tune its rating to reflect
-why it's exceptional.  Exceptional songs drive advanced retrieval filtering,
-so you can easily fetch great music across a wide range of listening
-contexts.  Default filtering matches everything else, so you can enjoy your
-whole music collection anytime. </p>
-
 <p>Dig into your music. </p>
+
+<p>Digger is a parametric retrieval app for autoplaying songs that match
+your listening context.  It prefers what you've least recently heard, and
+can fetch across genres, styles, time periods and artists in your music
+library.  Whenever the currently playing song grabs you, tune its rating to
+reflect your impression and make it easier to find next time.  Open to
+anything?  Leave the filters wide open. </p>
+
+<p>Rediscover your music collection.</p>
 
 </div>
 
