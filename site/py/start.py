@@ -11,7 +11,7 @@ import py.dbacc as dbacc
 import io
 from PIL import Image, ImageDraw, ImageFont
 
-CACHE_BUST_PARAM = "v=230916"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=230919"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -125,14 +125,14 @@ files.
 
 <p>Dig into your music. </p>
 
-<p>Digger is a parametric retrieval app for autoplaying songs that match
-your listening context.  It prefers what you've least recently heard, and
-can fetch across genres, styles, time periods and artists in your music
-library.  Whenever the currently playing song grabs you, tune its rating to
-reflect your impression and make it easier to find next time.  Open to
-anything?  Leave the filters wide open. </p>
+<p>Autoplay your music collection tuning the mix to match your listening
+context.  Digger parametric retrieval fetches across genres, styles, time
+periods and artists, preferring what you've least recently heard.  Whenever
+the currently playing song grabs you, tune its rating to reflect your
+impression and make it easier to find next time. Open to anything? Leave the
+filters wide open. </p>
 
-<p>Rediscover your music collection.</p>
+<p>Rediscover your music collection. </p>
 
 </div>
 
