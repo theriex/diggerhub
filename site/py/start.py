@@ -89,64 +89,63 @@ REPORTFRAMEHTML = """
 FLOWCONTENTHTML = """
 
 <div id="toptextdiv" class="textcontentdiv boxedcontentdiv">
-
-<p>The next song to play from your collection is the one matching your mood that you haven't heard in a while. </p>
-
-<p>Digger knows which song that is because you told it last time you played it. </p>
-
+<div>
+You have a music collection. Now you've got annotations and autoplay.
+</div>
 </div>
 
+<div class="textcontentdiv"> A picture holds what you saw. A rating holds
+what you heard.  Annotating a song is like taking a pic while you listen.
+Digger provides structured annotation that feeds search and retrieval, so
+you can autoplay your collection with your own impressions.  </div>
 
-<div class="textcontentdiv">
-Digger works alongside your music software and does not modify your song
-files.
-</div>
-
-<div id="downloadsignincontdiv">
-  <div id="downloadsdiv" class="boxedcontentdiv">
-    <div class="platoptdescdiv">Get Digger for</div>
-    <div class="downloadsline">
-      <div><a href="downloads/digger-linux" onclick="app.login.dldet(event);return false">Linux</a></div>
-      <div><a href="downloads/Digger.dmg" onclick="app.login.dldet(event);return false">Mac</a></div>
-      <div><a href="downloads/digger-win.zip" onclick="app.login.dldet(event);return false">Windows</a><br/>
-           <span>(win8.1+)</span></div>
-    </div>
-    <div class="downloadsline">
-      <div><a href="https://apps.apple.com/app/id6446126460" onclick="app.login.dldet(event);return false">IOS</a></div>
-      <div><a href="https://play.google.com/store/apps/details?id=com.diggerhub.digger" onclick="app.login.dldet(event);return false">Android</a></div>
-    </div>
-    <div class="platoptdescdiv">&nbsp;</div>
+<div id="downloadsdiv" class="boxedcontentdiv">
+  <div class="platoptdescdiv">Get Digger for</div>
+  <div class="downloadsline">
+    <div><a href="downloads/digger-linux" onclick="app.login.dldet(event);return false">Linux</a></div>
+    <div><a href="downloads/Digger.dmg" onclick="app.login.dldet(event);return false">Mac</a></div>
+    <div><a href="downloads/digger-win.zip" onclick="app.login.dldet(event);return false">Windows</a><br/>
+         <span>(win8.1+)</span></div>
   </div>
-  <div id="hubaccountcontentdiv" class="boxedcontentdiv"></div>
+  <div class="downloadsline">
+    <div><a href="https://apps.apple.com/app/id6446126460" onclick="app.login.dldet(event);return false">IOS</a></div>
+    <div><a href="https://play.google.com/store/apps/details?id=com.diggerhub.digger" onclick="app.login.dldet(event);return false">Android</a></div>
+  </div>
+  <div class="platoptdescdiv"></div>
+</div>
+
+<div class="annoscrdiv">
+<div>Select one of your albums to play.</div>
+<img src="docs/screenshots/01SuggAlb.png"/>
+</div>
+
+<div class="annoscrdiv">
+<div>Annotate any song as it's playing to reflect what you hear and feel.</div>
+<img src="docs/screenshots/02AlbPlayRating.png"/>
+</div>
+
+<div class="annoscrdiv">
+<div>Autoplay songs using your own impressions.</div>
+<img src="docs/screenshots/03DeckFilters.png"/>
+</div>
+
+<div class="annoscrdiv">
+<div>Tune what's on deck or just let it play.  Digger pulls what you've
+heard least recently, so you can enjoy all your music.</div>
+<img src="docs/screenshots/04DeckAction.png"/>
+</div>
+
+<div id="hubacctdiv">
+<div>Connect to the hub for backup and sync. <br/>
+Pull-based rating collaboration. </div>
+<div id="hubaccountcontentdiv" class="boxedcontentdiv"></div>
 </div>
 
 <div class="textsectionspacerdiv"></div>
-<div class="textcontentdiv">
 
-<p>Dig into your music. </p>
-
-<p>Autoplay your music collection tuning the mix to match your listening
-context.  Digger parametric retrieval fetches across genres, styles, time
-periods and artists, preferring what you've least recently heard.  Whenever
-the currently playing song grabs you, tune its rating to reflect your
-impression and make it easier to find next time. Open to anything? Leave the
-filters wide open. </p>
-
-<p>Rediscover your music collection. </p>
-
-</div>
-
-<div id="slidesdiv">
-  <div id="slidepgdiv">
-    <span id="slidepgindspan">
-      <img class="sldselimg" src="docs/slideshow/slide0.png"/>
-      <img class="sldimg" src="docs/slideshow/slide1.png"/>
-      <img class="sldimg" src="docs/slideshow/slide2.png"/>
-      <img class="sldimg" src="docs/slideshow/slide3.png"/>
-      <img class="sldimg" src="docs/slideshow/slide4.png"/>
-    </span>
-  </div>
-  <div id="slidedispdiv"><img src="docs/slideshow/slide0.png"/></div>
+<div class="textcontentdiv"> Digger parametric retrieval fetches across
+genres, styles, time periods and artists, preferring what you've least
+recently heard.  Rediscover your music collection. Dig into your music.
 </div>
 
 <div id="headertextdiv">
