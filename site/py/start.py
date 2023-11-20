@@ -11,7 +11,7 @@ import py.dbacc as dbacc
 import io
 from PIL import Image, ImageDraw, ImageFont
 
-CACHE_BUST_PARAM = "v=231117"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=231120"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -94,10 +94,9 @@ You have a music collection. Now you've got annotations and autoplay.
 </div>
 </div>
 
-<div class="textcontentdiv"> A picture holds what you saw. A rating holds
-what you heard.  Annotating a song is like taking a pic while you listen.
-Digger provides structured annotation that feeds search and retrieval, so
-you can autoplay your collection with your own impressions.  </div>
+<div class="textcontentdiv convocontentdiv"> A picture captures what you
+saw. A rating captures what you heard.  Digger ratings support search and
+automated retrieval.  </div>
 
 <div id="downloadsdiv" class="boxedcontentdiv">
   <div class="platoptdescdiv">Get Digger for</div>
@@ -125,28 +124,28 @@ you can autoplay your collection with your own impressions.  </div>
 </div>
 
 <div class="annoscrdiv">
-<div>Autoplay songs using your own impressions.</div>
+<div>Autoplay songs using your own impressions.  Digger pulls what you've
+heard least recently, so you can enjoy all your music.</div>
 <img src="docs/screenshots/03DeckFilters.png"/>
 </div>
 
 <div class="annoscrdiv">
-<div>Tune what's on deck or just let it play.  Digger pulls what you've
-heard least recently, so you can enjoy all your music.</div>
+<div>Fine tune what's on deck next.</div>
 <img src="docs/screenshots/04DeckAction.png"/>
 </div>
 
 <div id="hubacctdiv">
 <div>Connect to the hub for backup and sync. <br/>
-Pull-based rating collaboration. </div>
+Optional pull-based rating collaboration. </div>
 <div id="hubaccountcontentdiv" class="boxedcontentdiv"></div>
 </div>
 
 <div class="textsectionspacerdiv"></div>
 
-<div class="textcontentdiv"> Digger parametric retrieval fetches across
-genres, styles, time periods and artists, preferring what you've least
-recently heard.  Rediscover your music collection. Dig into your music.
-</div>
+<div class="textcontentdiv convocontentdiv"> Digger parametric retrieval
+fetches across genres, styles, time periods and artists, preferring what
+you've least recently heard.  Rediscover your music collection. Dig into
+your music.  </div>
 
 <div id="headertextdiv">
   <div id="marqueeplaceholderdiv">&nbsp;</div>
