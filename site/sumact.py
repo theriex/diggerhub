@@ -152,8 +152,13 @@ def check_user_activity(user, settings):
         return
     usum = {"acct": user, "count": 0}
     songsum = {"sincets":sincets, "top20":[]}
+    # The public Top 20 should not include anything you are not comfortable
+    # playing for others, nor should it include anything you think is not
+    # very good.  Otherwise it's no fun to see.
     songs = dbacc.query_entity("Song", "WHERE aid = " + user["dsId"] +
                                " AND lp > \"" + sincets + "\"" +
+                               " AND kws LIKE \"%Social%\"" +
+                               " AND rv >= 5" +
                                " ORDER BY rv DESC, lp DESC")
     for song in songs:
         usum["count"] += 1
