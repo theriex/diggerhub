@@ -456,7 +456,10 @@ app.login = (function () {
             default: jt.log("Standard site homepage display"); }
             mgrs.hua.initDisplay();
             //setTimeout(mgrs.mrq.runMarquee, 12000);
-            mgrs.sld.runSlideshow(); }
+            mgrs.sld.runSlideshow(); },
+        scrollToTopOfContent: function () {
+            const div = jt.byId("sitecontentdiv");
+            div.scrollTo({top:0, left:0, behavior:"smooth"}); }
     };  //end mgrs.gen returned functions
     }());
 
@@ -466,6 +469,7 @@ return {
     getAuth: function () { return authobj; },
     dldet: function (event) { return mgrs.dld.detail(event); },
     closeDLOver: function () { return mgrs.dld.closeOverlay(); },
+    scrollToTopOfContent: function () { mgrs.gen.scrollToTopOfContent(); },
     dispatch: function (mgrname, fname, ...args) {
         return mgrs[mgrname][fname].apply(app.login, args); }
 };  //end of returned functions

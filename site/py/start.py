@@ -11,7 +11,7 @@ import py.dbacc as dbacc
 import io
 from PIL import Image, ImageDraw, ImageFont
 
-CACHE_BUST_PARAM = "v=231120"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=231130"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -144,8 +144,8 @@ Optional pull-based rating collaboration. </div>
 
 <div class="textcontentdiv convocontentdiv"> Digger parametric retrieval
 fetches across genres, styles, time periods and artists, preferring what
-you've least recently heard.  Rediscover your music collection. Dig into
-your music.  </div>
+you've least recently heard.  Rediscover your music collection. 
+<a href="#showdownloadlinks" onclick="app.login.scrollToTopOfContent();return false">Dig into your music</a>. </div>
 
 <div id="headertextdiv">
   <div id="marqueeplaceholderdiv">&nbsp;</div>
