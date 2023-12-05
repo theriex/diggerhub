@@ -11,7 +11,7 @@ import py.dbacc as dbacc
 import io
 from PIL import Image, ImageDraw, ImageFont
 
-CACHE_BUST_PARAM = "v=231130"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=231205"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -84,6 +84,40 @@ REPORTFRAMEHTML = """
     $REPORTHTML
   </div>
 </div>
+"""
+
+DELETEMEINSTHTML = """
+
+<h1>Deleting Your Data</h1>
+
+<p>Thanks for having trusted your Digger song rating data to DiggerHub.  As
+part of keeping that trust, a few steps are required to confirm who you are
+and that you really do want to delete all your data: </p>
+
+<ol> 
+
+<li>In the Digger app, while signed in to DiggerHub, choose "me" in the
+account headings then choose the "sign out" heading.  In the sign out
+display, click the "Delete Me" button and then confirm.
+
+<li>In the Digger app, Change your account name according to the email you
+received, then uninstall the app and respond to the email.
+
+<li>Allow a few business days for processing.  You will receive an email
+confirming your account, all your song ratings, and any received or sent
+messages have all been deleted.
+
+</ol>
+
+<p>After your data has been removed, DiggerHub won't have any remaining data
+about you.  If you kept a copy of your data using the Win/Mac/*nix version
+of Digger, that data will no longer sync with DiggerHub because the deleted
+server IDs won't be found anymore.  Please be absolutely sure you never want
+to use your account or ratings again if you choose to delete your data. </p>
+
+<p>If you never joined DiggerHub, all your Digger ratings are stored with
+the app, so they are deleted with the app if you uninstall it. </p>
+
 """
 
 FLOWCONTENTHTML = """
@@ -244,6 +278,13 @@ def weekly_top20(stinf, rtype="page"):
     return weekly_top20_page(stinf, sasum)
 
 
+def delete_me_instruct(stinf):
+    stinf["replace"]["$CONTENTHTML"] = REPORTFRAMEHTML
+    stinf["replace"]["$REPORTHTML"] = DELETEMEINSTHTML
+    stinf["replace"]["$RELROOT"] = stinf["replace"]["$RDR"]
+    return replace_and_respond(stinf)
+
+
 def mainpage(stinf):
     stinf["replace"]["$CONTENTHTML"] = CONTENTHTML
     stinf["replace"]["$FLOWCONTENTHTML"] = FLOWCONTENTHTML
@@ -275,4 +316,6 @@ def startpage(path, refer):
         return weekly_top20(stinf, rtype="image")
     if stinf["path"].startswith("plink/wt20/"):
         return weekly_top20(stinf, rtype="page")
+    if stinf["path"].startswith("delmeinst"):
+        return delete_me_instruct(stinf)
     return fail404()
