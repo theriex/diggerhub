@@ -11,7 +11,7 @@ import py.dbacc as dbacc
 import io
 from PIL import Image, ImageDraw, ImageFont
 
-CACHE_BUST_PARAM = "v=231212"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=231213"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -158,8 +158,7 @@ automated retrieval.  </div>
 </div>
 
 <div class="annoscrdiv">
-<div>Autoplay songs using your own impressions.  Digger pulls what you've
-heard least recently, so you can enjoy all your music.</div>
+<div>Autoplay songs using your own impressions.</div>
 <img src="docs/screenshots/03DeckFilters.png"/>
 </div>
 
@@ -169,8 +168,8 @@ heard least recently, so you can enjoy all your music.</div>
 </div>
 
 <div id="hubacctdiv">
-<div>Connect to the hub for backup and sync. <br/>
-Optional pull-based rating collaboration. </div>
+<div>Connect to <em>DiggerHub</em> for backup and sync, with
+optional pull-based rating collaboration. </div>
 <div id="hubaccountcontentdiv" class="boxedcontentdiv"></div>
 </div>
 
