@@ -11,7 +11,7 @@ import py.dbacc as dbacc
 import io
 from PIL import Image, ImageDraw, ImageFont
 
-CACHE_BUST_PARAM = "v=231213"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=231223"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -124,13 +124,13 @@ FLOWCONTENTHTML = """
 
 <div id="toptextdiv" class="textcontentdiv boxedcontentdiv">
 <div>
-You have a music collection. Now you've got annotations and autoplay.
+You own some music. Add your impressions.
 </div>
 </div>
 
 <div class="textcontentdiv convocontentdiv"> A picture captures what you
-saw. A rating captures what you heard.  Digger ratings support search and
-automated retrieval.  </div>
+saw. A rating captures what you heard.  Digger ratings support parametric
+continuous playback.  </div>
 
 <div id="downloadsdiv" class="boxedcontentdiv">
   <div class="platoptdescdiv">Get Digger for</div>
