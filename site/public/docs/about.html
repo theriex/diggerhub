@@ -29,44 +29,91 @@ retrieval power with far fewer song data requirements. </p>
 <p>By combining dual scalar values with well chosen keywords, Digger was
 able to achieve substantial retrieval power.  For example Instead of
 playlists for "Brunch", "Beach", "Dinner", "Party" and such, a single
-"Social" keyword combined with energy level and approachability filtering
-provides equivalent or better access.  Retrieval processing prefers what was
-least recently played, so it digs through all matching songs in the
-least boring order.  Digger was initially tested on a diverse collection of
-10k+ songs to verify the rating process was reasonable and contextual
-retrieval worked well. </p>
+"Social" keyword filtered by approachability and energy level provides
+equivalent and more flexible selection.  Retrieval processing prefers what
+was least recently played, so the app will "dig" through all matching songs
+in the least boring order.  Digger was initially tested on a diverse
+collection of 10k+ songs to verify the rating process was reasonable and
+contextual retrieval worked well. </p>
+
+<h2>Features</h2>
+
+<ul>
+<li>Continuous energy level and approachability controls and corresponding range selection filters.
+<li>General and custom keywords with positive or negative selection filtering.
+<li>Overall rating star slider.
+<li>Personal song comments.
+<li>Detailed song impression sharing.
+<li>Auto sync between devices via DiggerHub.
+<li>Selectable playback frequency with automatic skip adjustment.
+<li>Sleep button.
+<li>Play history and match info displays.
+<li>Deck playback tuning.
+<li>Realtime reactive search.
+</ul>
 
 
-<h2>Album listening</h2>
-
-<p>Digger was created to play appropriate music without selection fatigue,
-but playing an album is the best way to appreciate a song in context. </p>
+<h2>Listening with Digger</h2>
 
 <div class="textcontentdiv boxedcontentdiv">
-<p>Select album view <img class="featureico" src="img/album.png"/> to play the album for the current song. <br/>
-For a quick list of sugggested albums from your library click <img class="featureico" src="img/suggest.png">.</p>
+Digger provides three access views to support how you want to
+play music from your collection:
+<div class="docicodiv"><img class="featureico" src="img/deck.png"/></div>
+(deck) fetches a mix of songs matching your current listening context,
+<div class="docicodiv"><img class="featureico" src="img/album.png"/></div>
+(album) plays albums or suggests them, and
+<div class="docicodiv"><img class="featureico" src="img/search.png"/></div>
+(search) finds albums and songs you are looking for quickly and easily.
 </div>
 
+<div class="paradiv">
+Search matches your comments, artist, album, and title, updating a result
+tree of of albums and songs as you type.  Album view has a suggestions
+button
+<div class="docicodiv"><img class="featureico" src="img/suggest.png"/></div>
+presenting up to 5 albums you've played least recently.  Deck view shows
+parametric retrieval controls and matching songs you can optionally
+prioritize or skip.
+</div>
+
+<p>Switching between playback views while listening is seamless.  In album
+view, playback proceeds sequentially through tracks and then stops.  In deck
+view, playback is continuous.  Digger prefers songs you have listened to
+least recently, and it also avoids overplaying in deck mode by respecting the
+playback frequency of each song.  The maximum deck playback frequency is
+once every 24 hours.  If you flag a song as tired in the playback tuning
+parameters, frequency moves from once every 90 days to once a year depending
+how often you skip the song.  Because Digger prefers least recently played
+songs, frequency tuning is not usually necessary, but when you need it,
+it's there.  Album view and search do not follow frequency constraints. </p>
 
 
-<h2>Digger song ratings in action</h2>
+<h2>Rating controls</h2>
 
-<p>Song ratings make it easy to describe your impression to others: </p>
+<p>The Digger player panel lets you capture much of what you feel without
+having to come up with descriptive words for every song.  The knobs,
+sliders, and keyword toggles are tools for active listening that connect
+music to past, present and future you.  It's an enhanced listening
+experience that works for you and grows with you over time. </p>
 
 <div class="textcontentdiv boxedcontentdiv">
-<p>Sharing <img class="featureico" src="img/share.png"/> a song copies the
+<img class="featureico" src="img/share.png"/>
+Sharing a song copies the
 <em>Title</em>, <em>Artist</em>, <em>Album</em>, <em>Keywords</em>, 
 <em>Approachability</em> and <em>Energy Level</em>, together with your
 comment <img class="featureico" src="img/comment.png"/> into a single
-statement to send however you like. </p>
+statement to send however you like.
 </div>
+
+<p>Deck range selectors and three-way keyword toggles let you pull music
+from your collection matching a wide range of listening situations. </p>
 
 
 <h2>DiggerHub</h2>
 
 <p>Initially created as a mechanism to synchronize Digger data across
-devices with minimum personal information, DiggerHub now also provides for
-structured collaboration that respects your time. </p>
+devices with bare minimum personal identification, DiggerHub also
+provides for structured collaboration that respects your time: </p>
 
 <div id="collabdiv">
 <h4>Connect</h4>
@@ -87,8 +134,8 @@ information for that song becomes yours. </p>
 
 <h4>Messages</h4>
 <img src="docs/collab/messages.png"/>
-<p>See what your friends have shared recently or get automatic
-recommendations from their ratings and your listening parameters. </p>
+<p>See what your friends have shared recently.  Get automatic
+recommendations matching their ratings to your listening parameters. </p>
 </div>
 
 <h2>More info</h2>
