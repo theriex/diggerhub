@@ -11,7 +11,7 @@ import py.dbacc as dbacc
 import io
 from PIL import Image, ImageDraw, ImageFont
 
-CACHE_BUST_PARAM = "v=231227"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=231229"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -124,7 +124,7 @@ FLOWCONTENTHTML = """
 
 <div id="toptextdiv" class="textcontentdiv boxedcontentdiv">
 <div>
-You own some music. Add your impressions.
+You own some music. Get the player that cares what you feel about it.
 </div>
 </div>
 
