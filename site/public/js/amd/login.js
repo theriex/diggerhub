@@ -446,7 +446,8 @@ app.login = (function () {
                         app.displayDoc("hpgoverlaydiv",
                                        event.target.href); }); }); }
             app.overlaydiv = "hpgoverlaydiv";
-            if(app.startPath.startsWith("/plink")) {
+            if(app.startPath.startsWith("/plink") ||
+               app.startPath.startsWith("/listener")) {
                 return adjustReportDisplay(); }
             switch(app.startPath) {
             case "/iosappstore": return mgrs.mmd.iosappstore();

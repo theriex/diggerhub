@@ -11,7 +11,7 @@ import py.dbacc as dbacc
 import io
 from PIL import Image, ImageDraw, ImageFont
 
-CACHE_BUST_PARAM = "v=231229"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=231230"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -83,6 +83,12 @@ REPORTFRAMEHTML = """
   <div id="reportinnercontentdiv">
     $REPORTHTML
   </div>
+</div>
+"""
+
+PERSONALPAGEHTML = """
+<div id="ppgwt20div">
+  $LATESTTOP20
 </div>
 """
 
@@ -208,11 +214,16 @@ def song_html(song):
     return html
 
 
-def weekly_top20_page(stinf, sasum):
+def month_and_day_from_dbtimestamp(timestamp):
     months = ["", "January", "February", "March", "April", "May", "June",
               "July", "August", "September", "October", "November", "December"]
-    month = months[int(sasum["end"][5:7])]
-    moday = month + " " + sasum["end"][8:10]
+    month = months[int(timestamp[5:7])]
+    moday = month + " " + timestamp[8:10]
+    return moday
+
+
+def weekly_top20_content_html(sasum):
+    moday = month_and_day_from_dbtimestamp(sasum["end"])
     html = "<div id=\"reptoplinediv\">" + sasum["digname"] + "</div>\n"
     html += ("<div id=\"reptitlelinediv\">Weekly Top 20 - " +
              "<span class=\"datevalspan\">" + moday + "</span></div>\n")
@@ -230,6 +241,12 @@ def weekly_top20_page(stinf, sasum):
                  ":</span>" + song_html(sasum[lab["fld"]]) + "<br/>")
     html += ("<div id=\"repsongtotaldiv\">" + str(sasum["ttlsongs"]) +
              " songs synchronized to DiggerHub</div>\n")
+    return html
+
+
+def weekly_top20_page(stinf, sasum):
+    moday = month_and_day_from_dbtimestamp(sasum["end"])
+    html = weekly_top20_content_html(sasum)
     stinf["replace"]["$TITLE"] = sasum["digname"] + " Weekly Top 20 " + moday
     stinf["replace"]["$DESCR"] = ("Top 20 songs from " + sasum["digname"] +
                                   " for week ending " + moday)
@@ -277,6 +294,33 @@ def weekly_top20(stinf, rtype="page"):
     return weekly_top20_page(stinf, sasum)
 
 
+def find_latest_t20_summary(digname):
+    where = ("WHERE sumtype = \"wt20\"" +
+             " AND digname = \"" + digname + "\"" +
+             " ORDER BY end DESC LIMIT 1")
+    sasums = dbacc.query_entity("SASum", where)
+    if len(sasums) > 0:
+        return sasums[0]
+    return None
+
+
+def listener_page(stinf):
+    pes = stinf["rawpath"].split("/")
+    if len(pes) < 2:
+        return fail404()
+    digname = pes[1]
+    wt20 = "No recent listening info"
+    sasum = find_latest_t20_summary(digname)
+    logging.info("listener_page " + digname + " " + str(sasum))
+    if sasum:
+        wt20 = weekly_top20_content_html(sasum)
+    stinf["replace"]["$CONTENTHTML"] = REPORTFRAMEHTML
+    stinf["replace"]["$REPORTHTML"] = PERSONALPAGEHTML
+    stinf["replace"]["$RELROOT"] = stinf["replace"]["$RDR"]
+    stinf["replace"]["$LATESTTOP20"] = wt20
+    return replace_and_respond(stinf)
+
+
 def delete_me_instruct(stinf):
     stinf["replace"]["$CONTENTHTML"] = REPORTFRAMEHTML
     stinf["replace"]["$REPORTHTML"] = DELETEMEINSTHTML
@@ -305,16 +349,18 @@ def startpage(path, refer):
             "$RDR": reldocroot,
             "$CBPARAM": CACHE_BUST_PARAM,
             "$TITLE": "DiggerHub",
-            "$DESCR": "Digger saves your song ratings and plays music from your collection matching what you want to hear. People use Digger to automate their music library."}}
+            "$DESCR": "Digger saves your song ratings and plays music from your collection matching what you want to hear. People use Digger to enhance their listening experience and access to their music library."}}
     if stinf["refer"]:
         logging.info("startpage referral: " + refer)
     if not reldocroot or stinf["path"].startswith("iosappstore"):
         return mainpage(stinf)
-    # path for dynamic images needs to not contain static directory ident
+    # paths for dynamic links must not start with static content paths
     if stinf["path"].startswith("dio/wt20/"):
         return weekly_top20(stinf, rtype="image")
     if stinf["path"].startswith("plink/wt20/"):
         return weekly_top20(stinf, rtype="page")
     if stinf["path"].startswith("delmeinst"):
         return delete_me_instruct(stinf)
+    if stinf["path"].startswith("listener"):
+        return listener_page(stinf)
     return fail404()
