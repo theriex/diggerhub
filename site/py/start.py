@@ -11,7 +11,7 @@ import py.dbacc as dbacc
 import io
 from PIL import Image, ImageDraw, ImageFont
 
-CACHE_BUST_PARAM = "v=231230"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=240118"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -240,7 +240,8 @@ def weekly_top20_content_html(sasum):
         html += ("<span class=\"repsummarylabelspan\">" + lab["name"] +
                  ":</span>" + song_html(sasum[lab["fld"]]) + "<br/>")
     html += ("<div id=\"repsongtotaldiv\">" + str(sasum["ttlsongs"]) +
-             " songs synchronized to DiggerHub</div>\n")
+             " songs synchronized to <a href=\"https://diggerhub.com\">" +
+             "DiggerHub</a></div>\n")
     return html
 
 
