@@ -6,12 +6,13 @@
 #pylint: disable=wrong-import-order
 
 import logging
+import py.mconf as mconf
 import py.util as util
 import py.dbacc as dbacc
 import io
 from PIL import Image, ImageDraw, ImageFont
 
-CACHE_BUST_PARAM = "v=240121"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=240207"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -266,7 +267,7 @@ def weekly_top20_image(sasum):
     for idx, song in enumerate(songs):
         mtxt += str(idx + 1) + ". " + song["ti"] + " - " + song["ar"] + "\n"
     mtxt += "..."
-    img = Image.open("public/img/ogimg.png")
+    img = Image.open(mconf.rpbgimg)
     draw = ImageDraw.Draw(img)
     # image size may be reduced at least 3x, aim for minimum 10px font size
     draw.font = ImageFont.truetype("Lato-Bold.ttf", 30)

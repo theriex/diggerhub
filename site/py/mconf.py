@@ -5,5 +5,6 @@ db = {"u":"root", "p":None, "h":"127.0.0.1", "d":"diggerhub_database"}
 logsdir = "logs/"
 errsdir = "errs/"
 domain = "diggerhub.com"
+rpbgimg = "public/img/ogimg.png"
 email = {"smtp":"localhost", "imap":"localhost",
          "support":"foo"}
