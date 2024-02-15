@@ -12,7 +12,7 @@ import py.dbacc as dbacc
 import io
 from PIL import Image, ImageDraw, ImageFont
 
-CACHE_BUST_PARAM = "v=240207"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=240215"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -270,7 +270,7 @@ def weekly_top20_image(sasum):
     img = Image.open(mconf.rpbgimg)
     draw = ImageDraw.Draw(img)
     # image size may be reduced at least 3x, aim for minimum 10px font size
-    draw.font = ImageFont.truetype("Lato-Bold.ttf", 30)
+    draw.font = ImageFont.truetype(mconf.rpfgfnt, 30)
     draw.multiline_text((90, 20), mtxt, (16, 16, 16))
     bbuf = io.BytesIO()
     img.save(bbuf, format="PNG")

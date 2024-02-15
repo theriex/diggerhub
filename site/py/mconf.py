@@ -6,5 +6,6 @@ logsdir = "logs/"
 errsdir = "errs/"
 domain = "diggerhub.com"
 rpbgimg = "public/img/ogimg.png"
+rpfgfnt = "Lato-Bold.ttf"
 email = {"smtp":"localhost", "imap":"localhost",
          "support":"foo"}
