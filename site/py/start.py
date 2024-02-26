@@ -351,7 +351,7 @@ def startpage(path, refer):
             "$RDR": reldocroot,
             "$CBPARAM": CACHE_BUST_PARAM,
             "$TITLE": "DiggerHub",
-            "$DESCR": "Digger saves your song ratings and plays music from your collection matching what you want to hear. People use Digger to enhance their listening experience and access to their music library."}}
+            "$DESCR": "Digger codifies your music impressions into retrieval parameters and personal annotations. People use Digger to automate their digital music collections and collaborate on listening experiences."}}
     if stinf["refer"]:
         logging.info("startpage referral: " + refer)
     if not reldocroot or stinf["path"].startswith("iosappstore"):
