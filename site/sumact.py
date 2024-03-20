@@ -125,7 +125,8 @@ def get_played_since_timestamp(settings):
     today = dayonly(datetime.datetime.utcnow())
     if lastsendts > dbacc.dt2ISO(today - datetime.timedelta(days=2)):
         return lastsendts, ""  # already sent recent summary
-    return lastsendts, dbacc.dt2ISO(today - datetime.timedelta(days=7))
+    # six days back and including today == one week
+    return lastsendts, dbacc.dt2ISO(today - datetime.timedelta(days=6))
 
 
 def already_listed(song, songsum):
