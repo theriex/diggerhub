@@ -12,7 +12,7 @@ import py.dbacc as dbacc
 import io
 from PIL import Image, ImageDraw, ImageFont
 
-CACHE_BUST_PARAM = "v=240226"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=240327"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -131,12 +131,8 @@ FLOWCONTENTHTML = """
 
 <div id="toptextdiv" class="textcontentdiv boxedcontentdiv">
 <div>
-You own some music. Get the player that cares how you feel about it.
+If you carry your music files, get the player that listens to you.
 </div>
-</div>
-
-<div class="textcontentdiv convocontentdiv"> A picture captures what you
-saw. A rating captures what you heard.  Digger ratings support autoplay.
 </div>
 
 <div id="downloadsdiv" class="boxedcontentdiv">
@@ -160,12 +156,12 @@ saw. A rating captures what you heard.  Digger ratings support autoplay.
 </div>
 
 <div class="annoscrdiv">
-<div>Annotate any song as it's playing to reflect what you hear and feel.</div>
+<div>Adjust knobs, keywords, stars, and comment to reflect what you feel.</div>
 <img src="docs/screenshots/02AlbPlayRating.png"/>
 </div>
 
 <div class="annoscrdiv">
-<div>Autoplay songs using your own impressions.</div>
+<div>Filter what music should autoplay.</div>
 <img src="docs/screenshots/03DeckFilters.png"/>
 </div>
 
@@ -175,8 +171,13 @@ saw. A rating captures what you heard.  Digger ratings support autoplay.
 </div>
 
 <div id="hubacctdiv">
-<div>Connect to <em>DiggerHub</em> for backup and sync, with
-optional pull-based rating collaboration. </div>
+<div id="featurelistdiv">Digger features: <ul>
+<li>Switch between album, autoplay or search anytime.
+<li>Describe songs as you listen.
+<li>Filter autoplay to match what you want to hear.
+</ul></div>
+<div>Connect to <em>DiggerHub</em> for backup, sync, and
+optional rating collaboration. </div>
 <div id="hubaccountcontentdiv" class="boxedcontentdiv"></div>
 </div>
 
