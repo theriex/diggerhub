@@ -104,6 +104,10 @@ def musfdat():  # params: auth, gid, since
 def songttls():  # params: auth
     return util.secure(appdat.songttls)
 
+@app.route('/api/suggdown')
+def suggdown():  # params: auth, suggtype
+    return util.secure(appdat.suggdown)
+
 ####### Spotify song data and collaboration actions:
 
 @app.route('/api/impsptracks', methods=['GET', 'POST'])

@@ -4,6 +4,7 @@
 #pylint: disable=missing-function-docstring
 #pylint: disable=logging-not-lazy
 #pylint: disable=too-many-lines
+#pylint: disable=consider-using-from-import
 
 import logging
 import json
@@ -1048,6 +1049,33 @@ def songttls():
     except ValueError as e:
         return util.serve_value_error(e)
     return util.respJSON([digacc], audience="private")
+
+# Auth required.
+def suggdown():
+    try:
+        digacc, _ = util.authenticate()
+        suggtype = dbacc.reqarg("suggtype", "string", required=True)
+        logging.info("suggdown " + suggtype + " for " + digacc["dsId"])
+        dls = []
+        having = "HAVING qc > 1"   # albums
+        if suggtype == "singles":
+            having = "HAVING qc = 1"
+        sql = ("SELECT ar, ab, COUNT(ti) AS qc, SUM(rv) AS sr, MAX(rv) AS mr," +
+               " MAX(lp) AS lp, GROUP_CONCAT(DISTINCT kws) AS kws" +
+               " FROM Song WHERE rv >= 5 AND lp IS NOT NULL" +
+               " AND ar IS NOT NULL AND LOWER(ar) NOT LIKE ('%unknown%')" +
+               " AND ab IS NOT NULL AND aid = " + digacc["dsId"] +
+               " GROUP BY ar, ab " + having + " ORDER BY lp LIMIT 1000")
+        rows = dbacc.custom_query(sql, ["ar", "ab", "qc", "sr", "mr",
+                                        "lp", "kws"])
+        for row in rows:
+            sug = {"ar":row["ar"], "ab":row["ab"], "qc":int(row["qc"]),
+                   "sr":int(row["sr"]), "mr":int(row["mr"]),
+                   "lp":row["lp"], "kws":row["kws"]}
+            dls.append(sug)
+    except ValueError as e:
+        return util.serve_value_error(e)
+    return util.respJSON(dls)
 
 
 # Read the given items in the given dataformat (albums or tracks), and
