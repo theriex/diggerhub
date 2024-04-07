@@ -108,6 +108,10 @@ def songttls():  # params: auth
 def suggdown():  # params: auth, suggtype
     return util.secure(appdat.suggdown)
 
+@app.route('/api/nosugg', methods=['GET', 'POST'])
+def nosugg():  #params: auth, artist, album, fq
+    return util.secure(appdat.nosugg)
+
 ####### Spotify song data and collaboration actions:
 
 @app.route('/api/impsptracks', methods=['GET', 'POST'])

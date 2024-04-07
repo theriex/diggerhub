@@ -1050,6 +1050,7 @@ def songttls():
         return util.serve_value_error(e)
     return util.respJSON([digacc], audience="private")
 
+
 # Auth required.
 def suggdown():
     try:
@@ -1065,6 +1066,7 @@ def suggdown():
                " FROM Song WHERE rv >= 5 AND lp IS NOT NULL" +
                " AND ar IS NOT NULL AND LOWER(ar) NOT LIKE ('%unknown%')" +
                " AND ab IS NOT NULL AND aid = " + digacc["dsId"] +
+               " AND (fq IS NULL OR (fq != 'M' AND fq != 'R'))" +
                " GROUP BY ar, ab " + having + " ORDER BY lp LIMIT 1000")
         rows = dbacc.custom_query(sql, ["ar", "ab", "qc", "sr", "mr",
                                         "lp", "kws"])
@@ -1076,6 +1078,26 @@ def suggdown():
     except ValueError as e:
         return util.serve_value_error(e)
     return util.respJSON(dls)
+
+
+# Auth required
+def nosugg():
+    try:
+        digacc, _ = util.authenticate()
+        artist = dbacc.reqarg("artist", "string", required=True)
+        album = dbacc.reqarg("album", "string", required=True)
+        fq = dbacc.reqarg("fq", "string", required=True)
+        where = ("WHERE aid = " + str(digacc["dsId"]) +
+                 " AND ar = \"" + artist + "\"" +
+                 " AND ab = \"" + album + "\"")
+        res = []
+        songs = dbacc.query_entity("Song", where)
+        for song in songs:
+            song["fq"] = fq
+            res.append(dbacc.write_entity(song, song["modified"]))
+    except ValueError as e:
+        return util.serve_value_error(e)
+    return util.respJSON(res)
 
 
 # Read the given items in the given dataformat (albums or tracks), and
