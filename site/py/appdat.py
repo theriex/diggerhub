@@ -144,6 +144,7 @@ def update_song_fields(updsong, dbsong):
         "rv": {"pt": "int", "un": False, "dv": 0},
         "fq": {"pt": "string", "un": False, "dv": ""},
         "lp": {"pt": "string", "un": False, "dv": ""},
+        "pd": {"pt": "string", "un": False, "dv": ""},
         "nt": {"pt": "string", "un": False, "dv": ""},
         "pc": {"pt": "int", "un": False, "dv": 0},
         "srcid": {"pt": "string", "un": False, "dv": ""},

@@ -158,6 +158,7 @@ def check_user_activity(user, settings):
     # very good.  Otherwise it's no fun to see.
     songs = dbacc.query_entity("Song", "WHERE aid = " + user["dsId"] +
                                " AND lp > \"" + sincets + "\"" +
+                               " AND pd = \"played\"" +
                                " AND kws LIKE \"%Social%\"" +
                                " AND rv >= 5" +
                                " ORDER BY rv DESC, lp DESC")

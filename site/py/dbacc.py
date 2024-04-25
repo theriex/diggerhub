@@ -91,8 +91,9 @@ entdefs = {
         "kws": {"pt": "string", "un": False, "dv": ""},
         "rv": {"pt": "int", "un": False, "dv": 0},
         "fq": {"pt": "string", "un": False, "dv": ""},
-        "lp": {"pt": "string", "un": False, "dv": ""},
         "nt": {"pt": "string", "un": False, "dv": ""},
+        "lp": {"pt": "string", "un": False, "dv": ""},
+        "pd": {"pt": "string", "un": False, "dv": ""},
         "pc": {"pt": "int", "un": False, "dv": 0},
         "srcid": {"pt": "dbid", "un": False, "dv": 0},
         "srcrat": {"pt": "string", "un": False, "dv": ""},
@@ -563,10 +564,12 @@ def app2db_Song(inst, fill=True):
         cnv["rv"] = app2db_fieldval("Song", "rv", inst)
     if fill or "fq" in inst:
         cnv["fq"] = app2db_fieldval("Song", "fq", inst)
-    if fill or "lp" in inst:
-        cnv["lp"] = app2db_fieldval("Song", "lp", inst)
     if fill or "nt" in inst:
         cnv["nt"] = app2db_fieldval("Song", "nt", inst)
+    if fill or "lp" in inst:
+        cnv["lp"] = app2db_fieldval("Song", "lp", inst)
+    if fill or "pd" in inst:
+        cnv["pd"] = app2db_fieldval("Song", "pd", inst)
     if fill or "pc" in inst:
         cnv["pc"] = app2db_fieldval("Song", "pc", inst)
     if fill or "srcid" in inst:
@@ -600,8 +603,9 @@ def db2app_Song(inst):
     cnv["kws"] = db2app_fieldval("Song", "kws", inst)
     cnv["rv"] = db2app_fieldval("Song", "rv", inst)
     cnv["fq"] = db2app_fieldval("Song", "fq", inst)
-    cnv["lp"] = db2app_fieldval("Song", "lp", inst)
     cnv["nt"] = db2app_fieldval("Song", "nt", inst)
+    cnv["lp"] = db2app_fieldval("Song", "lp", inst)
+    cnv["pd"] = db2app_fieldval("Song", "pd", inst)
     cnv["pc"] = db2app_fieldval("Song", "pc", inst)
     cnv["srcid"] = db2app_fieldval("Song", "srcid", inst)
     cnv["srcrat"] = db2app_fieldval("Song", "srcrat", inst)
@@ -891,8 +895,8 @@ def update_existing_DigAcc(context, fields):
 def insert_new_Song(cnx, cursor, fields):
     fields = app2db_Song(fields)
     stmt = (
-        "INSERT INTO Song (created, modified, aid, path, ti, ar, ab, smti, smar, smab, el, al, kws, rv, fq, lp, nt, pc, srcid, srcrat, spid) "
-        "VALUES (%(created)s, %(modified)s, %(aid)s, %(path)s, %(ti)s, %(ar)s, %(ab)s, %(smti)s, %(smar)s, %(smab)s, %(el)s, %(al)s, %(kws)s, %(rv)s, %(fq)s, %(lp)s, %(nt)s, %(pc)s, %(srcid)s, %(srcrat)s, %(spid)s)")
+        "INSERT INTO Song (created, modified, aid, path, ti, ar, ab, smti, smar, smab, el, al, kws, rv, fq, nt, lp, pd, pc, srcid, srcrat, spid) "
+        "VALUES (%(created)s, %(modified)s, %(aid)s, %(path)s, %(ti)s, %(ar)s, %(ab)s, %(smti)s, %(smar)s, %(smab)s, %(el)s, %(al)s, %(kws)s, %(rv)s, %(fq)s, %(nt)s, %(lp)s, %(pd)s, %(pc)s, %(srcid)s, %(srcrat)s, %(spid)s)")
     data = {
         'created': fields.get("created"),
         'modified': fields.get("modified"),
@@ -909,8 +913,9 @@ def insert_new_Song(cnx, cursor, fields):
         'kws': fields.get("kws", entdefs["Song"]["kws"]["dv"]),
         'rv': fields.get("rv", entdefs["Song"]["rv"]["dv"]),
         'fq': fields.get("fq", entdefs["Song"]["fq"]["dv"]),
-        'lp': fields.get("lp", entdefs["Song"]["lp"]["dv"]),
         'nt': fields.get("nt", entdefs["Song"]["nt"]["dv"]),
+        'lp': fields.get("lp", entdefs["Song"]["lp"]["dv"]),
+        'pd': fields.get("pd", entdefs["Song"]["pd"]["dv"]),
         'pc': fields.get("pc", entdefs["Song"]["pc"]["dv"]),
         'srcid': fields.get("srcid", entdefs["Song"]["srcid"]["dv"]),
         'srcrat': fields.get("srcrat", entdefs["Song"]["srcrat"]["dv"]),
@@ -1260,12 +1265,12 @@ def query_DigAcc(cnx, cursor, where):
 
 def query_Song(cnx, cursor, where):
     query = "SELECT dsId, created, modified, "
-    query += "aid, path, ti, ar, ab, smti, smar, smab, el, al, kws, rv, fq, lp, nt, pc, srcid, srcrat, spid"
+    query += "aid, path, ti, ar, ab, smti, smar, smab, el, al, kws, rv, fq, nt, lp, pd, pc, srcid, srcrat, spid"
     query += " FROM Song " + where
     cursor.execute(query)
     res = []
-    for (dsId, created, modified, aid, path, ti, ar, ab, smti, smar, smab, el, al, kws, rv, fq, lp, nt, pc, srcid, srcrat, spid) in cursor:
-        inst = {"dsType": "Song", "dsId": dsId, "created": created, "modified": modified, "aid": aid, "path": path, "ti": ti, "ar": ar, "ab": ab, "smti": smti, "smar": smar, "smab": smab, "el": el, "al": al, "kws": kws, "rv": rv, "fq": fq, "lp": lp, "nt": nt, "pc": pc, "srcid": srcid, "srcrat": srcrat, "spid": spid}
+    for (dsId, created, modified, aid, path, ti, ar, ab, smti, smar, smab, el, al, kws, rv, fq, nt, lp, pd, pc, srcid, srcrat, spid) in cursor:
+        inst = {"dsType": "Song", "dsId": dsId, "created": created, "modified": modified, "aid": aid, "path": path, "ti": ti, "ar": ar, "ab": ab, "smti": smti, "smar": smar, "smab": smab, "el": el, "al": al, "kws": kws, "rv": rv, "fq": fq, "nt": nt, "lp": lp, "pd": pd, "pc": pc, "srcid": srcid, "srcrat": srcrat, "spid": spid}
         inst = db2app_Song(inst)
         res.append(inst)
     dblogmsg("QRY", "Song", res)
