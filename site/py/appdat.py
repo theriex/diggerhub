@@ -117,7 +117,8 @@ def reset_dead_spid_if_metadata_changed(updsong, dbsong):
 # See related app deck.js simplifiedMatch used for dupe checking.
 def standardized_colloquial_match(txt):
     scm = txt
-    scm = re.sub(r"\(.*", "", scm)  # remove trailing parentheticals
+    if not re.search(r"\(.*part.*\)", scm, flags=re.IGNORECASE):
+        scm = re.sub(r"\(.*", "", scm)  # remove trailing parenthetical
     scm = re.sub(r"\[.*", "", scm)  # remove trailing bracket text
     scm = re.sub(r"featuring.*", "", scm, flags=re.IGNORECASE)
     scm = scm.strip()
