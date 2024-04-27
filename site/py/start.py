@@ -131,7 +131,7 @@ FLOWCONTENTHTML = """
 
 <div id="toptextdiv" class="textcontentdiv boxedcontentdiv">
 <div>
-If you carry your music files, get the player that listens to you.
+Get the player that gets what you want to hear next.
 </div>
 </div>
 
@@ -156,25 +156,25 @@ If you carry your music files, get the player that listens to you.
 </div>
 
 <div class="annoscrdiv">
-<div>Adjust knobs, keywords, stars, and comment to reflect what you feel.</div>
+<div>Adjust knobs, keys, stars, and comment to reflect what you feel.</div>
 <img src="docs/screenshots/02AlbPlayRating.png"/>
 </div>
 
 <div class="annoscrdiv">
-<div>Filter what music should autoplay.</div>
+<div>Set the filters for what you want to hear.</div>
 <img src="docs/screenshots/03DeckFilters.png"/>
 </div>
 
 <div class="annoscrdiv">
-<div>Fine tune what's on deck next.</div>
+<div>Fine tune what's on deck.</div>
 <img src="docs/screenshots/04DeckAction.png"/>
 </div>
 
 <div id="hubacctdiv">
 <div id="featurelistdiv">Digger features: <ul>
-<li>Switch between album, autoplay or search anytime.
+<li>Switch between album, autoplay and search anytime.
 <li>Describe songs as you listen.
-<li>Filter autoplay to match what you want to hear.
+<li>Autoplay what you want to hear.
 </ul></div>
 <div>Connect to <em>DiggerHub</em> for backup, sync, and
 optional rating collaboration. </div>
@@ -183,10 +183,11 @@ optional rating collaboration. </div>
 
 <div class="textsectionspacerdiv"></div>
 
-<div class="textcontentdiv convocontentdiv"> Digger parametric retrieval
-fetches across genres, styles, time periods and artists, preferring what
-you've least recently heard.  Rediscover your music collection. 
-<a href="#showdownloadlinks" onclick="app.login.scrollToTopOfContent();return false">Dig into your music</a>. </div>
+<div class="textcontentdiv convocontentdiv"> The Digger Custom Autoplay
+Mixer can reach across genres, time periods and artists, preferring
+what you've least recently heard.  Rediscover your music collection.  <a
+href="#showdownloadlinks" onclick="app.login.scrollToTopOfContent();return
+false">Dig into your music</a>. </div>
 
 <div id="headertextdiv">
   <div id="marqueeplaceholderdiv">&nbsp;</div>
