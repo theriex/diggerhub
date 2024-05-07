@@ -153,6 +153,16 @@ module.exports = (function () {
         {f:"ttlsongs", d:"int", descr:"Count of songs considered for summary"}],
      cache:{minutes:30},  //relatively small records, read-only data
      logflds:["aid", "sumtype", "start", "end", "ttlsongs"]},
+
+    {entity:"StInt", descr:"Structured interaction e.g. beta test", fields:[
+        {f:"aid", d:"req dbid", c:"interacting account"},
+        {f:"email", d:"priv req unique email", c:"confirmed contact email" },
+        {f:"confcode", d:"adm string", c:"interaction confirmation code"},
+        {f:"status", d:"priv string", c:"code confirmed"},
+        {f:"intype", d:"req string", descr:"Interaction type label"},
+        {f:"stdat", d:"json", descr:"Interaction state data"}],
+     cache:{minutes:0},
+     logflds:["aid", "intype"]},
         
     {entity:"AppService", descr:"Processing service access", fields:[
         {f:"name", d:"string req unique", c:"Name of service"},

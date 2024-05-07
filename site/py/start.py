@@ -127,6 +127,7 @@ the app, so they are deleted with the app if you uninstall it. </p>
 
 """
 
+
 FLOWCONTENTHTML = """
 
 <div id="toptextdiv" class="textcontentdiv boxedcontentdiv">
@@ -356,7 +357,8 @@ def startpage(path, refer):
             "$DESCR": "Digger codifies your music impressions into retrieval parameters and personal annotations. People use Digger to automate their digital music collections and collaborate on listening experiences."}}
     if stinf["refer"]:
         logging.info("startpage referral: " + refer)
-    if not reldocroot or stinf["path"].startswith("iosappstore"):
+    if not reldocroot or (stinf["path"].startswith("iosappstore") or
+                          stinf["path"].startswith("beta")):
         return mainpage(stinf)
     # paths for dynamic links must not start with static content paths
     if stinf["path"].startswith("dio/wt20/"):

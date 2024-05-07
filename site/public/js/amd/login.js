@@ -108,8 +108,7 @@ app.login = (function () {
         initDisplay: function (dispdiv) {
             dispdiv = dispdiv || haid;
             if(!jt.byId(dispdiv)) { return; }  //no account access
-            app.top.dispatch("afg", "setDisplayDiv", dispdiv);
-            app.top.dispatch("afg", "setInApp", "");
+            app.top.dispatch("afg", "runOutsideApp", dispdiv);
             initialSignIn(
                 function (accntok) {
                     app.top.dispatch("hcu", "deserializeAccount", accntok[0]);
@@ -148,6 +147,169 @@ app.login = (function () {
                    ["div", {id:"haddiv"}, "Starting..."]]]]));
             mgrs.hua.initDisplay("haddiv"); }
     };  //end mgrs.had returned functions
+    }());
+
+
+    //The hub sign in manager handles account sign in or join.  Takes a div
+    //id for form display and calls back with the account.
+    mgrs.hsi = (function () {
+        var context = null;
+        function getAccount (authobj, errf) {
+            jt.call("POST", app.dr("/api/acctok"), jt.objdata(authobj),
+                    context.cbf, errf); }
+        function acctFromForm () {
+            app.top.dispatch("afg", "runOutsideApp", context.divid,
+                             context.cbf);
+            app.top.dispatch("afg", "accountFanGroup", "offline", 1); }
+        function acctFromCookie () {
+            const cookauth = mgrs.ap.read();
+            if(cookauth) {
+                getAccount({an:cookauth.authname, at:cookauth.authtoken},
+                           acctFromForm); }
+            else {
+                acctFromForm(); } }
+        function acctFromParameters() {
+            if(app.startParams.an && app.startParams.at) {
+                getAccount({an:app.startParams.an, at:app.startParams.at},
+                           acctFromCookie); }
+            else {
+                acctFromCookie(); } }
+    return {
+        signIn: function (formDispId, callbackfunc) {
+            var acct = app.top.dispatch("aaa", "getAccount");
+            if(acct) {
+                return callbackfunc(acct); }
+            context = {divid:formDispId, cbf:callbackfunc};
+            acctFromParameters(); }
+    };  //end mgrs.hsi returned functions
+    }());
+
+
+    //The beta test program display manager handles 
+    mgrs.btp = (function () {
+        const bprgnm = "beta1";
+        const progmax = 10;
+        var stat = null;   //beta test program general status
+        var acct = null;   //tester DigAcc
+        var stint = null;  //step interaction info for tester
+        function callstat (txt) { jt.out("btpcpdiv", txt); }
+        function errf (code, errtxt) { jt.out("btpcpdiv", "Call failed code " +
+                                              code + ": " + errtxt); }
+        const steps = {
+            intro:{
+                nav:function () {
+                    return "To participate, you must have at least 50 songs on an Android or IOS device that you will record your impressions of while you listen with Digger.  After recording your impressions, you will try filtered autoplay in at least two different listening situations and provide feedback."; },
+                det:function () {
+                    return jt.tac2html(
+                        [["p", {id:"btpirwrdp"}, "Your testing of Digger is vital, and as a small gesture of thanks you will be sent a $50 gift card for either Bandcamp or Amazon, whichever you prefer.  You will also have the opportunity to be directly involved in the Digger project, including new feature development."],
+                         ["div", {id:"btpinxtcontdiv"},
+                          [["div", {id:"btpidiv"}],
+                           ["div", {id:"btpddiv"}]]]]); },
+                ckf:function () {
+                    if(!stat) {
+                        callstat("Checking beta test program status...");
+                        const url = app.cb("api/betastat", {intype:bprgnm});
+                        jt.call("GET", url, null,
+                            function (statret) {
+                                callstat("");
+                                stat = statret;
+                                if(stat.comp + stat.open > progmax) {
+                                    jt.out("btpirwrdp", "This beta testing round is now full and all gift cards are spoken for.  If you would like to sign up as a beta tester anyway, that would be immensely appreciated. If there's more budget in the future you'll get advanced notice.");
+                                mgrs.btp.dispCurrStep(); } },
+                            errf);
+                        return false; }
+                    if(!acct) {
+                        jt.out("btpidiv", "To continue, sign in.");
+                        mgrs.hsi.signIn("btpddiv", function (siacc) {
+                            acct = siacc;
+                            mgrs.btp.dispCurrStep(); });
+                        return false; }
+                    if(!stint) {
+                        jt.out("btpidiv", "");
+                        jt.out("btpddiv", "");
+                        callstat("Fetching your testing info...");
+                        const data = jt.objdata(
+                            {an:acct.email, at:acct.token, intype:bprgnm,
+                             confcode:app.startParams.confcode});
+                        jt.call("POST", app.dr("/api/betastat"), data,
+                            function (structuredInteraction) {
+                                callstat("");
+                                stint = structuredInteraction;
+                                mgrs.btp.dispCurrStep(); },
+                            errf);
+                        return false; }
+                    return true; }},
+            emconf:{  //stint came back without confirmation code
+                nav:function () {
+                    return "Beta testing is expected to take a couple of days, and must be completed within 3 weeks of starting.  To receive a gift card, you will need to provide a non-forwarded U.S. physical address (limit one per household).  To start, request your beta test invite:"; },
+                det:function () {
+                    return jt.tac2html(
+                        ["a", {href:"#sendInvite",
+                               onclick:mdfs("btp.sendInvite")},
+                         "Send Invitation"]); },
+                ckf:function () {  //"confirmed", "active" ok.
+                    return stint.status; } },
+            survey:{
+                nav:function () {
+                    return "Beta Test Program Start Questions"; },
+                det:function () {
+                    return jt.tac2html(
+                        ["div", {id:"btpsurveycontdiv"}]); },
+                ckf:function () {
+                    app.btq.survey("pretest", "btpsurveycontdiv", stat,
+                                   acct, stint, app.btp.saveStep); } },
+            rating:{},
+            response:{},
+            thanks:{} };
+        function helloLineHTML () {
+            const gw = "Thanks for your interest in the Digger Beta Testing Program!";
+            const sw = "Welcome back $DIGNAME!";
+            if(acct) {
+                return sw.replace(/\$DIGNAME/g, acct.digname); }
+            return gw; }
+    return {
+        sendInvite: function () {
+            jt.out("btpstdetdiv", "Sending...");
+            const data = jt.objdata(
+                {an:acct.email, at:acct.token, intype:bprgnm,
+                 action:"sendInvite"});  //text and auth server side
+            jt.call("POST", app.dr("/api/betastat"), data,
+                function () {
+                    jt.out("btpstdetdiv",
+                           "Invitation sent, check your email."); },
+                errf); },
+        saveStep: function () {  //stint already updated by caller
+            callstat("Saving beta test progress...");
+            const data = jt.objdata(
+                {an:acct.email, at:acct.token, intype:bprgnm,
+                 action:"save", stdat:JSON.stringify(stint.stdat)});
+            jt.call("POST", app.dr("/api/betastat"), data,
+                function () {
+                    callstat("");
+                    app.btp.dispCurrStep(); },
+                errf); },
+        dispCurrStep: function () {
+            var step = Object.keys(steps).find((st) => !steps[st].ckf());
+            jt.out("btphellodiv", helloLineHTML());
+            jt.out("btpstnavdiv", steps[step].nav());
+            jt.out("btpstdetdiv", steps[step].det());
+            jt.out("btpcpdiv", "");
+            if(steps[step].ckf) {
+                steps[step].ckf(); } },
+        display: function () {
+            window.history.replaceState({}, document.title, "/beta");
+            jt.out("sitecontentdiv", jt.tac2html(
+                [["div", {id:"logodiv"},
+                  ["a", {href:"/"},
+                   ["img", {src:"img/appicon.png"}]]],
+                 ["div", {id:"btptitlediv"}, "Digger Beta Test"],
+                 ["div", {id:"btpcontentdiv"},
+                  [["div", {id:"btphellodiv"}, helloLineHTML()],
+                   ["div", {id:"btpstnavdiv"}],
+                   ["div", {id:"btpstdetdiv"}],
+                   ["div", {id:"btpcpdiv"}]]]]));
+            mgrs.btp.dispCurrStep(); }
+    };  //end mgrs.btp returned function
     }());
 
 
@@ -266,8 +428,7 @@ app.login = (function () {
             "Autoplay your music collection",
             "Buy an album this week",
             "Record your impressions",
-            "Connect to DiggerHub with the app",
-            ];
+            "Connect to DiggerHub with the app"];
         var idx = 0;
     return {
         nextStatement: function () {
@@ -452,6 +613,7 @@ app.login = (function () {
             switch(app.startPath) {
             case "/iosappstore": return mgrs.mmd.iosappstore();
             case "/account": return mgrs.had.display();
+            case "/beta": return mgrs.btp.display();
             case "/songfinder": return mgrs.sgf.display();
             case "/digger": return app.initDiggerModules();
             default: jt.log("Standard site homepage display"); }

@@ -7,7 +7,7 @@ body { padding:0; border:0; }
 #sitebodycontentdiv { position:relative; } /*zero height anchor div*/
 #sitecontentdiv, #hpgoverlaydiv { position:absolute; top:0px; left:0px;
   right:0px; max-height:100vh; overflow:scroll; }
-#sitecontentdiv { background:#ffc2a4;
+#sitecontentdiv { height:100vh; background:#ffc2a4;
   background:linear-gradient(#ffc2a4, #ff9c6b); }
 #sitecontentinnerdiv { 
   background-image:url("../img/bglogo.png");
@@ -111,6 +111,16 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
   border:1px solid #333; box-shadow:1px 1px 1px #2f2b00; }
 #collabdiv p { max-width:600px; text-align:center; margin:8px auto 24px;
   text-shadow:none; font-size:medium; font-style:italic; }
+
+/* -------------------- */
+/* beta test program display */
+
+#btptitlediv { font-size:x-large; font-weight:bold; padding:10px;
+  display:inline-block; }
+#btpcontentdiv { padding:10px; clear:both; }
+#btphellodiv { font-weight:bold; padding-bottom:8px; }
+#btpstnavdiv, #btpstprgdiv { padding:8px 0px; }
+#btpcpdiv { font-size:small; padding-top:8px; }
 
 /* -------------------- */
 /* marketing message display */
