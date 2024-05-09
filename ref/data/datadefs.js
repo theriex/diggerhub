@@ -158,9 +158,9 @@ module.exports = (function () {
         {f:"aid", d:"req dbid", c:"interacting account"},
         {f:"email", d:"priv req unique email", c:"confirmed contact email" },
         {f:"confcode", d:"adm string", c:"interaction confirmation code"},
-        {f:"status", d:"priv string", c:"code confirmed"},
+        {f:"status", d:"priv string", c:"Pending|Active|Complete"},
         {f:"intype", d:"req string", descr:"Interaction type label"},
-        {f:"stdat", d:"json", descr:"Interaction state data"}],
+        {f:"stdat", d:"priv json", descr:"Interaction state data"}],
      cache:{minutes:0},
      logflds:["aid", "intype"]},
         

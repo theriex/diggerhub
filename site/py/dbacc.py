@@ -141,6 +141,18 @@ entdefs = {
         "end": {"pt": "string", "un": False, "dv": ""},
         "ttlsongs": {"pt": "int", "un": False, "dv": 0}
     },
+    "StInt": {  # Structured interaction e.g. beta test
+        "dsId": {"pt": "dbid", "un": True, "dv": 0},
+        "created": {"pt": "string", "un": False, "dv": ""},
+        "modified": {"pt": "string", "un": False, "dv": ""},
+        "batchconv": {"pt": "string", "un": False, "dv": ""},
+        "aid": {"pt": "dbid", "un": False, "dv": 0},
+        "email": {"pt": "email", "un": True, "dv": ""},
+        "confcode": {"pt": "string", "un": False, "dv": ""},
+        "status": {"pt": "string", "un": False, "dv": ""},
+        "intype": {"pt": "string", "un": False, "dv": ""},
+        "stdat": {"pt": "string", "un": False, "dv": ""}
+    },
     "AppService": {  # Processing service access
         "dsId": {"pt": "dbid", "un": True, "dv": 0},
         "created": {"pt": "string", "un": False, "dv": ""},
@@ -160,6 +172,7 @@ entkeys = {
     "SKeyMap": ["skey"],
     "DigMsg": [],
     "SASum": [],
+    "StInt": ["email"],
     "AppService": ["name"]
 }
 
@@ -170,6 +183,7 @@ cachedefs = {
     "SKeyMap": {"minutes": 0, "manualadd": False},
     "DigMsg": {"minutes": 0, "manualadd": False},
     "SASum": {"minutes": 30, "manualadd": False},
+    "StInt": {"minutes": 0, "manualadd": False},
     "AppService": {"minutes": 240, "manualadd": False}
 }
 
@@ -769,6 +783,52 @@ def db2app_SASum(inst):
     return cnv
 
 
+# Convert the given StInt inst dict from app values to db values.  Removes
+# the dsType field to avoid trying to write it to the db.
+def app2db_StInt(inst, fill=True):
+    cnv = {}
+    cnv["dsId"] = None
+    if "dsId" in inst:
+        cnv["dsId"] = app2db_fieldval(None, "dsId", inst)
+    if fill or "created" in inst:
+        cnv["created"] = app2db_fieldval(None, "created", inst)
+    if fill or "modified" in inst:
+        cnv["modified"] = app2db_fieldval(None, "modified", inst)
+    if fill or "batchconv" in inst:
+        cnv["batchconv"] = app2db_fieldval(None, "batchconv", inst)
+    if fill or "aid" in inst:
+        cnv["aid"] = app2db_fieldval("StInt", "aid", inst)
+    if fill or "email" in inst:
+        cnv["email"] = app2db_fieldval("StInt", "email", inst)
+    if fill or "confcode" in inst:
+        cnv["confcode"] = app2db_fieldval("StInt", "confcode", inst)
+    if fill or "status" in inst:
+        cnv["status"] = app2db_fieldval("StInt", "status", inst)
+    if fill or "intype" in inst:
+        cnv["intype"] = app2db_fieldval("StInt", "intype", inst)
+    if fill or "stdat" in inst:
+        cnv["stdat"] = app2db_fieldval("StInt", "stdat", inst)
+    return cnv
+
+
+# Convert the given StInt inst dict from db values to app values.  Adds the
+# dsType field for general app processing.
+def db2app_StInt(inst):
+    cnv = {}
+    cnv["dsType"] = "StInt"
+    cnv["dsId"] = db2app_fieldval(None, "dsId", inst)
+    cnv["created"] = db2app_fieldval(None, "created", inst)
+    cnv["modified"] = db2app_fieldval(None, "modified", inst)
+    cnv["batchconv"] = db2app_fieldval(None, "batchconv", inst)
+    cnv["aid"] = db2app_fieldval("StInt", "aid", inst)
+    cnv["email"] = db2app_fieldval("StInt", "email", inst)
+    cnv["confcode"] = db2app_fieldval("StInt", "confcode", inst)
+    cnv["status"] = db2app_fieldval("StInt", "status", inst)
+    cnv["intype"] = db2app_fieldval("StInt", "intype", inst)
+    cnv["stdat"] = db2app_fieldval("StInt", "stdat", inst)
+    return cnv
+
+
 # Convert the given AppService inst dict from app values to db values.  Removes
 # the dsType field to avoid trying to write it to the db.
 def app2db_AppService(inst, fill=True):
@@ -816,6 +876,7 @@ def dblogmsg(op, entity, res):
         "SKeyMap": ["skey", "spid"],
         "DigMsg": ["sndr", "msgtype", "rcvr", "songid", "ti"],
         "SASum": ["aid", "sumtype", "start", "end", "ttlsongs"],
+        "StInt": ["aid", "intype"],
         "AppService": ["name"]}
     if res:
         if op != "QRY":  # query is already a list, listify anything else
@@ -1123,6 +1184,59 @@ def update_existing_SASum(context, fields):
     return result
 
 
+# Write a new StInt row, using the given field values or defaults.
+def insert_new_StInt(cnx, cursor, fields):
+    fields = app2db_StInt(fields)
+    stmt = (
+        "INSERT INTO StInt (created, modified, aid, email, confcode, status, intype, stdat) "
+        "VALUES (%(created)s, %(modified)s, %(aid)s, %(email)s, %(confcode)s, %(status)s, %(intype)s, %(stdat)s)")
+    data = {
+        'created': fields.get("created"),
+        'modified': fields.get("modified"),
+        'aid': fields.get("aid", entdefs["StInt"]["aid"]["dv"]),
+        'email': fields.get("email", entdefs["StInt"]["email"]["dv"]),
+        'confcode': fields.get("confcode", entdefs["StInt"]["confcode"]["dv"]),
+        'status': fields.get("status", entdefs["StInt"]["status"]["dv"]),
+        'intype': fields.get("intype", entdefs["StInt"]["intype"]["dv"]),
+        'stdat': fields.get("stdat", entdefs["StInt"]["stdat"]["dv"])}
+    cursor.execute(stmt, data)
+    fields["dsId"] = cursor.lastrowid
+    cnx.commit()
+    fields = db2app_StInt(fields)
+    dblogmsg("ADD", "StInt", fields)
+    return fields
+
+
+# Update the specified StInt row with the given field values.
+def update_existing_StInt(context, fields):
+    fields = app2db_StInt(fields, fill=False)
+    dsId = int(fields["dsId"])  # Verify int value
+    stmt = ""
+    for field in fields:  # only updating the fields passed in
+        if stmt:
+            stmt += ", "
+        stmt += field + "=(%(" + field + ")s)"
+    stmt = "UPDATE StInt SET " + stmt + " WHERE dsId=" + str(dsId)
+    if context["vck"] != "override":
+        stmt += " AND modified=\"" + context["vck"] + "\""
+    data = {}
+    for field in fields:
+        data[field] = fields[field]
+    context["cursor"].execute(stmt, data)
+    if context["cursor"].rowcount < 1 and context["vck"] != "override":
+        logging.error(stmt + " " + json.dumps(data))
+        entcache.cache_clean()  # out of sync, clear it all
+        raise ValueError("StInt" + str(dsId) + " update received outdated version check value " + context["vck"] + ".")
+    context["cnx"].commit()
+    result = context["existing"]
+    for field in fields:
+        result[field] = fields[field]
+    result = db2app_StInt(result)
+    dblogmsg("UPD", "StInt", result)
+    entcache.cache_remove(result)
+    return result
+
+
 # Write a new AppService row, using the given field values or defaults.
 def insert_new_AppService(cnx, cursor, fields):
     fields = app2db_AppService(fields)
@@ -1201,6 +1315,8 @@ def write_entity(inst, vck="1234-12-12T00:00:00Z"):
                     return update_existing_DigMsg(context, inst)
                 if entity == "SASum":
                     return update_existing_SASum(context, inst)
+                if entity == "StInt":
+                    return update_existing_StInt(context, inst)
                 if entity == "AppService":
                     return update_existing_AppService(context, inst)
                 raise ValueError("Cannot modify unknown entity dsType " +
@@ -1217,6 +1333,8 @@ def write_entity(inst, vck="1234-12-12T00:00:00Z"):
                 return insert_new_DigMsg(cnx, cursor, inst)
             if entity == "SASum":
                 return insert_new_SASum(cnx, cursor, inst)
+            if entity == "StInt":
+                return insert_new_StInt(cnx, cursor, inst)
             if entity == "AppService":
                 return insert_new_AppService(cnx, cursor, inst)
             raise ValueError("Cannot create unknown entity dsType " +
@@ -1319,6 +1437,20 @@ def query_SASum(cnx, cursor, where):
     return res
 
 
+def query_StInt(cnx, cursor, where):
+    query = "SELECT dsId, created, modified, "
+    query += "aid, email, confcode, status, intype, stdat"
+    query += " FROM StInt " + where
+    cursor.execute(query)
+    res = []
+    for (dsId, created, modified, aid, email, confcode, status, intype, stdat) in cursor:
+        inst = {"dsType": "StInt", "dsId": dsId, "created": created, "modified": modified, "aid": aid, "email": email, "confcode": confcode, "status": status, "intype": intype, "stdat": stdat}
+        inst = db2app_StInt(inst)
+        res.append(inst)
+    dblogmsg("QRY", "StInt", res)
+    return res
+
+
 def query_AppService(cnx, cursor, where):
     query = "SELECT dsId, created, modified, "
     query += "name, ckey, csec, data"
@@ -1354,6 +1486,8 @@ def query_entity(entity, where):
                 return query_DigMsg(cnx, cursor, where)
             if entity == "SASum":
                 return query_SASum(cnx, cursor, where)
+            if entity == "StInt":
+                return query_StInt(cnx, cursor, where)
             if entity == "AppService":
                 return query_AppService(cnx, cursor, where)
         except mysql.connector.Error as e:
@@ -1411,6 +1545,21 @@ def visible_SASum_fields(obj, audience):
     return filtobj
 
 
+def visible_StInt_fields(obj, audience):
+    filtobj = {}
+    for fld, val in obj.items():
+        if fld == "email" and audience != "private":
+            continue
+        if fld == "confcode":
+            continue
+        if fld == "status" and audience != "private":
+            continue
+        if fld == "stdat" and audience != "private":
+            continue
+        filtobj[fld] = val
+    return filtobj
+
+
 def visible_AppService_fields(obj, audience):
     filtobj = {}
     for fld, val in obj.items():
@@ -1433,6 +1582,8 @@ def visible_fields(obj, audience="public"):
         return visible_DigMsg_fields(obj, audience)
     if obj["dsType"] == "SASum":
         return visible_SASum_fields(obj, audience)
+    if obj["dsType"] == "StInt":
+        return visible_StInt_fields(obj, audience)
     if obj["dsType"] == "AppService":
         return visible_AppService_fields(obj, audience)
     raise ValueError("Unknown object dsType: " + obj["dsType"])

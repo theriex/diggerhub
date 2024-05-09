@@ -1102,6 +1102,60 @@ def nosugg():
     return util.respJSON(res)
 
 
+def betastat():
+    try:
+        intype = dbacc.reqarg("intype", "string", required=True)
+        confcode = dbacc.reqarg("confcode", "string")
+        action = dbacc.reqarg("action", "string")
+        stdat = dbacc.reqarg("stdat", "json")
+        digacc = None
+        emaddr = dbacc.reqarg("an", "DigAcc.email")
+        if emaddr:
+            digacc, _ = util.authenticate()
+        if not digacc:  # GET of summary counts for intype
+            stcs = ["Pending", "Active", "Complete"]
+            sql = "SELECT intype"
+            for stc in stcs:
+                sql += (", COUNT(CASE status WHEN '" + stc + "'" +
+                        " then 1 else null end) AS " + stc.lower())
+            sql += " FROM StInt WHERE intype = \"" + intype + "\""
+            stcs = [stc.lower() for stc in stcs]
+            stcs.insert(0, "intype")
+            res = dbacc.custom_query(sql, stcs)
+        else:  # authenticated. get stint for account
+            stint = {"dsType":"StInt", "modified":"", "aid":digacc["dsId"],
+                     "email":digacc["email"], "status":"Pending",
+                     "intype":intype}
+            where = ("WHERE aid = " + str(digacc["dsId"]) +
+                     " AND intype = \"" + intype + "\"")
+            stints = dbacc.query_entity("StInt", where)
+            if len(stints) > 0:
+                stint = stints[0]
+            if confcode:
+                if confcode != stint["confcode"]:
+                    raise ValueError("confcode did not match")
+                stint["email"] = digacc["email"]
+                stint["status"] = "Active"
+            elif action == "sendInvite":
+                stint["confcode"] = util.make_activation_code()
+                subj = "Digger Beta Testing confirmation"
+                body = ("Follow this link to confirm email communications" +
+                        " and start your beta testing!\n\n" +
+                        "https://diggerhub.com/beta" +
+                        "?an=" + digacc["email"] +
+                        "&at=" + util.token_for_user(digacc) +
+                        "&confcode=" + stint["confcode"])
+                util.send_mail(digacc["email"], subj, body)
+            elif action == "save" and stdat:
+                # status Complete is set directly in the db by support
+                stint["stdat"] = stdat
+            stint = dbacc.write_entity(stint, stint["modified"])
+            res = [stint]
+    except ValueError as e:
+        return util.serve_value_error(e)
+    return util.respJSON(res, audience="private")
+
+
 # Read the given items in the given dataformat (albums or tracks), and
 # create or update corresponding Songs.  Update DigAcc.settings.spimport
 # after successful import of all tracks to record progress.

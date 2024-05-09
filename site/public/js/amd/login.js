@@ -154,9 +154,16 @@ app.login = (function () {
     //id for form display and calls back with the account.
     mgrs.hsi = (function () {
         var context = null;
-        function getAccount (authobj, errf) {
-            jt.call("POST", app.dr("/api/acctok"), jt.objdata(authobj),
-                    context.cbf, errf); }
+        function getAccount (ao, errf) {
+            jt.call("POST", app.dr("/api/acctok"), jt.objdata(ao),
+                function (accntok) {
+                    app.top.dispatch("hcu", "deserializeAccount", accntok[0]);
+                    app.top.dispatch("aaa", "reflectAccountChangeInRuntime",
+                                     accntok[0], accntok[1]);
+                    authobj = app.top.dispatch("aaa", "getAccount");
+                    mgrs.ap.save();
+                    context.cbf(authobj); },
+                errf); }
         function acctFromForm () {
             app.top.dispatch("afg", "runOutsideApp", context.divid,
                              context.cbf);
@@ -189,6 +196,8 @@ app.login = (function () {
     mgrs.btp = (function () {
         const bprgnm = "beta1";
         const progmax = 10;
+        const btpdivs = ["btphellodiv", "btpnavdiv", "btpdetdiv", "btpcpdiv"];
+        const statvs = ["Pending", "Active", "Complete"];
         var stat = null;   //beta test program general status
         var acct = null;   //tester DigAcc
         var stint = null;  //step interaction info for tester
@@ -197,67 +206,61 @@ app.login = (function () {
                                               code + ": " + errtxt); }
         const steps = {
             intro:{
-                nav:function () {
-                    return "To participate, you must have at least 50 songs on an Android or IOS device that you will record your impressions of while you listen with Digger.  After recording your impressions, you will try filtered autoplay in at least two different listening situations and provide feedback."; },
-                det:function () {
-                    return jt.tac2html(
-                        [["p", {id:"btpirwrdp"}, "Your testing of Digger is vital, and as a small gesture of thanks you will be sent a $50 gift card for either Bandcamp or Amazon, whichever you prefer.  You will also have the opportunity to be directly involved in the Digger project, including new feature development."],
-                         ["div", {id:"btpinxtcontdiv"},
-                          [["div", {id:"btpidiv"}],
-                           ["div", {id:"btpddiv"}]]]]); },
-                ckf:function () {
+                cmp:function () {
+                    return (stat && acct && stint); },
+                display:function () {
+                    jt.out("btpnavdiv", "To participate, you must have at least 50 songs on an Android or IOS device that you will record your impressions of while you listen with Digger.  After recording your impressions, you will try filtered autoplay in at least two different listening situations and provide feedback.");
+                    jt.out("btpdetdiv", jt.tac2html(
+                        [["p", {id:"btpirwrdp"}, "Your testing of Digger is vital, and as a small gesture of thanks you will be sent a $50 gift card for either Bandcamp or Amazon, whichever you prefer.  If you want, you will also have the opportunity to be directly involved in the Digger project, including new feature development."],
+                         ["div", {id:"btpixdiv"}]]));
                     if(!stat) {
                         callstat("Checking beta test program status...");
                         const url = app.cb("api/betastat", {intype:bprgnm});
-                        jt.call("GET", url, null,
-                            function (statret) {
+                        return jt.call("GET", url, null,
+                            function (statrets) {
                                 callstat("");
-                                stat = statret;
-                                if(stat.comp + stat.open > progmax) {
-                                    jt.out("btpirwrdp", "This beta testing round is now full and all gift cards are spoken for.  If you would like to sign up as a beta tester anyway, that would be immensely appreciated. If there's more budget in the future you'll get advanced notice.");
-                                mgrs.btp.dispCurrStep(); } },
-                            errf);
-                        return false; }
+                                stat = statrets[0];
+                                if(stat.active + stat.complete > progmax) {
+                                    jt.out("btpirwrdp", "This beta testing round is now full and all gift cards are spoken for.  If you would like to sign up as a beta tester anyway, that would be immensely appreciated. If there's more budget in the future you'll get advanced notice."); }
+                                mgrs.btp.dispCurrStep(); },
+                            errf); }
                     if(!acct) {
-                        jt.out("btpidiv", "To continue, sign in.");
-                        mgrs.hsi.signIn("btpddiv", function (siacc) {
+                        const siid = "hubaccountcontentdiv";  //like main page
+                        jt.out("btpixdiv", jt.tac2html(
+                            ["div", {id:"hubacctdiv"},
+                             [["p", "To continue, sign in."],
+                              ["div", {id:siid, cla:"boxedcontentdiv"}]]]));
+                        return mgrs.hsi.signIn(siid, function (siacc) {
                             acct = siacc;
-                            mgrs.btp.dispCurrStep(); });
-                        return false; }
+                            mgrs.btp.dispCurrStep(); }); }
                     if(!stint) {
-                        jt.out("btpidiv", "");
-                        jt.out("btpddiv", "");
+                        jt.out("btpixdiv", "");
                         callstat("Fetching your testing info...");
                         const data = jt.objdata(
                             {an:acct.email, at:acct.token, intype:bprgnm,
                              confcode:app.startParams.confcode});
-                        jt.call("POST", app.dr("/api/betastat"), data,
-                            function (structuredInteraction) {
+                        return jt.call("POST", app.dr("/api/betastat"), data,
+                            function (stints) {
                                 callstat("");
-                                stint = structuredInteraction;
+                                stint = stints[0];
                                 mgrs.btp.dispCurrStep(); },
-                            errf);
-                        return false; }
-                    return true; }},
+                            errf); } } },
             emconf:{  //stint came back without confirmation code
-                nav:function () {
-                    return "Beta testing is expected to take a couple of days, and must be completed within 3 weeks of starting.  To receive a gift card, you will need to provide a non-forwarded U.S. physical address (limit one per household).  To start, request your beta test invite:"; },
-                det:function () {
-                    return jt.tac2html(
+                cmp:function () {
+                    return (statvs.slice(1).indexOf(stint.status) >= 0); },
+                display:function () {
+                    jt.out("btpnavdiv", "Beta testing is expected to take a couple of days, and must be completed within 3 weeks of starting.  To receive a gift card, you will need to provide a non-forwarded U.S. physical address (limit one per household).  To confirm your email and get started, request your beta test invite:");
+                    jt.out("btpdetdiv", jt.tac2html(
                         ["a", {href:"#sendInvite",
                                onclick:mdfs("btp.sendInvite")},
-                         "Send Invitation"]); },
-                ckf:function () {  //"confirmed", "active" ok.
-                    return stint.status; } },
+                         "Send Invitation"])); } },
             survey:{
-                nav:function () {
-                    return "Beta Test Program Start Questions"; },
-                det:function () {
-                    return jt.tac2html(
-                        ["div", {id:"btpsurveycontdiv"}]); },
-                ckf:function () {
-                    app.btq.survey("pretest", "btpsurveycontdiv", stat,
-                                   acct, stint, app.btp.saveStep); } },
+                cmp:function () {
+                    return app.btq.complete("pretest", stint); },
+                display:function () {
+                    jt.out("btpnavdiv", "Beta Test Program Start Questions");
+                    app.btq.survey("pretest", "btpdetdiv", stint,
+                                   app.btp.saveStep); } },
             rating:{},
             response:{},
             thanks:{} };
@@ -265,17 +268,17 @@ app.login = (function () {
             const gw = "Thanks for your interest in the Digger Beta Testing Program!";
             const sw = "Welcome back $DIGNAME!";
             if(acct) {
-                return sw.replace(/\$DIGNAME/g, acct.digname); }
+                return sw.replace(/\$DIGNAME/g, acct.firstname); }
             return gw; }
     return {
         sendInvite: function () {
-            jt.out("btpstdetdiv", "Sending...");
+            jt.out("btpdetdiv", "Sending...");
             const data = jt.objdata(
                 {an:acct.email, at:acct.token, intype:bprgnm,
                  action:"sendInvite"});  //text and auth server side
             jt.call("POST", app.dr("/api/betastat"), data,
                 function () {
-                    jt.out("btpstdetdiv",
+                    jt.out("btpdetdiv",
                            "Invitation sent, check your email."); },
                 errf); },
         saveStep: function () {  //stint already updated by caller
@@ -289,13 +292,10 @@ app.login = (function () {
                     app.btp.dispCurrStep(); },
                 errf); },
         dispCurrStep: function () {
-            var step = Object.keys(steps).find((st) => !steps[st].ckf());
+            var step = Object.keys(steps).find((st) => !steps[st].cmp());
+            btpdivs.forEach(function (id) { jt.out(id, ""); });
             jt.out("btphellodiv", helloLineHTML());
-            jt.out("btpstnavdiv", steps[step].nav());
-            jt.out("btpstdetdiv", steps[step].det());
-            jt.out("btpcpdiv", "");
-            if(steps[step].ckf) {
-                steps[step].ckf(); } },
+            steps[step].display(); },
         display: function () {
             window.history.replaceState({}, document.title, "/beta");
             jt.out("sitecontentdiv", jt.tac2html(
@@ -304,10 +304,7 @@ app.login = (function () {
                    ["img", {src:"img/appicon.png"}]]],
                  ["div", {id:"btptitlediv"}, "Digger Beta Test"],
                  ["div", {id:"btpcontentdiv"},
-                  [["div", {id:"btphellodiv"}, helloLineHTML()],
-                   ["div", {id:"btpstnavdiv"}],
-                   ["div", {id:"btpstdetdiv"}],
-                   ["div", {id:"btpcpdiv"}]]]]));
+                  btpdivs.map((d) => ["div", {id:d}])]]));
             mgrs.btp.dispCurrStep(); }
     };  //end mgrs.btp returned function
     }());

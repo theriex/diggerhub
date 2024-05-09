@@ -99,6 +99,21 @@ CREATE TABLE SASum (  -- Song activity summary, e.g. weekly top20
 );
 ALTER TABLE SASum AUTO_INCREMENT = 2020;
 
+CREATE TABLE StInt (  -- Structured interaction e.g. beta test
+  dsId BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE,
+  created VARCHAR(256) NOT NULL,
+  modified VARCHAR(256) NOT NULL,
+  batchconv VARCHAR(256),
+  aid BIGINT NOT NULL,
+  email VARCHAR(256) NOT NULL UNIQUE,
+  confcode VARCHAR(256),
+  status VARCHAR(256),
+  intype VARCHAR(256) NOT NULL,
+  stdat LONGTEXT,
+  PRIMARY KEY (dsId)
+);
+ALTER TABLE StInt AUTO_INCREMENT = 2020;
+
 CREATE TABLE AppService (  -- Processing service access
   dsId BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE,
   created VARCHAR(256) NOT NULL,

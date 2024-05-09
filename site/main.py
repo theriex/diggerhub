@@ -112,6 +112,11 @@ def suggdown():  # params: auth, suggtype
 def nosugg():  #params: auth, artist, album, fq
     return util.secure(appdat.nosugg)
 
+@app.route('/api/betastat', methods=['GET', 'POST'])
+def betastat():  #params: auth if post
+    return appdat.betastat()
+
+
 ####### Spotify song data and collaboration actions:
 
 @app.route('/api/impsptracks', methods=['GET', 'POST'])
