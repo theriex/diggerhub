@@ -192,7 +192,119 @@ app.login = (function () {
     }());
 
 
-    //The beta test program display manager handles 
+    //The beta test questions manager handles defined survey questions.
+    mgrs.btq = (function () {
+        const sdefs = {
+            pretest:[
+                {q:"Which platform will you be testing with?",
+                 id:"whichplat", qtype:"radio", sel:["iOS", "Android"]},
+                {q:"How many albums do you own?",
+                 id:"ttlab", qtype:"radio",
+                 sel:["Only a few", "Several", "Hundreds"]},
+                {q:"How would you describe the music you have?",
+                 id:"varmus", qtype:"radio",
+                 sel:["Varied", "Mostly similar genre"]},
+                {q:"How many albums have you purchased in the past year?",
+                 id:"ablastyr", qtype:"range",
+                 sel:["0", "1", "2-5", "6-9", "10+"]},
+                {q:"How many times have you seen live music in the past year?",
+                 id:"livelastyr", qtype:"range",
+                 sel:["0", "1", "2-5", "6-9", "10+"]},
+                {q:"Name for USPS delivery:", id:"uspsname", qtype:"text"},
+                {q:"Street address, city, state, zip:", id:"uspsaddr",
+                 qtype:"text"}],
+            aftertest:[
+                {q:"What was the first listening situation you filtered for?",
+                 id:"firstlisten", qtype:"text"},
+                {q:"What was the second listening situation you tried?",
+                 id:"secondlisten", qtype:"text"},
+                {q:"Was anything bad about your Digger experience?",
+                 id:"badstuff", qtype:"longtext"},
+                {q:"What was good about your Digger experience?",
+                 id:"goodstuff", qtype:"longtext"},
+                {q:"How likely are you to use Digger in the future?",
+                 id:"usefut", qtype:"range", 
+                 sel:["Never", "", "", "Don't Know", "", "", "Definitely"]},
+                {q:"Would you recommend Digger to others?",
+                 id:"recommend", qtype:"range",
+                 sel:["Never", "", "", "Unsure", "", "", "Definitely"]},
+                {q:"Would you be willing to contacted in the future?",
+                 id:"contact", qtype:"radio", sel:["No", "Yes"]}]};
+        const rend = {
+            radio:function (qas, qid, sel) {
+                return jt.tac2html(
+                    ["div", {cla:"btqradiocontdiv"},
+                     sel.map((v) =>
+                         ["div", {cla:"radiobdiv"},
+                          [["input", {type:"radio", id:qid + v + "RadioButton",
+                                      value:v, checked:jt.toru(qas[qid] === v),
+                                      onclick:mdfs("btq.setAnswer", "radio",
+                                                   qid, v)}],
+                           ["label", {fo:qid + v + "RadioButton"}, v]]])]); },
+            range:function (qas, qid, sel) {
+                return jt.tac2html(
+                    ["div", {cla:"btqrangecontdiv"},
+                     sel.map((v, idx) =>
+                         ["div", {cla:"btqrangecelldiv"},
+                          [["div", ["label", {fo:qid + v + "RadioButton"}, v]],
+                           ["input", {type:"radio", id:qid + v + "RadioButton",
+                                      value:idx,
+                                      checked:jt.toru(qas[qid] === idx),
+                                      onclick:mdfs("btq.setAnswer", "range",
+                                                   qid, idx)}]]])]); },
+            text:function (qas, qid) {
+                return jt.tac2html(
+                    ["input", {type:"text", value:qas[qid] || "", size:28,
+                               id:qid + "txtin",
+                               oninput:mdfs("btq.setAnswer", "text", qid)}]); },
+            longtext:function (qas, qid) {
+                return jt.tac2html(
+                    ["textarea", {id:qid + "ta", rows:5, cols:40,
+                                  oninput:mdfs("btq.setAnswer",
+                                               "longtext", qid)},
+                     qas[qid] || ""]); } };
+        const qtexttypes = ["text", "longtext"];
+        var ctx = null;
+    return {
+        setAnswer: function (qtype, qid, val) {
+            if(qtexttypes.includes(qtype)) {
+                val = jt.byId(qid + "txtin").value; }
+            ctx.stint[ctx.tdef][qid] = val; },
+        checkAnswers: function () {
+            sdefs[ctx.tdef].forEach(function (q) {  //clear any prev errmsgs
+                jt.out(q.id + "qerrdiv", ""); });
+            const qas = ctx.stint[ctx.tdef];
+            const noval = sdefs[ctx.tdef].find((q) =>
+                ((qtexttypes.includes(q.qtype) && !qas[q.id]) ||
+                 (qas[q.id] === undefined)));
+            if(noval) {
+                jt.out(noval.id + "qerrdiv", "Please answer this question");
+                return; }
+            ctx.cbf(); },
+        completed: function (tdef, stint) {
+            const qas = stint[tdef] || {};
+            return sdefs[tdef].every((q) => qas[q.id]); },
+        survey: function (testdef, divid, respstint, donefunc) {
+            ctx = {tdef:testdef, tdiv:divid, stint:respstint, cbf:donefunc};
+            if(mgrs.btq.completed(ctx.tdef, ctx.stint)) {
+                return ctx.cbf(); }
+            ctx.stint[ctx.tdef] = ctx.stint[ctx.tdef] || {};
+            const qas = ctx.stint[ctx.tdef];
+            jt.out(ctx.tdiv, jt.tac2html(
+                [sdefs[ctx.tdef].map((q) =>
+                    ["div", {id:q.id + "contdiv", cla:"btqcontdiv"},
+                     [["div", {id:q.id + "qtdiv", cla:"btqtdiv"}, q.q],
+                      ["div", {id:q.id + "qerrdiv", cla:"btqerrdiv"}],
+                      ["div", {id:q.id + "qadiv", cla:"btqadiv"},
+                       rend[q.qtype](qas, q.id, q.sel)]]]),
+                 ["div", {cla:"dlgbuttonsdiv"},
+                  ["button", {type:"button", onclick:mdfs("btq.checkAnswers")},
+                    "Continue"]]])); }
+    };  //end mgrs.btq returned functions
+    }());
+
+
+    //The beta test program display manager handles a beta testing process
     mgrs.btp = (function () {
         const bprgnm = "beta1";
         const progmax = 10;
@@ -256,11 +368,11 @@ app.login = (function () {
                          "Send Invitation"])); } },
             survey:{
                 cmp:function () {
-                    return app.btq.complete("pretest", stint); },
+                    return mgrs.btq.completed("pretest", stint); },
                 display:function () {
-                    jt.out("btpnavdiv", "Beta Test Program Start Questions");
-                    app.btq.survey("pretest", "btpdetdiv", stint,
-                                   app.btp.saveStep); } },
+                    jt.out("btpnavdiv", "Beta Test Setup Questions");
+                    mgrs.btq.survey("pretest", "btpdetdiv", stint,
+                                    mgrs.btp.saveStep); } },
             rating:{},
             response:{},
             thanks:{} };
@@ -289,7 +401,7 @@ app.login = (function () {
             jt.call("POST", app.dr("/api/betastat"), data,
                 function () {
                     callstat("");
-                    app.btp.dispCurrStep(); },
+                    mgrs.btp.dispCurrStep(); },
                 errf); },
         dispCurrStep: function () {
             var step = Object.keys(steps).find((st) => !steps[st].cmp());

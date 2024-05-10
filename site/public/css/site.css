@@ -121,6 +121,12 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
 #btphellodiv { font-weight:bold; padding-bottom:8px; }
 #btpnavdiv, #btpdetdiv { padding:8px 0px; }
 #btpcpdiv { font-size:small; padding-top:8px; }
+.btqcontdiv { padding:5px 0px; }
+.btqerrdiv { font-size:small; color:red; }
+.btqradiocontdiv { text-align:center; }
+.btqrangecontdiv { display:grid; grid-auto-flow:column; grid-auto-columns:1fr; }
+.btqrangecelldiv { text-align:center; }
+
 
 /* -------------------- */
 /* marketing message display */
