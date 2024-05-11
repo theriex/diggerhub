@@ -150,7 +150,7 @@ entdefs = {
         "email": {"pt": "email", "un": True, "dv": ""},
         "confcode": {"pt": "string", "un": False, "dv": ""},
         "status": {"pt": "string", "un": False, "dv": ""},
-        "intype": {"pt": "string", "un": False, "dv": ""},
+        "sitype": {"pt": "string", "un": False, "dv": ""},
         "stdat": {"pt": "string", "un": False, "dv": ""}
     },
     "AppService": {  # Processing service access
@@ -804,8 +804,8 @@ def app2db_StInt(inst, fill=True):
         cnv["confcode"] = app2db_fieldval("StInt", "confcode", inst)
     if fill or "status" in inst:
         cnv["status"] = app2db_fieldval("StInt", "status", inst)
-    if fill or "intype" in inst:
-        cnv["intype"] = app2db_fieldval("StInt", "intype", inst)
+    if fill or "sitype" in inst:
+        cnv["sitype"] = app2db_fieldval("StInt", "sitype", inst)
     if fill or "stdat" in inst:
         cnv["stdat"] = app2db_fieldval("StInt", "stdat", inst)
     return cnv
@@ -824,7 +824,7 @@ def db2app_StInt(inst):
     cnv["email"] = db2app_fieldval("StInt", "email", inst)
     cnv["confcode"] = db2app_fieldval("StInt", "confcode", inst)
     cnv["status"] = db2app_fieldval("StInt", "status", inst)
-    cnv["intype"] = db2app_fieldval("StInt", "intype", inst)
+    cnv["sitype"] = db2app_fieldval("StInt", "sitype", inst)
     cnv["stdat"] = db2app_fieldval("StInt", "stdat", inst)
     return cnv
 
@@ -876,7 +876,7 @@ def dblogmsg(op, entity, res):
         "SKeyMap": ["skey", "spid"],
         "DigMsg": ["sndr", "msgtype", "rcvr", "songid", "ti"],
         "SASum": ["aid", "sumtype", "start", "end", "ttlsongs"],
-        "StInt": ["aid", "intype"],
+        "StInt": ["aid", "sitype"],
         "AppService": ["name"]}
     if res:
         if op != "QRY":  # query is already a list, listify anything else
@@ -1188,8 +1188,8 @@ def update_existing_SASum(context, fields):
 def insert_new_StInt(cnx, cursor, fields):
     fields = app2db_StInt(fields)
     stmt = (
-        "INSERT INTO StInt (created, modified, aid, email, confcode, status, intype, stdat) "
-        "VALUES (%(created)s, %(modified)s, %(aid)s, %(email)s, %(confcode)s, %(status)s, %(intype)s, %(stdat)s)")
+        "INSERT INTO StInt (created, modified, aid, email, confcode, status, sitype, stdat) "
+        "VALUES (%(created)s, %(modified)s, %(aid)s, %(email)s, %(confcode)s, %(status)s, %(sitype)s, %(stdat)s)")
     data = {
         'created': fields.get("created"),
         'modified': fields.get("modified"),
@@ -1197,7 +1197,7 @@ def insert_new_StInt(cnx, cursor, fields):
         'email': fields.get("email", entdefs["StInt"]["email"]["dv"]),
         'confcode': fields.get("confcode", entdefs["StInt"]["confcode"]["dv"]),
         'status': fields.get("status", entdefs["StInt"]["status"]["dv"]),
-        'intype': fields.get("intype", entdefs["StInt"]["intype"]["dv"]),
+        'sitype': fields.get("sitype", entdefs["StInt"]["sitype"]["dv"]),
         'stdat': fields.get("stdat", entdefs["StInt"]["stdat"]["dv"])}
     cursor.execute(stmt, data)
     fields["dsId"] = cursor.lastrowid
@@ -1439,12 +1439,12 @@ def query_SASum(cnx, cursor, where):
 
 def query_StInt(cnx, cursor, where):
     query = "SELECT dsId, created, modified, "
-    query += "aid, email, confcode, status, intype, stdat"
+    query += "aid, email, confcode, status, sitype, stdat"
     query += " FROM StInt " + where
     cursor.execute(query)
     res = []
-    for (dsId, created, modified, aid, email, confcode, status, intype, stdat) in cursor:
-        inst = {"dsType": "StInt", "dsId": dsId, "created": created, "modified": modified, "aid": aid, "email": email, "confcode": confcode, "status": status, "intype": intype, "stdat": stdat}
+    for (dsId, created, modified, aid, email, confcode, status, sitype, stdat) in cursor:
+        inst = {"dsType": "StInt", "dsId": dsId, "created": created, "modified": modified, "aid": aid, "email": email, "confcode": confcode, "status": status, "sitype": sitype, "stdat": stdat}
         inst = db2app_StInt(inst)
         res.append(inst)
     dblogmsg("QRY", "StInt", res)

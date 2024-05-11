@@ -145,7 +145,7 @@ Get the player that gets what you want to hear next.
          <span>(win8.1+)</span></div>
   </div>
   <div class="downloadsline">
-    <div><a href="https://apps.apple.com/app/id6446126460" onclick="app.login.dldet(event);return false">IOS</a></div>
+    <div><a href="https://apps.apple.com/app/id6446126460" onclick="app.login.dldet(event);return false">iOS</a></div>
     <div><a href="https://play.google.com/store/apps/details?id=com.diggerhub.digger" onclick="app.login.dldet(event);return false">Android</a></div>
   </div>
   <div class="platoptdescdiv"></div>

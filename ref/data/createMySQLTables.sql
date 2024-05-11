@@ -108,7 +108,7 @@ CREATE TABLE StInt (  -- Structured interaction e.g. beta test
   email VARCHAR(256) NOT NULL UNIQUE,
   confcode VARCHAR(256),
   status VARCHAR(256),
-  intype VARCHAR(256) NOT NULL,
+  sitype VARCHAR(256) NOT NULL,
   stdat LONGTEXT,
   PRIMARY KEY (dsId)
 );

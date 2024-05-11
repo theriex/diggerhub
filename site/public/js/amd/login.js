@@ -14,7 +14,7 @@ app.login = (function () {
         mgrfname = mgrfname.split(".");
         fstr = "app.login.dispatch('" + mgrfname[0] + "','" +
             mgrfname[1] + "'" + pstr + ")";
-        if(pstr !== ",event") {  //don't return false from event hooks
+        if(!pstr.startsWith(",event")) {  //don't return false from event hooks
             fstr = jt.fs(fstr); }
         return fstr;
     }
@@ -237,9 +237,10 @@ app.login = (function () {
                      sel.map((v) =>
                          ["div", {cla:"radiobdiv"},
                           [["input", {type:"radio", id:qid + v + "RadioButton",
-                                      value:v, checked:jt.toru(qas[qid] === v),
-                                      onclick:mdfs("btq.setAnswer", "radio",
-                                                   qid, v)}],
+                                      name:qid + "Radios", value:v,
+                                      checked:jt.toru(qas[qid] === v),
+                                      onclick:mdfs("btq.setAnswer", "event",
+                                                   "radio", qid, v)}],
                            ["label", {fo:qid + v + "RadioButton"}, v]]])]); },
             range:function (qas, qid, sel) {
                 return jt.tac2html(
@@ -248,48 +249,52 @@ app.login = (function () {
                          ["div", {cla:"btqrangecelldiv"},
                           [["div", ["label", {fo:qid + v + "RadioButton"}, v]],
                            ["input", {type:"radio", id:qid + v + "RadioButton",
-                                      value:idx,
+                                      name:qid + "Radios", value:idx,
                                       checked:jt.toru(qas[qid] === idx),
-                                      onclick:mdfs("btq.setAnswer", "range",
-                                                   qid, idx)}]]])]); },
+                                      onclick:mdfs("btq.setAnswer", "event",
+                                                   "range", qid, idx)}]]])]); },
             text:function (qas, qid) {
                 return jt.tac2html(
                     ["input", {type:"text", value:qas[qid] || "", size:28,
                                id:qid + "txtin",
-                               oninput:mdfs("btq.setAnswer", "text", qid)}]); },
+                               oninput:mdfs("btq.setAnswer", "event",
+                                            "text", qid)}]); },
             longtext:function (qas, qid) {
                 return jt.tac2html(
                     ["textarea", {id:qid + "ta", rows:5, cols:40,
-                                  oninput:mdfs("btq.setAnswer",
+                                  oninput:mdfs("btq.setAnswer", "event",
                                                "longtext", qid)},
                      qas[qid] || ""]); } };
         const qtexttypes = ["text", "longtext"];
         var ctx = null;
+        function findUnanswered (tdef, stint) {
+            const qas = stint.stdat[tdef] || {};
+            const noval = sdefs[tdef].find((q) =>
+                ((qtexttypes.includes(q.qtype) && !qas[q.id]) ||
+                 (qas[q.id] === undefined)));
+            return noval; }
     return {
-        setAnswer: function (qtype, qid, val) {
+        setAnswer: function (ignore /*event*/, qtype, qid, val) {
             if(qtexttypes.includes(qtype)) {
                 val = jt.byId(qid + "txtin").value; }
-            ctx.stint[ctx.tdef][qid] = val; },
+            jt.out(qid + "qerrdiv", "");
+            ctx.stint.stdat[ctx.tdef][qid] = val; },
         checkAnswers: function () {
             sdefs[ctx.tdef].forEach(function (q) {  //clear any prev errmsgs
                 jt.out(q.id + "qerrdiv", ""); });
-            const qas = ctx.stint[ctx.tdef];
-            const noval = sdefs[ctx.tdef].find((q) =>
-                ((qtexttypes.includes(q.qtype) && !qas[q.id]) ||
-                 (qas[q.id] === undefined)));
+            const noval = findUnanswered(ctx.tdef, ctx.stint);
             if(noval) {
                 jt.out(noval.id + "qerrdiv", "Please answer this question");
                 return; }
             ctx.cbf(); },
         completed: function (tdef, stint) {
-            const qas = stint[tdef] || {};
-            return sdefs[tdef].every((q) => qas[q.id]); },
+            return !findUnanswered(tdef, stint); },
         survey: function (testdef, divid, respstint, donefunc) {
             ctx = {tdef:testdef, tdiv:divid, stint:respstint, cbf:donefunc};
             if(mgrs.btq.completed(ctx.tdef, ctx.stint)) {
                 return ctx.cbf(); }
-            ctx.stint[ctx.tdef] = ctx.stint[ctx.tdef] || {};
-            const qas = ctx.stint[ctx.tdef];
+            ctx.stint.stdat[ctx.tdef] = ctx.stint.stdat[ctx.tdef] || {};
+            const qas = ctx.stint.stdat[ctx.tdef];
             jt.out(ctx.tdiv, jt.tac2html(
                 [sdefs[ctx.tdef].map((q) =>
                     ["div", {id:q.id + "contdiv", cla:"btqcontdiv"},
@@ -313,21 +318,25 @@ app.login = (function () {
         var stat = null;   //beta test program general status
         var acct = null;   //tester DigAcc
         var stint = null;  //step interaction info for tester
+        var cnts = null;   //song rating counts for tester
         function callstat (txt) { jt.out("btpcpdiv", txt); }
         function errf (code, errtxt) { jt.out("btpcpdiv", "Call failed code " +
                                               code + ": " + errtxt); }
+        function over50 (cnt) {
+            if(cnt > 50) { return "over 50"; }
+            return String(cnt); }
         const steps = {
             intro:{
                 cmp:function () {
                     return (stat && acct && stint); },
                 display:function () {
-                    jt.out("btpnavdiv", "To participate, you must have at least 50 songs on an Android or IOS device that you will record your impressions of while you listen with Digger.  After recording your impressions, you will try filtered autoplay in at least two different listening situations and provide feedback.");
+                    jt.out("btpnavdiv", "To participate, you must have at least 50 songs on an Android or iOS device that you will record your impressions of while you listen with Digger.  After recording your impressions, you will try filtered autoplay in at least two different listening situations and provide feedback.");
                     jt.out("btpdetdiv", jt.tac2html(
                         [["p", {id:"btpirwrdp"}, "Your testing of Digger is vital, and as a small gesture of thanks you will be sent a $50 gift card for either Bandcamp or Amazon, whichever you prefer.  If you want, you will also have the opportunity to be directly involved in the Digger project, including new feature development."],
                          ["div", {id:"btpixdiv"}]]));
                     if(!stat) {
                         callstat("Checking beta test program status...");
-                        const url = app.cb("api/betastat", {intype:bprgnm});
+                        const url = app.cb("api/betastat", {sitype:bprgnm});
                         return jt.call("GET", url, null,
                             function (statrets) {
                                 callstat("");
@@ -349,12 +358,14 @@ app.login = (function () {
                         jt.out("btpixdiv", "");
                         callstat("Fetching your testing info...");
                         const data = jt.objdata(
-                            {an:acct.email, at:acct.token, intype:bprgnm,
+                            {an:acct.email, at:acct.token, sitype:bprgnm,
                              confcode:app.startParams.confcode});
                         return jt.call("POST", app.dr("/api/betastat"), data,
                             function (stints) {
                                 callstat("");
                                 stint = stints[0];
+                                stint.stdat = stint.stdat || "{}";
+                                stint.stdat = JSON.parse(stint.stdat);
                                 mgrs.btp.dispCurrStep(); },
                             errf); } } },
             emconf:{  //stint came back without confirmation code
@@ -373,9 +384,34 @@ app.login = (function () {
                     jt.out("btpnavdiv", "Beta Test Setup Questions");
                     mgrs.btq.survey("pretest", "btpdetdiv", stint,
                                     mgrs.btp.saveStep); } },
-            rating:{},
-            response:{},
+            rating:{
+                cmp:function () {
+                    return (cnts && cnts.ttl >= 50 && cnts.mto >= 4); },
+                display:function () {
+                    jt.out("btpnavdiv", "Looking forward to listening with Digger! If you have not already installed the " + stint.stdat.pretest.whichplat + " app, click the download link on <a href=\"https:diggerhub.com\">diggerhub</a> to request a promo code.  Thanks for testing!");
+                    if(cnts) {
+                        jt.out("btpnavdiv", "So far you've described " + over50(cnts.ttl) + "songs from your collection and listened to " + over50(cnts.mto) + " more than once.  After you've listened to at least 50 songs, try autoplay in a couple of different listening situations then come back to this page to complete your beta test.  Thanks for testing!"); }
+                    jt.out("btpdetdiv", jt.tac2html(
+                        ["a", {href:"#refreshCounts",
+                               onclick:mdfs("btp.refreshSongCounts")},
+                         "Refresh Song counts"]));
+                    if(!cnts) {
+                        mgrs.btp.refreshSongCounts(); } } },
+            response:{
+                cmp:function () {
+                    return mgrs.btq.completed("aftertest", stint); },
+                display:function () {
+                    jt.out("btpnavdiv", "Beta Test Finishing Questions");
+                    mgrs.btq.survey("aftertest", "btpdetdiv", stint,
+                                    mgrs.btp.saveStep); }},
             thanks:{} };
+        function updateCountsFromSongs (fetchedSongs) {
+            cnts = {ttl:0, mto:0, songs:fetchedSongs};
+            cnts.songs.forEach(function (s) {
+                cnts.ttl += 1;
+                const mod = parseInt(s.modified.split(";")[1]);
+                if(mod > 1) {
+                    cnts.mto += 1; } }); }
         function helloLineHTML () {
             const gw = "Thanks for your interest in the Digger Beta Testing Program!";
             const sw = "Welcome back $DIGNAME!";
@@ -383,10 +419,22 @@ app.login = (function () {
                 return sw.replace(/\$DIGNAME/g, acct.firstname); }
             return gw; }
     return {
+        refreshSongCounts: function () {
+            jt.out("btpdetdiv", "");
+            callstat("Refreshing song counts...");
+            const data = jt.objdata(
+                {an:acct.email, at:acct.token, sitype:bprgnm,
+                 action:"songCounts", platform:stint.stdat.pretest.whichplat});
+            jt.call("POST", app.dr("/api/betastat"), data,
+                function (songs) {
+                    callstat("");
+                    updateCountsFromSongs(songs);
+                    mgrs.btp.dispCurrStep(); },
+                errf); },
         sendInvite: function () {
             jt.out("btpdetdiv", "Sending...");
             const data = jt.objdata(
-                {an:acct.email, at:acct.token, intype:bprgnm,
+                {an:acct.email, at:acct.token, sitype:bprgnm,
                  action:"sendInvite"});  //text and auth server side
             jt.call("POST", app.dr("/api/betastat"), data,
                 function () {
@@ -396,10 +444,12 @@ app.login = (function () {
         saveStep: function () {  //stint already updated by caller
             callstat("Saving beta test progress...");
             const data = jt.objdata(
-                {an:acct.email, at:acct.token, intype:bprgnm,
+                {an:acct.email, at:acct.token, sitype:bprgnm,
                  action:"save", stdat:JSON.stringify(stint.stdat)});
             jt.call("POST", app.dr("/api/betastat"), data,
-                function () {
+                function (stints) {
+                    stint = stints[0];
+                    stint.stdat = JSON.parse(stint.stdat);
                     callstat("");
                     mgrs.btp.dispCurrStep(); },
                 errf); },
@@ -459,13 +509,13 @@ app.login = (function () {
         const posdiv = "downloadsdiv";
         const dispdiv = "dloverlaydiv";
         const templates = {
-            iosp: "ipem(Request a promotional code) to evaluate Digger at no cost, or help support ongoing development and link(buy Digger for IOS).",
+            iosp: "ipem(Request a promotional code) to evaluate Digger at no cost, or help support ongoing development and link(buy Digger for iOS).",
             droidp: "Request a dpem(promotional link) to evaluate Digger at no cost, or help support ongoing development and link(buy Digger for Android).",
             webapp: "Access Digger with any browser while the local Digger server is running. See the $webappdoc description page for details. link(Download Digger)" };
         function iosPromoEmailLink () {
             const emaddr = app.subPlaceholders(null, null, "SUPPEMAIL");
-            const subj = "Digger for IOS promo code";
-            const body = "Hi,\n\nI'd like to help evaluate Digger for IOS. Please send me a promotional code to get Digger at no cost from the App Store.\n\nThanks,\n";
+            const subj = "Digger for iOS promo code";
+            const body = "Hi,\n\nI'd like to help evaluate Digger for iOS. Please send me a promotional code to get Digger at no cost from the App Store.\n\nThanks,\n";
             const link = "mailto:" + emaddr + "?subject=" + jt.dquotenc(subj) +
                   "&body=" + jt.dquotenc(body);
             return link; }

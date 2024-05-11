@@ -1104,7 +1104,7 @@ def nosugg():
 
 def betastat():
     try:
-        intype = dbacc.reqarg("intype", "string", required=True)
+        sitype = dbacc.reqarg("sitype", "string", required=True)
         confcode = dbacc.reqarg("confcode", "string")
         action = dbacc.reqarg("action", "string")
         stdat = dbacc.reqarg("stdat", "json")
@@ -1112,29 +1112,43 @@ def betastat():
         emaddr = dbacc.reqarg("an", "DigAcc.email")
         if emaddr:
             digacc, _ = util.authenticate()
-        if not digacc:  # GET of summary counts for intype
+        if not digacc:  # GET of summary counts for sitype
             stcs = ["Pending", "Active", "Complete"]
-            sql = "SELECT intype"
+            sql = "SELECT sitype"
             for stc in stcs:
                 sql += (", COUNT(CASE status WHEN '" + stc + "'" +
                         " then 1 else null end) AS " + stc.lower())
-            sql += " FROM StInt WHERE intype = \"" + intype + "\""
+            sql += " FROM StInt WHERE sitype = \"" + sitype + "\""
             stcs = [stc.lower() for stc in stcs]
-            stcs.insert(0, "intype")
+            stcs.insert(0, "sitype")
             res = dbacc.custom_query(sql, stcs)
-        else:  # authenticated. get stint for account
+        elif action == "songCounts":
+            plat = dbacc.reqarg("platform", "string", required=True)
+            pathexprs = {"iOS":"//item/item\..*\?id=",
+                         "Android":"^/?storage/.*/Music/"}
+            regex = pathexprs.get(plat)
+            if not regex:
+                raise ValueException("No match for platform: " + plat)
+            where = ("WHERE aid = " + str(digacc["dsId"]) +
+                     " AND path REGEXP \"" + regex + "\"" +
+                     " ORDER BY modified DESC LIMIT 100")
+            res = dbacc.query_entity("Song", where)
+        else:  # get stint for account and update as needed
             stint = {"dsType":"StInt", "modified":"", "aid":digacc["dsId"],
                      "email":digacc["email"], "status":"Pending",
-                     "intype":intype}
+                     "sitype":sitype}
             where = ("WHERE aid = " + str(digacc["dsId"]) +
-                     " AND intype = \"" + intype + "\"")
+                     " AND sitype = \"" + sitype + "\"")
             stints = dbacc.query_entity("StInt", where)
             if len(stints) > 0:
                 stint = stints[0]
+                if stint["status"] == "Complete":
+                    raise ValueError("Cannot modify StInt status Complete.")
             if confcode:
                 if confcode != stint["confcode"]:
                     raise ValueError("confcode did not match")
                 stint["email"] = digacc["email"]
+                stint["sdat"] = ""
                 stint["status"] = "Active"
             elif action == "sendInvite":
                 stint["confcode"] = util.make_activation_code()
@@ -1146,8 +1160,8 @@ def betastat():
                         "&at=" + util.token_for_user(digacc) +
                         "&confcode=" + stint["confcode"])
                 util.send_mail(digacc["email"], subj, body)
-            elif action == "save" and stdat:
-                # status Complete is set directly in the db by support
+            elif action == "save":
+                logging.info("betastat save stdat: " + str(stdat));
                 stint["stdat"] = stdat
             stint = dbacc.write_entity(stint, stint["modified"])
             res = [stint]

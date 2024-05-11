@@ -159,10 +159,10 @@ module.exports = (function () {
         {f:"email", d:"priv req unique email", c:"confirmed contact email" },
         {f:"confcode", d:"adm string", c:"interaction confirmation code"},
         {f:"status", d:"priv string", c:"Pending|Active|Complete"},
-        {f:"intype", d:"req string", descr:"Interaction type label"},
+        {f:"sitype", d:"req string", descr:"Structured interaction type label"},
         {f:"stdat", d:"priv json", descr:"Interaction state data"}],
      cache:{minutes:0},
-     logflds:["aid", "intype"]},
+     logflds:["aid", "sitype"]},
         
     {entity:"AppService", descr:"Processing service access", fields:[
         {f:"name", d:"string req unique", c:"Name of service"},
