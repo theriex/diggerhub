@@ -194,10 +194,10 @@ app.login = (function () {
 
     //The beta test questions manager handles defined survey questions.
     mgrs.btq = (function () {
+        const nevudef = ["Never", "Unlikely", "Unsure",
+                         "Probably", "Definitely"];
         const sdefs = {
             pretest:[
-                {q:"Which platform will you be testing with?",
-                 id:"whichplat", qtype:"radio", sel:["iOS", "Android"]},
                 {q:"How many albums do you own?",
                  id:"ttlab", qtype:"radio",
                  sel:["Only a few", "Several", "Hundreds"]},
@@ -210,9 +210,8 @@ app.login = (function () {
                 {q:"How many times have you seen live music in the past year?",
                  id:"livelastyr", qtype:"range",
                  sel:["0", "1", "2-5", "6-9", "10+"]},
-                {q:"Name for USPS delivery:", id:"uspsname", qtype:"text"},
-                {q:"Street address, city, state, zip:", id:"uspsaddr",
-                 qtype:"text"}],
+                {q:"Which platform will you be testing with?",
+                 id:"whichplat", qtype:"radio", sel:["iOS", "Android"]}],
             aftertest:[
                 {q:"What was the first listening situation you filtered for?",
                  id:"firstlisten", qtype:"text"},
@@ -223,12 +222,12 @@ app.login = (function () {
                 {q:"What was good about your Digger experience?",
                  id:"goodstuff", qtype:"longtext"},
                 {q:"How likely are you to use Digger in the future?",
-                 id:"usefut", qtype:"range", 
-                 sel:["Never", "", "", "Don't Know", "", "", "Definitely"]},
+                 id:"usefut", qtype:"range", sel:nevudef},
                 {q:"Would you recommend Digger to others?",
-                 id:"recommend", qtype:"range",
-                 sel:["Never", "", "", "Unsure", "", "", "Definitely"]},
-                {q:"Would you be willing to contacted in the future?",
+                 id:"recommend", qtype:"range", sel:nevudef},
+                {q:"Which gift card would you prefer?",
+                 id:"giftcard", qtype:"radio", sel:["Bandcamp", "Amazon"]},
+                {q:"Can the Digger project contact you in the future?",
                  id:"contact", qtype:"radio", sel:["No", "Yes"]}]};
         const rend = {
             radio:function (qas, qid, sel) {
@@ -241,13 +240,15 @@ app.login = (function () {
                                       checked:jt.toru(qas[qid] === v),
                                       onclick:mdfs("btq.setAnswer", "event",
                                                    "radio", qid, v)}],
-                           ["label", {fo:qid + v + "RadioButton"}, v]]])]); },
+                           ["label", {fo:qid + v + "RadioButton",
+                                      cla:"btqradlab"}, v]]])]); },
             range:function (qas, qid, sel) {
                 return jt.tac2html(
                     ["div", {cla:"btqrangecontdiv"},
                      sel.map((v, idx) =>
                          ["div", {cla:"btqrangecelldiv"},
-                          [["div", ["label", {fo:qid + v + "RadioButton"}, v]],
+                          [["div", {cla:"btqrangelabeldiv"},
+                            ["label", {fo:qid + v + "RadioButton"},v]],
                            ["input", {type:"radio", id:qid + v + "RadioButton",
                                       name:qid + "Radios", value:idx,
                                       checked:jt.toru(qas[qid] === idx),
@@ -261,7 +262,7 @@ app.login = (function () {
                                             "text", qid)}]); },
             longtext:function (qas, qid) {
                 return jt.tac2html(
-                    ["textarea", {id:qid + "ta", rows:5, cols:40,
+                    ["textarea", {id:qid + "txtin", rows:5, cols:40,
                                   oninput:mdfs("btq.setAnswer", "event",
                                                "longtext", qid)},
                      qas[qid] || ""]); } };
@@ -311,14 +312,19 @@ app.login = (function () {
 
     //The beta test program display manager handles a beta testing process
     mgrs.btp = (function () {
+        const supplink = jt.tac2html(
+            ["a", {href:"mailto:support@diggerhub.com"}, "support"]);
+        const hublink = jt.tac2html(
+            ["a", {href:"https://diggerhub.com"}, "DiggerHub"]);
         const bprgnm = "beta1";
-        const progmax = 10;
+        const progmax = 10;  //Clear all Active stints before changing.
         const btpdivs = ["btphellodiv", "btpnavdiv", "btpdetdiv", "btpcpdiv"];
-        const statvs = ["Pending", "Active", "Complete"];
-        var stat = null;   //beta test program general status
+        var btst = null;   //beta test program general status
         var acct = null;   //tester DigAcc
         var stint = null;  //step interaction info for tester
-        var cnts = null;   //song rating counts for tester
+        var cnts = null;  //song rating info
+        function isopen () {
+            return (!btst || (btst.active + btst.complete < progmax)); }
         function callstat (txt) { jt.out("btpcpdiv", txt); }
         function errf (code, errtxt) { jt.out("btpcpdiv", "Call failed code " +
                                               code + ": " + errtxt); }
@@ -326,26 +332,26 @@ app.login = (function () {
             if(cnt > 50) { return "over 50"; }
             return String(cnt); }
         const steps = {
-            intro:{
+            intro:{  //verify account, stint, btst
                 cmp:function () {
-                    return (stat && acct && stint); },
+                    return (btst && acct && stint); },
                 display:function () {
-                    jt.out("btpnavdiv", "To participate, you must have at least 50 songs on an Android or iOS device that you will record your impressions of while you listen with Digger.  After recording your impressions, you will try filtered autoplay in at least two different listening situations and provide feedback.");
+                    jt.out("btpnavdiv", "To participate, you must have at least 50 songs on an Android or iOS device you can listen to with Digger.  After you've recorded your impressions, you'll try autoplay in a couple of listening situations of your choosing and let us know what you think.");
                     jt.out("btpdetdiv", jt.tac2html(
-                        [["p", {id:"btpirwrdp"}, "Your testing of Digger is vital, and as a small gesture of thanks you will be sent a $50 gift card for either Bandcamp or Amazon, whichever you prefer.  If you want, you will also have the opportunity to be directly involved in the Digger project, including new feature development."],
+                        [["p", {id:"btpirwrdp"}, "Your testing of Digger is vital, and as a small gesture of thanks you will be sent a $50 gift card for either Bandcamp or Amazon, whichever you prefer.  If you like, you'll also have the opportunity to be directly involved in the Digger project, including new feature development."],
                          ["div", {id:"btpixdiv"}]]));
-                    if(!stat) {
+                    if(!btst) {  //verify beta test still active first
                         callstat("Checking beta test program status...");
                         const url = app.cb("api/betastat", {sitype:bprgnm});
                         return jt.call("GET", url, null,
                             function (statrets) {
                                 callstat("");
-                                stat = statrets[0];
-                                if(stat.active + stat.complete > progmax) {
-                                    jt.out("btpirwrdp", "This beta testing round is now full and all gift cards are spoken for.  If you would like to sign up as a beta tester anyway, that would be immensely appreciated. If there's more budget in the future you'll get advanced notice."); }
+                                btst = statrets[0];
                                 mgrs.btp.dispCurrStep(); },
                             errf); }
-                    if(!acct) {
+                    if(!isopen()) {
+                        jt.out("btpirwrdp", "This round of beta testing is now closed and all gift cards have been reserved.  You are welcome to sign up for priority consideration in any future testing."); }
+                    if(!acct) {  //sign in first, help dumb bots move on
                         const siid = "hubaccountcontentdiv";  //like main page
                         jt.out("btpixdiv", jt.tac2html(
                             ["div", {id:"hubacctdiv"},
@@ -354,7 +360,7 @@ app.login = (function () {
                         return mgrs.hsi.signIn(siid, function (siacc) {
                             acct = siacc;
                             mgrs.btp.dispCurrStep(); }); }
-                    if(!stint) {
+                    if(!stint) {  //init stint to register interest
                         jt.out("btpixdiv", "");
                         callstat("Fetching your testing info...");
                         const data = jt.objdata(
@@ -368,50 +374,75 @@ app.login = (function () {
                                 stint.stdat = JSON.parse(stint.stdat);
                                 mgrs.btp.dispCurrStep(); },
                             errf); } } },
-            emconf:{  //stint came back without confirmation code
+            emconf:{  //confirm email communication
                 cmp:function () {
-                    return (statvs.slice(1).indexOf(stint.status) >= 0); },
+                    return (stint.status !== "Pending"); },  //Active|Complete
                 display:function () {
-                    jt.out("btpnavdiv", "Beta testing is expected to take a couple of days, and must be completed within 3 weeks of starting.  To receive a gift card, you will need to provide a non-forwarded U.S. physical address (limit one per household).  To confirm your email and get started, request your beta test invite:");
+                    jt.out("btpnavdiv", "Beta testing normally takes a couple of days.  After you start, your beta testing position is guaranteed, and you can complete your testing whenever you feel like listening to music over the next 3 weeks.  To confirm your email and start your beta test, request your testing invite:");
+                    if(!isopen()) {
+                        jt.out("btpnavdiv", "This round of beta testing is currently closed and all gift cards are spoken for.  If you would like priority consideration for a future testing round, or an extension of this round, request a testing invite to reserve your spot:"); }
                     jt.out("btpdetdiv", jt.tac2html(
                         ["a", {href:"#sendInvite",
                                onclick:mdfs("btp.sendInvite")},
                          "Send Invitation"])); } },
             survey:{
                 cmp:function () {
-                    return mgrs.btq.completed("pretest", stint); },
+                    return ((stint.status === "Active") && 
+                            mgrs.btq.completed("pretest", stint)); },
                 display:function () {
-                    jt.out("btpnavdiv", "Beta Test Setup Questions");
-                    mgrs.btq.survey("pretest", "btpdetdiv", stint,
-                                    mgrs.btp.saveStep); } },
-            rating:{
+                    if(!isopen() || (stint.status !== "Active")) {
+                        jt.out("btpnavdiv", "Thanks for your interest in beta testing Digger! This beta testing round is now closed, we'll be in touch if there's budget for any more gift cards. Meanwhile if you want to record your music impressions while listening, and autoplay your music, you can download Digger at no cost from " + hublink + "."); }
+                    else {  //support manually earmarks gift card once Active
+                        jt.out("btpnavdiv", jt.tac2html(
+                            ["div", {id:"btqsurveytitlediv"},
+                             "Beta Test Setup Questions:"]));
+                        mgrs.btq.survey("pretest", "btpdetdiv", stint,
+                                        mgrs.btp.saveStep); } } },
+            rating:{  //use digger, monitor progress
                 cmp:function () {
                     return (cnts && cnts.ttl >= 50 && cnts.mto >= 4); },
                 display:function () {
-                    jt.out("btpnavdiv", "Looking forward to listening with Digger! If you have not already installed the " + stint.stdat.pretest.whichplat + " app, click the download link on <a href=\"https:diggerhub.com\">diggerhub</a> to request a promo code.  Thanks for testing!");
-                    if(cnts) {
-                        jt.out("btpnavdiv", "So far you've described " + over50(cnts.ttl) + "songs from your collection and listened to " + over50(cnts.mto) + " more than once.  After you've listened to at least 50 songs, try autoplay in a couple of different listening situations then come back to this page to complete your beta test.  Thanks for testing!"); }
+                    jt.out("btpnavdiv", "Your beta test has started! If you have not already installed Digger for " + stint.stdat.pretest.whichplat + ", click the download link on " + hublink + " to request a promo code, then sign in with the app and start listening.  Return to this page to see your progress.  If you have any questions email " + supplink + ". Thanks for testing!");
+                    if(cnts && cnts.ttl > 0) {
+                        jt.out("btpnavdiv", "So far you've described " + over50(cnts.ttl) + "songs from your collection and listened to " + over50(cnts.mto) + " more than once.  After listening to 50 songs, try autoplay in a couple of different listening situations and come back to complete your beta test.  If you have any questions email " + supplink + ". Thanks for testing!"); }
                     jt.out("btpdetdiv", jt.tac2html(
                         ["a", {href:"#refreshCounts",
                                onclick:mdfs("btp.refreshSongCounts")},
                          "Refresh Song counts"]));
                     if(!cnts) {
                         mgrs.btp.refreshSongCounts(); } } },
-            response:{
+            response:{  //minimum digger usage reqs met, get reactions
                 cmp:function () {
                     return mgrs.btq.completed("aftertest", stint); },
                 display:function () {
-                    jt.out("btpnavdiv", "Beta Test Finishing Questions");
+                    jt.out("btpnavdiv", jt.tac2html(
+                        ["div", {id:"btqsurveytitlediv"},
+                         "Beta Test Finishing Questions:"]));
                     mgrs.btq.survey("aftertest", "btpdetdiv", stint,
                                     mgrs.btp.saveStep); }},
-            thanks:{} };
+            thanks:{  //responses being reviewed, gift card conf email after
+                cmp:function () {
+                    return (stint.status === "Complete"); },
+                display:function () {
+                    jt.out("btpnavdiv", "Thanks for beta testing! Your responses have all been recorded and support will complete your beta test when they send out your gift card.  If you have any questions or concerns email " + supplink + ".  Thanks again for your effort and insights, they are very much appreciated."); } },
+            done:{  //gift card sent, thanks again
+                cmp:function () { return false; },
+                display:function () {
+                    jt.out("btpnavdiv", "Thanks again for testing! Your gift card has been sent.  If you think of anything else, email " + supplink +", the Digger project appreciates your help."); } } };
         function updateCountsFromSongs (fetchedSongs) {
-            cnts = {ttl:0, mto:0, songs:fetchedSongs};
-            cnts.songs.forEach(function (s) {
+            const now = new Date().toISOString();
+            cnts = {ttl:0, mto:0, calcts:now, oldest:now, newest:""};
+            fetchedSongs.forEach(function (s) {
+                if(s.created < cnts.oldest) {
+                    cnts.oldest = s.created; }
+                if(s.modified > cnts.newest) {
+                    cnts.newest = s.modified; }
                 cnts.ttl += 1;
                 const mod = parseInt(s.modified.split(";")[1]);
                 if(mod > 1) {
-                    cnts.mto += 1; } }); }
+                    cnts.mto += 1; } });
+            stint.sdat.cnts = cnts;
+            mgrs.btp.saveStep(); }
         function helloLineHTML () {
             const gw = "Thanks for your interest in the Digger Beta Testing Program!";
             const sw = "Welcome back $DIGNAME!";

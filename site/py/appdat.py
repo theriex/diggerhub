@@ -1017,7 +1017,6 @@ def fanmsg():
     return util.respJSON(msgs)
 
 
-
 # gid, since (timestamp). Auth required, need to know who is asking.
 def musfdat():
     try:
@@ -1102,69 +1101,88 @@ def nosugg():
     return util.respJSON(res)
 
 
+def stint_summary_counts(sitype):
+    stcs = ["Pending", "Active", "Complete"]
+    sql = "SELECT sitype"
+    for stc in stcs:
+        sql += (", COUNT(CASE status WHEN '" + stc + "'" +
+                " then 1 else null end) AS " + stc.lower())
+    sql += " FROM StInt WHERE sitype = \"" + sitype + "\""
+    stcs = [stc.lower() for stc in stcs]
+    stcs.insert(0, "sitype")
+    return dbacc.custom_query(sql, stcs)
+
+
+def platform_song_counts_for_tester(digacc):
+    plat = dbacc.reqarg("platform", "string", required=True)
+    pathexprs = {"iOS": r"//item/item\..*\?id=",
+                 "Android": r"^/?storage/.*/Music/"}
+    regex = pathexprs.get(plat)
+    if not regex:
+        raise ValueError("No match for platform: " + plat)
+    where = ("WHERE aid = " + str(digacc["dsId"]) +
+             " AND path REGEXP \"" + regex + "\"" +
+             " ORDER BY modified DESC LIMIT 100")
+    return dbacc.query_entity("Song", where)
+
+
+def update_stint_for_tester(digacc, sitype, action):
+    stint = {"dsType":"StInt", "modified":"", "aid":digacc["dsId"],
+             "email":digacc["email"], "status":"Pending",
+             "sitype":sitype}
+    where = ("WHERE aid = " + str(digacc["dsId"]) +
+             " AND sitype = \"" + sitype + "\"")
+    stints = dbacc.query_entity("StInt", where)
+    if len(stints) > 0:
+        stint = stints[0]
+        if stint["status"] == "Complete":
+            raise ValueError("Cannot modify StInt status Complete.")
+    confcode = dbacc.reqarg("confcode", "string")
+    if confcode:
+        if confcode != stint["confcode"]:
+            raise ValueError("confcode did not match")
+        stint["email"] = digacc["email"]
+        stint["sdat"] = ""
+        stint["status"] = "Active"
+    elif action == "sendInvite":
+        stint["confcode"] = util.make_activation_code()
+        subj = "Digger Beta Testing confirmation"
+        body = ("Follow this link to confirm email communications" +
+                " and start your beta testing!\n\n" +
+                "https://diggerhub.com/beta" +
+                "?an=" + digacc["email"] +
+                "&at=" + util.token_for_user(digacc) +
+                "&confcode=" + stint["confcode"])
+        util.send_mail(digacc["email"], subj, body)
+    elif action == "save":
+        stdat = dbacc.reqarg("stdat", "json")
+        logging.info("betastat save stdat: " + str(stdat))
+        subj = "betastat save from " + digacc["email"]
+        body = ("sitype: " + str(stint["sitype"]) + "\n" +
+                "aid: " + str(stint["aid"]) + "\n" +
+                "email: " + str(stint["email"]) + "\n" +
+                "status: " + str(stint["status"]) + "\n" +
+                "stdat: " + str(stint["stdat"]) + "\n")
+        util.send_mail(None, subj, body)
+        stint["stdat"] = stdat
+    stint = dbacc.write_entity(stint, stint["modified"])
+    return [stint]
+
+
 def betastat():
     try:
         sitype = dbacc.reqarg("sitype", "string", required=True)
-        confcode = dbacc.reqarg("confcode", "string")
         action = dbacc.reqarg("action", "string")
-        stdat = dbacc.reqarg("stdat", "json")
         digacc = None
         emaddr = dbacc.reqarg("an", "DigAcc.email")
         if emaddr:
             digacc, _ = util.authenticate()
         if not digacc:  # GET of summary counts for sitype
-            stcs = ["Pending", "Active", "Complete"]
-            sql = "SELECT sitype"
-            for stc in stcs:
-                sql += (", COUNT(CASE status WHEN '" + stc + "'" +
-                        " then 1 else null end) AS " + stc.lower())
-            sql += " FROM StInt WHERE sitype = \"" + sitype + "\""
-            stcs = [stc.lower() for stc in stcs]
-            stcs.insert(0, "sitype")
-            res = dbacc.custom_query(sql, stcs)
+            res = stint_summary_counts(sitype)
         elif action == "songCounts":
-            plat = dbacc.reqarg("platform", "string", required=True)
-            pathexprs = {"iOS":"//item/item\..*\?id=",
-                         "Android":"^/?storage/.*/Music/"}
-            regex = pathexprs.get(plat)
-            if not regex:
-                raise ValueException("No match for platform: " + plat)
-            where = ("WHERE aid = " + str(digacc["dsId"]) +
-                     " AND path REGEXP \"" + regex + "\"" +
-                     " ORDER BY modified DESC LIMIT 100")
-            res = dbacc.query_entity("Song", where)
+            res = platform_song_counts_for_tester(digacc)
         else:  # get stint for account and update as needed
-            stint = {"dsType":"StInt", "modified":"", "aid":digacc["dsId"],
-                     "email":digacc["email"], "status":"Pending",
-                     "sitype":sitype}
-            where = ("WHERE aid = " + str(digacc["dsId"]) +
-                     " AND sitype = \"" + sitype + "\"")
-            stints = dbacc.query_entity("StInt", where)
-            if len(stints) > 0:
-                stint = stints[0]
-                if stint["status"] == "Complete":
-                    raise ValueError("Cannot modify StInt status Complete.")
-            if confcode:
-                if confcode != stint["confcode"]:
-                    raise ValueError("confcode did not match")
-                stint["email"] = digacc["email"]
-                stint["sdat"] = ""
-                stint["status"] = "Active"
-            elif action == "sendInvite":
-                stint["confcode"] = util.make_activation_code()
-                subj = "Digger Beta Testing confirmation"
-                body = ("Follow this link to confirm email communications" +
-                        " and start your beta testing!\n\n" +
-                        "https://diggerhub.com/beta" +
-                        "?an=" + digacc["email"] +
-                        "&at=" + util.token_for_user(digacc) +
-                        "&confcode=" + stint["confcode"])
-                util.send_mail(digacc["email"], subj, body)
-            elif action == "save":
-                logging.info("betastat save stdat: " + str(stdat));
-                stint["stdat"] = stdat
-            stint = dbacc.write_entity(stint, stint["modified"])
-            res = [stint]
+            res = update_stint_for_tester(digacc, sitype, action)
     except ValueError as e:
         return util.serve_value_error(e)
     return util.respJSON(res, audience="private")

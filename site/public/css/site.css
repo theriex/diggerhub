@@ -118,16 +118,19 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
 #btptitlediv { font-size:x-large; font-weight:bold; padding:10px;
   display:inline-block; }
 #btpcontentdiv { padding:10px; clear:both; max-width:600px; margin:auto; }
-#btphellodiv { font-weight:bold; padding-bottom:8px; }
+#btphellodiv { padding-bottom:8px; font-style:italic; }
 #btpnavdiv, #btpdetdiv { padding:8px 0px; }
 #btpcpdiv { font-size:small; padding-top:8px; }
+#btqsurveytitlediv { font-weight:bold; }
 .btqcontdiv { padding:0px 0px 16px 0px; }
 .btqtdiv { padding:0px 0px 5px 0px; font-style:italic; }
 .btqerrdiv { font-size:small; color:red; }
 .btqradiocontdiv { }
 .btqradiocontdiv .radiobdiv { padding-left:16px; }
 .btqrangecontdiv { display:grid; grid-auto-flow:column; grid-auto-columns:1fr; }
+.btqradlab { font-size:small; }
 .btqrangecelldiv { text-align:center; }
+.btqrangelabeldiv { font-size:small; }
 
 
 /* -------------------- */
