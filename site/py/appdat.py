@@ -194,6 +194,8 @@ def find_hub_push_songs(digacc, prevsync):
                                           song["ti"])
     if len(retsongs) >= maxsongs:  # let client know more to download
         digacc["syncsince"] = retsongs[-1]["modified"]
+    else:  # let client know downloads are up to date
+        digacc["syncsince"] = ""
     return digacc, retsongs
 
 
