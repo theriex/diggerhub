@@ -404,7 +404,7 @@ app.login = (function () {
                 display:function () {
                     jt.out("btpnavdiv", "Your beta test has started! If you have not already installed Digger for " + stint.stdat.pretest.whichplat + ", click the download link on " + hublink + " to request a promo code, then sign in with the app and start listening.  Return to this page to see your progress.  If you have any questions email " + supplink + ". Thanks for testing!");
                     if(cnts && cnts.ttl > 0) {
-                        jt.out("btpnavdiv", "So far you've described " + over50(cnts.ttl) + "songs from your collection and listened to " + over50(cnts.mto) + " more than once.  After listening to 50 songs, try autoplay in a couple of different listening situations and come back to complete your beta test.  If you have any questions email " + supplink + ". Thanks for testing!"); }
+                        jt.out("btpnavdiv", "So far you've described " + over50(cnts.ttl) + " songs from your collection and listened to " + over50(cnts.mto) + " songs more than once.  After listening to 50 songs, try autoplay in a couple of different listening situations and come back to complete your beta test.  If you have any questions email " + supplink + ". Thanks for testing!"); }
                     jt.out("btpdetdiv", jt.tac2html(
                         ["a", {href:"#refreshCounts",
                                onclick:mdfs("btp.refreshSongCounts")},
@@ -441,7 +441,7 @@ app.login = (function () {
                 const mod = parseInt(s.modified.split(";")[1]);
                 if(mod > 1) {
                     cnts.mto += 1; } });
-            stint.sdat.cnts = cnts;
+            stint.stdat.cnts = cnts;
             mgrs.btp.saveStep(); }
         function helloLineHTML () {
             const gw = "Thanks for your interest in the Digger Beta Testing Program!";

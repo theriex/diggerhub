@@ -1123,6 +1123,7 @@ def platform_song_counts_for_tester(digacc):
     if not regex:
         raise ValueError("No match for platform: " + plat)
     where = ("WHERE aid = " + str(digacc["dsId"]) +
+             " AND (el != 49 OR al != 49 OR kws IS NOT NULL)" +
              " AND path REGEXP \"" + regex + "\"" +
              " ORDER BY modified DESC LIMIT 100")
     return dbacc.query_entity("Song", where)
