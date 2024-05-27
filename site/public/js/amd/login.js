@@ -213,6 +213,9 @@ app.login = (function () {
                 {q:"Which platform will you be testing with?",
                  id:"whichplat", qtype:"radio", sel:["iOS", "Android"]}],
             aftertest:[
+                {q:"What effect did rating a song have on your listening?",
+                 id:"rateff", qtype:"radio",
+                 sel:["Detracted", "Neutral", "Enhanced"]},
                 {q:"What was the first listening situation you filtered for?",
                  id:"firstlisten", qtype:"text"},
                 {q:"What was the second listening situation you tried?",
@@ -492,10 +495,11 @@ app.login = (function () {
         display: function () {
             window.history.replaceState({}, document.title, "/beta");
             jt.out("sitecontentdiv", jt.tac2html(
-                [["div", {id:"logodiv"},
-                  ["a", {href:"/"},
-                   ["img", {src:"img/appicon.png"}]]],
-                 ["div", {id:"btptitlediv"}, "Digger Beta Test"],
+                [["div", {id:"topsectiondiv"},  //old float handling e:240527
+                  [["div", {id:"logodiv"},
+                    ["a", {href:"/"},
+                     ["img", {src:"img/appicon.png"}]]],
+                   ["div", {id:"btptitlediv"}, "Digger Beta Test"]]],
                  ["div", {id:"btpcontentdiv"},
                   btpdivs.map((d) => ["div", {id:d}])]]));
             mgrs.btp.dispCurrStep(); }
