@@ -441,8 +441,7 @@ app.login = (function () {
                 if(s.modified > cnts.newest) {
                     cnts.newest = s.modified; }
                 cnts.ttl += 1;
-                const mod = parseInt(s.modified.split(";")[1]);
-                if(mod > 1) {
+                if(s.pc > 1) {
                     cnts.mto += 1; } });
             stint.stdat.cnts = cnts;
             mgrs.btp.saveStep(); }
