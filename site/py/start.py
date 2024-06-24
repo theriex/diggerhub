@@ -12,7 +12,7 @@ import py.dbacc as dbacc
 import io
 from PIL import Image, ImageDraw, ImageFont
 
-CACHE_BUST_PARAM = "v=240622"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=240624"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -132,7 +132,7 @@ FLOWCONTENTHTML = """
 
 <div id="toptextdiv" class="textcontentdiv boxedcontentdiv">
 <div>
-Get the player that gets what you want to hear next.
+Your music. Your impressions. Get the player that gets what you want to play.
 </div>
 </div>
 
