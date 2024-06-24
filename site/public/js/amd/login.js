@@ -339,9 +339,9 @@ app.login = (function () {
                 cmp:function () {
                     return (btst && acct && stint); },
                 display:function () {
-                    jt.out("btpnavdiv", "To participate, you must have at least 50 songs on an Android or iOS device to listen with Digger.  After recording your impressions, you'll try autoplay in a couple of listening situations of your choosing and let us know what you think.");
+                    jt.out("btpnavdiv", "To participate, you must have at least 50 songs on an Android or iOS device you will listen to with Digger.  Using Digger, you'll record your impressions of these songs as you listen, then try Digger autoplay in a couple of different listening situations of your choosing.  What you tell us will be vital to the Digger project.");
                     jt.out("btpdetdiv", jt.tac2html(
-                        [["p", {id:"btpirwrdp"}, "Your testing of Digger is vital, and as a small gesture of thanks you will be sent a $50 Bandcamp or Amazon gift card, whichever you prefer.  If you like, you'll also have the opportunity to be directly involved in the Digger project, including new feature development."],
+                        [["p", {id:"btpirwrdp"}, "As a small gesture of thanks for testing, you will be sent a $50 Bandcamp or Amazon gift card, whichever you prefer.  You'll also have the opportunity to be directly involved in the Digger project if you like, including new feature development."],
                          ["div", {id:"btpixdiv"}]]));
                     if(!btst) {  //verify beta test still active first
                         callstat("Checking beta test program status...");
