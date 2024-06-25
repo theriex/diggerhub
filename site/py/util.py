@@ -281,29 +281,7 @@ def url_for_mail_message():
     return returl
 
 
-def send_activation_email(digacc, fan=None):
-    acturl = (url_for_mail_message() + "/account?actcode=" + digacc["actcode"] +
-              "&an=" + urllib.parse.quote(digacc["email"]) +
-              "&at=" + token_for_user(digacc))
-    if fan:
-        logging.info("Invitation mail -> " + digacc["email"])
-        subj = fan["firstname"] + " has invited you to join DiggerHub"
-        body = ("Hello " + digacc["firstname"] + ",\n\n" +
-                fan["firstname"] + " (" + fan["email"] +
-                ") has invited you to join DiggerHub!\n\n" +
-                "Use this link to access your account:\n\n" +
-                acturl + "\n\n" +
-                "Welcome to DiggerHub!\n")
-    else:
-        logging.info("Activation mail -> " + digacc["email"])
-        subj = "DiggerHub account activation link"
-        body = ("Use this link to activate your DiggerHub account:\n\n" +
-                acturl + "\n\n" +
-                "Welcome to DiggerHub!\n")
-    send_mail(digacc["email"], subj, body)
-
-
-def update_email_and_password(digacc, emaddr, pwd, fan=None):
+def update_email_and_password(digacc, emaddr, pwd):
     emaddr = normalize_email(emaddr)
     if pwd and pwd.lower() == "noval":
         pwd = ""
@@ -325,8 +303,6 @@ def update_email_and_password(digacc, emaddr, pwd, fan=None):
     # if either email or password changed, always update the phash
     digacc["phash"] = make_password_hash(digacc["email"], pwd,
                                          digacc["created"])
-    if digacc["status"] == "Pending":
-        send_activation_email(digacc, fan)
     return change
 
 
@@ -430,16 +406,6 @@ def acctok():
         logging.info("acctok signin failed: " + str(e))
         return serve_value_error(e, quiet=True)
     return respJSON([digacc, token], audience="private")
-
-
-def mailactcode():
-    try:
-        digacc, _ = authenticate()
-        send_activation_email(digacc)
-    except ValueError as e:
-        logging.info("mailactcode failed: " + str(e))
-        return serve_value_error(e)
-    return respJSON("[]")
 
 
 def mailpwr():

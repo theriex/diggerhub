@@ -54,10 +54,6 @@ def updacc():  # params: auth, DigAcc
 def acctok():  # params: email, password
     return util.secure(util.acctok)
 
-@app.route('/api/mailactcode', methods=['GET', 'POST'])
-def mailactcode():  # params: email, returl
-    return util.secure(util.mailactcode)
-
 @app.route('/api/mailpwr', methods=['GET', 'POST'])
 def mailpwr():  # params: email, returl
     return util.secure(util.mailpwr)
