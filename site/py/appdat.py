@@ -1145,7 +1145,7 @@ def update_stint_for_tester(digacc, sitype, action):
         if confcode != stint["confcode"]:
             raise ValueError("confcode did not match")
         stint["email"] = digacc["email"]
-        stint["sdat"] = ""
+        stint["stdat"] = "{\"activated\":\"" + dbacc.nowISO() + "\"}"
         stint["status"] = "Active"
     elif action == "sendInvite":
         stint["confcode"] = util.make_activation_code()

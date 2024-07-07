@@ -327,7 +327,8 @@ app.login = (function () {
         var stint = null;  //step interaction info for tester
         var cnts = null;  //song rating info
         function isopen () {
-            return (!btst || (btst.active + btst.complete < progmax)); }
+            //the penultimate tester does not see a "testing closed" notice
+            return (!btst || (btst.active + btst.complete <= progmax)); }
         function callstat (txt) { jt.out("btpcpdiv", txt); }
         function errf (code, errtxt) { jt.out("btpcpdiv", "Call failed code " +
                                               code + ": " + errtxt); }
@@ -390,17 +391,21 @@ app.login = (function () {
                          "Send Invitation"])); } },
             survey:{
                 cmp:function () {
-                    return ((stint.status === "Active") && 
+                    return (((stint.status === "Active") ||
+                             (stint.status === "Complete")) &&
                             mgrs.btq.completed("pretest", stint)); },
                 display:function () {
-                    if(!isopen() || (stint.status !== "Active")) {
-                        jt.out("btpnavdiv", "Thanks for your interest in beta testing Digger! This beta testing round is now closed, we'll be in touch if there's budget for any more gift cards. Meanwhile if you want to record your music impressions while listening, and autoplay your music, you can download Digger at no cost from " + hublink + "."); }
-                    else {  //support manually earmarks gift card once Active
+                    if((stint.status === "Active") &&
+                       (isopen() || stint.stdat.admincleared)) {
                         jt.out("btpnavdiv", jt.tac2html(
                             ["div", {id:"btqsurveytitlediv"},
                              "Beta Test Setup Questions:"]));
                         mgrs.btq.survey("pretest", "btpdetdiv", stint,
-                                        mgrs.btp.saveStep); } } },
+                                        mgrs.btp.saveStep); }
+                    else if(stint.status === "Abandoned") {
+                        jt.out("btpnavdiv", "Your beta testing was incomplete. After 3 weeks it was marked as abandoned to make room for another tester to go ahead.  If you would like to inquire whether it might be possible to re-activate your beta test, contact " + supplink + ". Your DiggerHub account is still active, your song impressions continue to be saved, and hopefully Digger will continue to be a valuable music listening tool for you."); }
+                    else {  //!isopen() or status "Queued" or whatever
+                        jt.out("btpnavdiv", "Thanks for your interest in beta testing Digger! This beta testing round is now closed, but your place in line has been noted and we'll be in touch if there's any more budget for gift cards. Meanwhile if you want to record your music impressions while listening, then autoplay your music, you can download Digger at no cost from " + hublink + "."); } } },
             rating:{  //use digger, monitor progress
                 cmp:function () {
                     return (cnts && cnts.ttl >= 50 && cnts.mto >= 4); },

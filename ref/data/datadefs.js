@@ -158,9 +158,10 @@ module.exports = (function () {
         {f:"aid", d:"req dbid", c:"interacting account"},
         {f:"email", d:"priv req unique email", c:"confirmed contact email" },
         {f:"confcode", d:"adm string", c:"interaction confirmation code"},
-        {f:"status", d:"priv string", c:"Pending|Active|Complete"},
+        {f:"status", d:"priv string", c:"testing stage workflow (*1)"},
         {f:"sitype", d:"req string", descr:"Structured interaction type label"},
         {f:"stdat", d:"priv json", descr:"Interaction state data"}],
+     //*1 status: Pending|Active|Complete|Abandoned|Queued
      cache:{minutes:0},
      logflds:["aid", "sitype"]},
         
