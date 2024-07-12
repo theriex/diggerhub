@@ -115,6 +115,30 @@ module.exports = (function () {
      cache:{minutes:0},
      logflds:["aid", "ti", "ar"]},
 
+    {entity:"Album", descr:"Album level comment and related info", fields:[
+        {f:"aid", d:"req dbid", c:"the account this album info is from"},
+        {f:"ar", d:"string", c:"artist for album"},
+        {f:"ab", d:"req string", c:"name of album (*1)"},
+        {f:"smar", d:"string", c:"standardized match artist"},
+        {f:"smab", d:"string", c:"standardized match album"},
+        {f:"nt", d:"text", c:"note text (whatever the user writes)"},
+        {f:"url", d:"text", c:"public web source to hear this album"},
+        {f:"sd", d:"json", c:"supporting details release year, label etc"},
+        {f:"cs", d:"text", c:"collection status (*2)"},
+        {f:"cst", d:"isodate", c:"last collection status value change"},
+        {f:"songs", d:"json", c:"array of song dsIds for this album (*3)"}],
+     //*1 ab: Album name should match most or all contained songs.
+     //*2 cs: most recent change day stamp kept in sd field
+     //       "Pending" - Haven't listened to it yet.
+     //       "Listened" - Listened to it, see my comments if I bothered.
+     //       "Notable" - Worth hearing, not considering owning.
+     //       "Considering" - Might add this to my collection.
+     //       "Collected" - Own this, might have associated song ratings.
+     //   Album.cst is used similarly to Song.lp for appropriate retrieval.
+     //*3 songs: 1+ songs with unique names in album track order if avail
+     cache:{minutes:0},
+     logflds:["aid", "ab", "ar"]},
+
     {entity:"SKeyMap", descr:"Song Title/Artist/Album key mappings", fields:[
         {f:"skey", d:"req string unique", c:"Canonical ti/ar/ab text"},
         {f:"spid", d:"string", c:"same as Song.spid"},

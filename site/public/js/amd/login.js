@@ -408,7 +408,7 @@ app.login = (function () {
                         jt.out("btpnavdiv", "Thanks for your interest in beta testing Digger! This beta testing round is now closed, but your place in line has been noted and we'll be in touch if there's any more budget for gift cards. Meanwhile if you want to record your music impressions while listening, then autoplay your music, you can download Digger at no cost from " + hublink + "."); } } },
             rating:{  //use digger, monitor progress
                 cmp:function () {
-                    return (cnts && cnts.ttl >= 50 && cnts.mto >= 4); },
+                    return (cnts && cnts.ttl >= 50 && cnts.mto >= 6); },
                 display:function () {
                     jt.out("btpnavdiv", "Your beta test has started! If you have not already installed Digger for " + stint.stdat.pretest.whichplat + ", click the download link on " + hublink + " to request a promo code, then sign in with the app and start listening.  Return to this page to see your progress.  If you have any questions email " + supplink + ". Thanks for testing!");
                     if(cnts && cnts.ttl > 0) {
