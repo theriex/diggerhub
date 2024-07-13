@@ -123,19 +123,23 @@ module.exports = (function () {
         {f:"smab", d:"string", c:"standardized match album"},
         {f:"nt", d:"text", c:"note text (whatever the user writes)"},
         {f:"url", d:"text", c:"public web source to hear this album"},
+        {f:"upi", d:"image", c:"url link preview image"},
+        {f:"ai", d:"json", c:"album info like release year, label etc"},
+        {f:"ti", d:"json", c:"track info, names and ordering"},
+        {f:"si", d:"json", c:"song info, digger songs summary (*2)"},
         {f:"sd", d:"json", c:"supporting details release year, label etc"},
-        {f:"cs", d:"text", c:"collection status (*2)"},
-        {f:"cst", d:"isodate", c:"last collection status value change"},
-        {f:"songs", d:"json", c:"array of song dsIds for this album (*3)"}],
-     //*1 ab: Album name should match most or all contained songs.
-     //*2 cs: most recent change day stamp kept in sd field
+        {f:"cs", d:"text", c:"collection status (*3)"},
+        {f:"cst", d:"isodate", c:"last collection status value change"}],
+     //Informational fields might not have anything in them.
+     //*1 ab: Album name should match for all contained songs.
+     //*2 si: song info on display request, may be old/missing.
+     //*3 cs: most recent change day stamp kept in sd field
      //       "Pending" - Haven't listened to it yet.
      //       "Listened" - Listened to it, see my comments if I bothered.
      //       "Notable" - Worth hearing, not considering owning.
      //       "Considering" - Might add this to my collection.
      //       "Collected" - Own this, might have associated song ratings.
      //   Album.cst is used similarly to Song.lp for appropriate retrieval.
-     //*3 songs: 1+ songs with unique names in album track order if avail
      cache:{minutes:0},
      logflds:["aid", "ab", "ar"]},
 
