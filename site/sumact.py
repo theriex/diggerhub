@@ -120,13 +120,20 @@ def send_day_of_week(settings):
     return senddow
 
 
-def get_played_since_timestamp(settings):
+# This cron job gets run once a day, typically just after 00:00:00 PDT.  It
+# doesn't matter when this summary task runs, but PDT can be unintuitive if
+# you are in Europe listening through the the evening/night, then you see
+# some of those songs in this weeks summary and others the following week.
+# Any timezone other than the server timezone has the potential to be
+# unintuitive in this way.  Just how it works.  Shouldn't really matter.
+def get_last_played_timestamps(settings):
     lastsendts = settings["sumact"].get("lastsend", dfltact["lastsend"])
     today = dayonly(datetime.datetime.utcnow())
     if lastsendts > dbacc.dt2ISO(today - datetime.timedelta(days=2)):
-        return lastsendts, ""  # already sent recent summary
+        return lastsendts, "", ""  # already sent recent summary
     # six days back and including today == one week
-    return lastsendts, dbacc.dt2ISO(today - datetime.timedelta(days=6))
+    sincets = dbacc.dt2ISO(today - datetime.timedelta(days=7))
+    return lastsendts, sincets, today
 
 
 def already_listed(song, songsum):
@@ -142,23 +149,28 @@ def already_listed(song, songsum):
 
 
 def check_user_activity(user, settings):
-    errpre = "check_user_activity skipping DigAcc" + str(user["dsId"])
+    ustr = "DigAcc" + str(user["dsId"])
+    errpre = "check_user_activity skipping " + ustr
     senddow = send_day_of_week(settings)
     if runinfo["tdow"] != senddow:
         logging.info(errpre +" sendon " + senddow)
         return
-    lastsendts, sincets = get_played_since_timestamp(settings)
+    lastsendts, sincets, untilts = get_last_played_timestamps(settings)
     if not sincets:
         logging.info(errpre + " not enough elapsed time since " + lastsendts)
         return
+    logging.info("check_user_activity " + ustr + " " +
+                 sincets[:10] + " - " + untilts[:10])
     usum = {"acct": user, "count": 0}
     songsum = {"sincets":sincets, "top20":[]}
     # The public Top 20 should not include anything you are not comfortable
     # playing for others, nor should it include anything you think is not
     # very good.  Otherwise it's no fun to see.
     songs = dbacc.query_entity("Song", "WHERE aid = " + user["dsId"] +
-                               " AND lp > \"" + sincets + "\"" +
-                               " AND pd = \"played\"" +
+                               " AND lp >= \"" + sincets + "\"" +
+                               " AND lp < \"" + untilts + "\"" +
+                               " AND (pd IS NULL OR pd NOT IN" +
+                               " (\"skipped\", \"snoozed\", \"dupe\"))" +
                                " AND kws LIKE \"%Social%\"" +
                                " AND rv >= 5" +
                                " ORDER BY rv DESC, lp DESC")
@@ -176,7 +188,7 @@ def check_user_activity(user, settings):
         if not songsum.get("ampest") or song["el"] > songsum["ampest"]["el"]:
             songsum["ampest"] = song
     runinfo["usums"].append(usum)
-    if usum["count"] < 3:
+    if usum["count"] < 20:  # weekly top 20 looks anemic if less than 20 songs
         logging.info(errpre + " not enough songs (" + str(usum["count"]) + ")")
         return
     songsum["ttlsongs"] = usum["count"]
