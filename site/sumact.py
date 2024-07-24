@@ -133,7 +133,7 @@ def get_last_played_timestamps(settings):
         return lastsendts, "", ""  # already sent recent summary
     # six days back and including today == one week
     sincets = dbacc.dt2ISO(today - datetime.timedelta(days=7))
-    return lastsendts, sincets, today
+    return lastsendts, sincets, dbacc.dt2ISO(today)
 
 
 def already_listed(song, songsum):
