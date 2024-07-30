@@ -186,7 +186,7 @@ optional rating collaboration. </div>
 
 <div class="textcontentdiv convocontentdiv"> The Digger Custom Autoplay
 Mixer can reach across genres, time periods and artists, preferring
-what you've least recently heard.  Rediscover your music collection.  <a
+what you've least recently heard.  Rediscover your music library.  <a
 href="#showdownloadlinks" onclick="app.login.scrollToTopOfContent();return
 false">Dig into your music</a>. </div>
 
