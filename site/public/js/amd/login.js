@@ -550,7 +550,7 @@ app.login = (function () {
         const templates = {
             iosp: "ipem(Request a promotional code) to evaluate Digger at no cost, or help support ongoing development and link(buy Digger for iOS).",
             droidp: "Request a dpem(promotional link) to evaluate Digger at no cost, or help support ongoing development and link(buy Digger for Android).",
-            webapp: "Access Digger with any browser while the local Digger server is running. See the $webappdoc description page for details. link(Download Digger)" };
+            webapp: "Digger is a microserver you access using a web browser.  If you have a relatively recent computer, link(Download Digger) as a prebuilt package.  If you have an older computer, or if you already have node.js installed, follow the $gitinstall instructions.  For setup details, see the $webappdoc description page." };
         function iosPromoEmailLink () {
             const emaddr = app.subPlaceholders(null, null, "SUPPEMAIL");
             const subj = "Digger for iOS promo code";
@@ -578,11 +578,18 @@ app.login = (function () {
             txt = txt.replace(/ipem\(([^)]*)\)/, function (ignore, linkt) {
                 return jt.tac2html(
                     ["a", {href:iosPromoEmailLink()}, linkt]); });
-            const wdu = "docs/websrvapp.html";
-            txt = txt.replace("$webappdoc", jt.tac2html(
-                ["a", {href:wdu, 
-                       onclick:"window.open('" + wdu + "');return false"},
-                 "Webserver App"]));
+            const repls = [
+                {u:"docs/websrvapp.html",
+                 m:"$webappdoc",
+                 t:"Webserver App"},
+                {u:"https://github.com/theriex/digger#user-content-install",
+                 m:"$gitinstall",
+                 t:"source install", s:"downloadlinkspan"}];
+            repls.forEach(function (r) {
+                txt = txt.replace(r.m, jt.tac2html(
+                    ["a", {href:r.u,
+                           onclick:"window.open('" + r.u + "');return false"},
+                     ["span", {cla:r.s || ""}, r.t]])); });
             txt = jt.tac2html(
                 ["div", {id:"dlovrcontdiv"},
                  [["div", {id:"dloverxdiv"},

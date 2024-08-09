@@ -132,7 +132,7 @@ FLOWCONTENTHTML = """
 
 <div id="toptextdiv" class="textcontentdiv boxedcontentdiv">
 <div>
-Your music on tap. What you want from what you feel.
+Your music on tap. What you want for what you feel.
 </div>
 </div>
 
