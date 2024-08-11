@@ -412,7 +412,7 @@ app.login = (function () {
                 display:function () {
                     jt.out("btpnavdiv", "Your beta test has started! If you have not already installed Digger for " + stint.stdat.pretest.whichplat + ", click the download link on " + hublink + " to request a promo code, then sign in with the app and start listening.  Return to this page to see your progress.  If you have any questions email " + supplink + ". Thanks for testing!");
                     if(cnts && cnts.ttl > 0) {
-                        jt.out("btpnavdiv", "So far you've described " + over50(cnts.ttl) + " songs from your collection and listened to " + over50(cnts.mto) + " songs more than once.  After listening to 50 songs or more, use the filter toggles and range selectors in the deck display to see how well autoplay works for two listening situations of your choosing.  Come back here for some final exit questions and you're beta test is complete.  If you have any questions email " + supplink + ". Thanks for testing!"); }
+                        jt.out("btpnavdiv", "So far you've described " + over50(cnts.ttl) + " songs from your collection and listened to " + over50(cnts.mto) + " songs more than once.  After listening to 50 songs or more, use the filter toggles and range selectors in the deck display to see how well autoplay works for two listening situations of your choosing.  Come back here for some final exit questions and you're beta test is complete.  If you have any questions, concerns, comments or anything else email " + supplink + ". Thanks for testing!"); }
                     jt.out("btpdetdiv", jt.tac2html(
                         ["a", {href:"#refreshCounts",
                                onclick:mdfs("btp.refreshSongCounts")},
