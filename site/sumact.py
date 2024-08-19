@@ -48,8 +48,15 @@ def send_user_summary():
 
 def song_ident_text(song):
     text = song["ti"] + " - " + song["ar"] + " (" + song["ab"] + ")"
-    if song["nt"]:
-        text += "\n    " + song["nt"]
+    # comment text makes it harder to scan the summary song list, and notes
+    # are not included in the wt20 site page.  Comments were originally
+    # included on the idea people might forward the received email, but
+    # sparse comments don't make things much more compelling, and
+    # copyright/songID noise in the comments field are annoying.  Comments
+    # should be included when sharing a song, or possibly when sharing an
+    # album, but not in an email notice.
+    # if song["nt"]:
+    #     text += "\n    " + song["nt"]
     return text
 
 
