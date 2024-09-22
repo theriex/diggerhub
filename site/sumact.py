@@ -20,30 +20,87 @@ import json
 import sys
 
 
-sdnvs = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday",
-         "Saturday", "Sunday", "Never"]
 runinfo = {"mode": "logonly",  # send mail only if "summary" or "all"
-           "usums": [],        # user summaries
-           "tdow": sdnvs[datetime.datetime.today().weekday()]}
+           "usums": []}        # user summaries
 dfltact = {"lastsend": "1970-01-01T00:00:00Z", "sendon": "Wednesday"}
 
 
-def send_user_summary():
-    subj = "DiggerHub user activity summary for " + runinfo["tdow"]
-    body = "No user summaries sent"
+def daily_activity_totals():
+    dat = {"yts": dbacc.dt2ISO(runinfo["sod"] - datetime.timedelta(days=1))}
+    sql = ("SELECT COUNT(DISTINCT aid) AS ttlusers, COUNT(*) AS ttlsongs" +
+           " FROM Song" +
+           " WHERE modified >= \"" + dat["yts"] + "\"" +
+           " AND modified < \"" + runinfo["wkets"] + "\"")
+    qres = dbacc.custom_query(sql, ["ttlusers", "ttlsongs"])
+    for rec in qres:
+        dat["ttlusers"] = rec["ttlusers"]
+        dat["ttlsongs"] = rec["ttlsongs"]
+    sql = ("SELECT COUNT(DISTINCT aid) AS ttlnuu, COUNT(*) AS ttlnewsgs " +
+           "FROM Song" + 
+           " WHERE modified >= \"" + dat["yts"] + "\"" +
+           " AND modified < \"" + runinfo["wkets"] + "\"" +
+           " AND created = SUBSTRING(modified, 1, 20)")
+    qres = dbacc.custom_query(sql, ["ttlnuu", "ttlnewsgs"])
+    for rec in qres:
+        dat["ttlnuu"] = rec["ttlnuu"]
+        dat["ttlnewsgs"] = rec["ttlnewsgs"]
+    txt = ("Stats for yesterday (" + dat["yts"] + " to " + runinfo["wkets"] +
+           ":\n  " + str(dat["ttlsongs"]) + " songs updated by " +
+           str(dat["ttlusers"]) + " listeners ")
+    return txt
+
+
+def user_weekly_top20_send_summary():
+    txt = ""
     if len(runinfo["usums"]) > 0:
-        body = "User summaries sent to:\n"
+        txt = ("Summarized " + str(runinfo["usersgttl"]) + " songs for " +
+               str(runinfo["userttl"]) + " listeners " + runinfo["wksts"] +
+               " to " + runinfo["wkets"] + "\n")
     for usersum in runinfo["usums"]:
-        body += (usersum["acct"]["dsId"] + " " +
-                 usersum["acct"]["digname"] + " " +
-                 "(" + usersum["acct"]["firstname"] + ") " +
-                 usersum["acct"]["email"] + ": " +
-                 str(usersum["count"]) + "\n")
+        txt += ("  " + usersum["acct"]["dsId"] + " " +
+                usersum["acct"]["digname"] + " " +
+                "(" + usersum["acct"]["firstname"] + ") " +
+                usersum["acct"]["email"] + ": " +
+                str(usersum["count"]) + "\n")
+    return txt
+
+
+def beta_activity_monitoring():
+    txt = ""
+    betas = dbacc.query_entity("StInt", "WHERE sitype = \"beta1\"" +
+                               " ORDER BY modified DESC")
+    if len(betas) > 0:
+        txt = "\"beta1\" test activity:\n"
+    for bt in betas:
+        stdat = util.load_json_or_default(bt["stdat"], {})
+        cdat = {"dsec":24 * 60 * 60, "daysact":0, "daysidle":0,}
+        activated = stdat.get("activated")
+        if activated:
+            dt = dbacc.ISO2dt(activated)
+            difft = datetime.datetime.utcnow() - dt
+            cdat["daysact"] = difft.total_seconds() // cdat["dsec"]
+        newest = stdat.get("newest")
+        if newest:
+            dt = dbacc.ISO2dt(newest)
+            difft = datetime.datetime.utcnow() - dt
+            cdat["daysidle"] = difft.total_seconds() // cdat["dsec"]
+        txt += ("  " + str(bt["aid"]) + " " + bt["status"] + " " + bt["email"] +
+                " days active: " + str(cdat["daysact"]) +
+                ", days idle: " + str(cdat["daysidle"]) + "\n")
+    return txt
+
+
+def send_hub_summary():
+    subj = "DiggerHub user activity send for " + runinfo["tdow"]
+    sta = [daily_activity_totals(),
+           user_weekly_top20_send_summary(),
+           beta_activity_monitoring()]
+    body = "\n".join(sta) + "\n"
     if runinfo["mode"] in ["all", "summary"]:
         util.send_mail("support@diggerhub.com", subj, body,
                        domain="diggerhub.com")
     else:
-        logging.info("User summary:\n" + body)
+        logging.info("send_hub_summary mode " + runinfo["mode"] + "\n" + body)
 
 
 def song_ident_text(song):
@@ -114,10 +171,6 @@ def send_activity_summary(user, settings, songsum):
         logging.info("Summary for " + str(user["dsId"]) + "\n" + body)
 
 
-def dayonly(dtinst):
-    return dtinst.replace(hour=0, minute=0, second=0, microsecond=0)
-
-
 def send_day_of_week(settings):
     senddow = "Never"
     try:
@@ -135,12 +188,9 @@ def send_day_of_week(settings):
 # unintuitive in this way.  Just how it works.  Shouldn't really matter.
 def get_last_played_timestamps(settings):
     lastsendts = settings["sumact"].get("lastsend", dfltact["lastsend"])
-    today = dayonly(datetime.datetime.utcnow())
-    if lastsendts > dbacc.dt2ISO(today - datetime.timedelta(days=2)):
+    if lastsendts > dbacc.dt2ISO(runinfo["sod"] - datetime.timedelta(days=2)):
         return lastsendts, "", ""  # already sent recent summary
-    # six days back and including today == one week
-    sincets = dbacc.dt2ISO(today - datetime.timedelta(days=7))
-    return lastsendts, sincets, dbacc.dt2ISO(today)
+    return lastsendts, runinfo["wksts"], runinfo["wkets"]
 
 
 def already_listed(song, songsum):
@@ -182,6 +232,7 @@ def check_user_activity(user, settings):
                                " AND rv >= 5" +
                                " ORDER BY rv DESC, lp DESC")
     for song in songs:
+        runinfo["usersgttl"] += 1
         usum["count"] += 1
         if len(songsum["top20"]) < 20 and not already_listed(song, songsum):
             songsum["top20"].append(song)
@@ -203,22 +254,31 @@ def check_user_activity(user, settings):
 
 
 def check_users():
-    now = datetime.datetime.utcnow()
-    lastweek = dbacc.dt2ISO(now - datetime.timedelta(weeks=1))
+    runinfo["userttl"] = 0
+    runinfo["usersgttl"] = 0
+    # skip checking users who have not accessed the hub in over a week
     users = dbacc.query_entity("DigAcc",
-                               "WHERE modified > \"" + lastweek + "\"")
+                               "WHERE modified > \"" + runinfo["wksts"] + "\"")
     for user in users:
+        runinfo["userttl"] += 1
         logging.info("Checking " + str(user["dsId"]) + " " + user["firstname"])
         dfltset = {"sumact": dfltact}
         settings = util.load_json_or_default(user["settings"], dfltset)
         if not settings.get("sumact"):
             settings["sumact"] = dfltact
         check_user_activity(user, settings)
-    send_user_summary()
+    send_hub_summary()
 
 
 def run_with_params():
-    logging.info("Checking weekly activity summary for " + runinfo["tdow"])
+    sdnvs = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday",
+             "Saturday", "Sunday", "Never"]
+    runinfo["tdow"] = sdnvs[datetime.datetime.today().weekday()]
+    now = datetime.datetime.utcnow()
+    runinfo["sod"] = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    runinfo["wkets"] = dbacc.dt2ISO(runinfo["sod"])
+    runinfo["wksts"] = dbacc.dt2ISO(runinfo["sod"] - datetime.timedelta(days=7))
+    logging.info("Checking weekly activity summary for send " + runinfo["tdow"])
     if len(sys.argv) > 1 and sys.argv[1] == "batch":
         runinfo["mode"] = "all"
     check_users()
