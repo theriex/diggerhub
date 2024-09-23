@@ -233,7 +233,7 @@ def weekly_top20_content_html(sasum):
     html += ("<div id=\"reptitlelinediv\"><a href=\"" + baseurl + "listener/" +
              sasum["digname"] + "\">Weekly Top 20</a> - <a href=\"" + baseurl +
              "plink/wt20/" + sasum["digname"] + "/" + sasum["end"][0:10] +
-             "</a><span class=\"datevalspan\">" + moday + "</span></div>\n")
+             "\"><span class=\"datevalspan\">" + moday + "</span></a></div>\n")
     html += "<ol>\n"
     for song in util.load_json_or_default(sasum["songs"], []):
         html += "<li>" + song_html(song) + "\n"
