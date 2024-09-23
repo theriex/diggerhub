@@ -149,7 +149,7 @@ def send_activity_summary(user, settings, songsum):
     if not plink:
         plink = "Set a digname for your account to publish weekly summaries"
     subj = "DiggerHub weekly activity summary"
-    body = "Your weekly activity summary\n"
+    body = "Account weekly summary set for " + runinfo["tdow"] + "\n"
     body += plink + "\n"
     body += str(songsum["ttlsongs"]) + " songs synchronized to DiggerHub\n"
     body += "Top Songs:\n\n"
