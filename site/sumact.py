@@ -72,6 +72,7 @@ def beta_activity_monitoring():
     if len(betas) > 0:
         txt = "\"beta1\" test activity:\n"
     for bt in betas:
+        # logging.info("stdat: " + bt["stdat"])
         stdat = util.load_json_or_default(bt["stdat"], {})
         cdat = {"dsec":24 * 60 * 60, "daysact":0, "daysidle":0,}
         activated = stdat.get("activated")
@@ -79,11 +80,13 @@ def beta_activity_monitoring():
             dt = dbacc.ISO2dt(activated)
             difft = datetime.datetime.utcnow() - dt
             cdat["daysact"] = difft.total_seconds() // cdat["dsec"]
-        newest = stdat.get("newest")
-        if newest:
-            dt = dbacc.ISO2dt(newest)
-            difft = datetime.datetime.utcnow() - dt
-            cdat["daysidle"] = difft.total_seconds() // cdat["dsec"]
+        cnts = stdat.get("cnts")
+        if cnts:
+            newest = cnts.get("newest")
+            if newest:
+                dt = dbacc.ISO2dt(newest[0:20])
+                difft = datetime.datetime.utcnow() - dt
+                cdat["daysidle"] = difft.total_seconds() // cdat["dsec"]
         txt += ("  " + str(bt["aid"]) + " " + bt["status"] + " " + bt["email"] +
                 " days active: " + str(cdat["daysact"]) +
                 ", days idle: " + str(cdat["daysidle"]) + "\n")
