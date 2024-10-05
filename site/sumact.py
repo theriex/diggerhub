@@ -93,11 +93,16 @@ def beta_activity_monitoring():
     return txt
 
 
+def daily_reminders():
+    return "Consider checking r/Music after email settled."
+
+
 def send_hub_summary():
     subj = "DiggerHub user activity send for " + runinfo["tdow"]
     sta = [daily_activity_totals(),
            user_weekly_top20_send_summary(),
-           beta_activity_monitoring()]
+           beta_activity_monitoring(),
+           daily_reminders()]
     body = "\n".join(sta) + "\n"
     if runinfo["mode"] in ["all", "summary"]:
         util.send_mail("support@diggerhub.com", subj, body,
