@@ -1142,7 +1142,7 @@ function createJSServerAcc () {
     jsc += "        if(persistentTypes.indexOf(dsType) < 0) {\n";
     jsc += "            jt.log(\"refmgr.getFull: unknown dsType \" + dsType);\n";
     jsc += "            console.trace(); }\n";
-    jsc += "        var url = app.dr(\"/api/fetchobj?dt=\" + dsType + \"&di=\" + dsId +\n";
+    jsc += "        var url = app.util.dr(\"/api/fetchobj?dt=\" + dsType + \"&di=\" + dsId +\n";
     jsc += "                         jt.ts(\"&cb=\", \"second\"));\n";
     jsc += "        var sem = jt.semaphore(\"refmgr.getFull\" + dsType + dsId);\n";
     jsc += "        if(sem && sem.critsec === \"processing\") {\n";
@@ -1175,7 +1175,7 @@ function createJSServerAcc () {
     jsc += "    serverUncache: function (dsType, dsId, contf, errf) {\n";
     jsc += "        app.refmgr.uncache(dsType, dsId);\n";
     jsc += "        var logpre = \"refmgr.serverUncache \" + dsType + \" \" + dsId + \" \";\n";
-    jsc += "        var url = app.dr(\"/api/uncache?dt=\" + dsType + \"&di=\" + dsId +\n";
+    jsc += "        var url = app.util.dr(\"/api/uncache?dt=\" + dsType + \"&di=\" + dsId +\n";
     jsc += "                         jt.ts(\"&cb=\", \"second\"));\n";
     jsc += "        jt.call(\"GET\", url, null,\n";
     jsc += "                function () {\n";

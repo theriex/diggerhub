@@ -97,15 +97,23 @@ module.exports = (function () {
         {f:"fq", d:"string", c:"play frequency code (see player)"},
         {f:"nt", d:"text", c:"note text (whatever the user wrote)"},
         {f:"lp", d:"isodate", c:"last played timestamp"},
-        {f:"pd", d:"string", c:"last played disposition (see player)"},
+        {f:"pd", d:"string", c:"last played disposition (*1)"},
         {f:"pc", d:"int", c:"how many times song was loaded into player"},
-        {f:"srcid", d:"dbid", c:"music fan id or source id (*1)"},
+        {f:"mddn", d:"int", c:"metadata album disk number or zero"},
+        {f:"mdtn", d:"int", c:"metadata album track number or zero"},
+        {f:"srcid", d:"dbid", c:"music fan id or source id (*2)"},
         {f:"srcrat", d:"string", c:"src el:al:rv:kwscsv values"},
-        {f:"spid", d:"string", c:"z:trackID, code:val or null/empty (*2)"}],
+        {f:"spid", d:"string", c:"z:trackID, code:val or null/empty (*3)"}],
      //SHOW TABLE STATUS WHERE NAME="Song"\G
-     //*1 srcid: null or zero if not music fan contributed.  Special ids:
-     //          1: spotify playback (Digger reacted to song on spotify player)
-     //*2 spid: null if not searched.
+     //*1 pd: null or empty string if playback disposition unknown
+     //         "played": normal playback
+     //         "dupe": processed as a duplicate of the song that was played
+     //         "snoozed": fq bumped and lp updated, pulled from deck.
+     //         "skipped": hit the skip button when playback started
+     //         "error ...": playback failed. May include error text
+     //*2 srcid: null or zero if not music fan contributed.  Special ids:
+     //         1: spotify playback (Digger reacted to song on spotify player)
+     //*3 spid: null if not searched.
      //         "z:" + spotify track id - successfully mapped.
      //         "x:" + ISO time - no spotify mapping found.
      //         "m:" + ISO time - unmappable due to bad metadata.
@@ -115,9 +123,10 @@ module.exports = (function () {
      cache:{minutes:0},
      logflds:["aid", "ti", "ar"]},
 
-    {entity:"Album", descr:"Album level comment and related info", fields:[
+    {entity:"Bookmark", descr:"A link to web music", fields:[
         {f:"aid", d:"req dbid", c:"the account this album info is from"},
-        {f:"ar", d:"string", c:"artist for album"},
+        {f:"bmtype", d:"string", c:"Performance/Album/Song"},
+        {f:"ar", d:"string", c:"artist name"},
         {f:"ab", d:"req string", c:"name of album (*1)"},
         {f:"smar", d:"string", c:"standardized match artist"},
         {f:"smab", d:"string", c:"standardized match album"},

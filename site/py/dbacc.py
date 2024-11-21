@@ -95,9 +95,31 @@ entdefs = {
         "lp": {"pt": "string", "un": False, "dv": ""},
         "pd": {"pt": "string", "un": False, "dv": ""},
         "pc": {"pt": "int", "un": False, "dv": 0},
+        "mdtn": {"pt": "int", "un": False, "dv": 0},
         "srcid": {"pt": "dbid", "un": False, "dv": 0},
         "srcrat": {"pt": "string", "un": False, "dv": ""},
         "spid": {"pt": "string", "un": False, "dv": ""}
+    },
+    "Bookmark": {  # A link to web music
+        "dsId": {"pt": "dbid", "un": True, "dv": 0},
+        "created": {"pt": "string", "un": False, "dv": ""},
+        "modified": {"pt": "string", "un": False, "dv": ""},
+        "batchconv": {"pt": "string", "un": False, "dv": ""},
+        "aid": {"pt": "dbid", "un": False, "dv": 0},
+        "bmtype": {"pt": "string", "un": False, "dv": ""},
+        "ar": {"pt": "string", "un": False, "dv": ""},
+        "ab": {"pt": "string", "un": False, "dv": ""},
+        "smar": {"pt": "string", "un": False, "dv": ""},
+        "smab": {"pt": "string", "un": False, "dv": ""},
+        "nt": {"pt": "string", "un": False, "dv": ""},
+        "url": {"pt": "string", "un": False, "dv": ""},
+        "upi": {"pt": "image", "un": False, "dv": None},
+        "ai": {"pt": "string", "un": False, "dv": ""},
+        "ti": {"pt": "string", "un": False, "dv": ""},
+        "si": {"pt": "string", "un": False, "dv": ""},
+        "sd": {"pt": "string", "un": False, "dv": ""},
+        "cs": {"pt": "string", "un": False, "dv": ""},
+        "cst": {"pt": "string", "un": False, "dv": ""}
     },
     "SKeyMap": {  # Song Title/Artist/Album key mappings
         "dsId": {"pt": "dbid", "un": True, "dv": 0},
@@ -169,6 +191,7 @@ entdefs = {
 entkeys = {
     "DigAcc": ["email", "digname"],
     "Song": [],
+    "Bookmark": [],
     "SKeyMap": ["skey"],
     "DigMsg": [],
     "SASum": [],
@@ -180,6 +203,7 @@ entkeys = {
 cachedefs = {
     "DigAcc": {"minutes": 120, "manualadd": False},
     "Song": {"minutes": 0, "manualadd": False},
+    "Bookmark": {"minutes": 0, "manualadd": False},
     "SKeyMap": {"minutes": 0, "manualadd": False},
     "DigMsg": {"minutes": 0, "manualadd": False},
     "SASum": {"minutes": 30, "manualadd": False},
@@ -586,6 +610,8 @@ def app2db_Song(inst, fill=True):
         cnv["pd"] = app2db_fieldval("Song", "pd", inst)
     if fill or "pc" in inst:
         cnv["pc"] = app2db_fieldval("Song", "pc", inst)
+    if fill or "mdtn" in inst:
+        cnv["mdtn"] = app2db_fieldval("Song", "mdtn", inst)
     if fill or "srcid" in inst:
         cnv["srcid"] = app2db_fieldval("Song", "srcid", inst)
     if fill or "srcrat" in inst:
@@ -621,9 +647,83 @@ def db2app_Song(inst):
     cnv["lp"] = db2app_fieldval("Song", "lp", inst)
     cnv["pd"] = db2app_fieldval("Song", "pd", inst)
     cnv["pc"] = db2app_fieldval("Song", "pc", inst)
+    cnv["mdtn"] = db2app_fieldval("Song", "mdtn", inst)
     cnv["srcid"] = db2app_fieldval("Song", "srcid", inst)
     cnv["srcrat"] = db2app_fieldval("Song", "srcrat", inst)
     cnv["spid"] = db2app_fieldval("Song", "spid", inst)
+    return cnv
+
+
+# Convert the given Bookmark inst dict from app values to db values.  Removes
+# the dsType field to avoid trying to write it to the db.
+def app2db_Bookmark(inst, fill=True):
+    cnv = {}
+    cnv["dsId"] = None
+    if "dsId" in inst:
+        cnv["dsId"] = app2db_fieldval(None, "dsId", inst)
+    if fill or "created" in inst:
+        cnv["created"] = app2db_fieldval(None, "created", inst)
+    if fill or "modified" in inst:
+        cnv["modified"] = app2db_fieldval(None, "modified", inst)
+    if fill or "batchconv" in inst:
+        cnv["batchconv"] = app2db_fieldval(None, "batchconv", inst)
+    if fill or "aid" in inst:
+        cnv["aid"] = app2db_fieldval("Bookmark", "aid", inst)
+    if fill or "bmtype" in inst:
+        cnv["bmtype"] = app2db_fieldval("Bookmark", "bmtype", inst)
+    if fill or "ar" in inst:
+        cnv["ar"] = app2db_fieldval("Bookmark", "ar", inst)
+    if fill or "ab" in inst:
+        cnv["ab"] = app2db_fieldval("Bookmark", "ab", inst)
+    if fill or "smar" in inst:
+        cnv["smar"] = app2db_fieldval("Bookmark", "smar", inst)
+    if fill or "smab" in inst:
+        cnv["smab"] = app2db_fieldval("Bookmark", "smab", inst)
+    if fill or "nt" in inst:
+        cnv["nt"] = app2db_fieldval("Bookmark", "nt", inst)
+    if fill or "url" in inst:
+        cnv["url"] = app2db_fieldval("Bookmark", "url", inst)
+    if fill or "upi" in inst:
+        cnv["upi"] = app2db_fieldval("Bookmark", "upi", inst)
+    if fill or "ai" in inst:
+        cnv["ai"] = app2db_fieldval("Bookmark", "ai", inst)
+    if fill or "ti" in inst:
+        cnv["ti"] = app2db_fieldval("Bookmark", "ti", inst)
+    if fill or "si" in inst:
+        cnv["si"] = app2db_fieldval("Bookmark", "si", inst)
+    if fill or "sd" in inst:
+        cnv["sd"] = app2db_fieldval("Bookmark", "sd", inst)
+    if fill or "cs" in inst:
+        cnv["cs"] = app2db_fieldval("Bookmark", "cs", inst)
+    if fill or "cst" in inst:
+        cnv["cst"] = app2db_fieldval("Bookmark", "cst", inst)
+    return cnv
+
+
+# Convert the given Bookmark inst dict from db values to app values.  Adds the
+# dsType field for general app processing.
+def db2app_Bookmark(inst):
+    cnv = {}
+    cnv["dsType"] = "Bookmark"
+    cnv["dsId"] = db2app_fieldval(None, "dsId", inst)
+    cnv["created"] = db2app_fieldval(None, "created", inst)
+    cnv["modified"] = db2app_fieldval(None, "modified", inst)
+    cnv["batchconv"] = db2app_fieldval(None, "batchconv", inst)
+    cnv["aid"] = db2app_fieldval("Bookmark", "aid", inst)
+    cnv["bmtype"] = db2app_fieldval("Bookmark", "bmtype", inst)
+    cnv["ar"] = db2app_fieldval("Bookmark", "ar", inst)
+    cnv["ab"] = db2app_fieldval("Bookmark", "ab", inst)
+    cnv["smar"] = db2app_fieldval("Bookmark", "smar", inst)
+    cnv["smab"] = db2app_fieldval("Bookmark", "smab", inst)
+    cnv["nt"] = db2app_fieldval("Bookmark", "nt", inst)
+    cnv["url"] = db2app_fieldval("Bookmark", "url", inst)
+    cnv["upi"] = db2app_fieldval("Bookmark", "upi", inst)
+    cnv["ai"] = db2app_fieldval("Bookmark", "ai", inst)
+    cnv["ti"] = db2app_fieldval("Bookmark", "ti", inst)
+    cnv["si"] = db2app_fieldval("Bookmark", "si", inst)
+    cnv["sd"] = db2app_fieldval("Bookmark", "sd", inst)
+    cnv["cs"] = db2app_fieldval("Bookmark", "cs", inst)
+    cnv["cst"] = db2app_fieldval("Bookmark", "cst", inst)
     return cnv
 
 
@@ -873,6 +973,7 @@ def dblogmsg(op, entity, res):
     log_summary_flds = {
         "DigAcc": ["email", "firstname"],
         "Song": ["aid", "ti", "ar"],
+        "Bookmark": ["aid", "ab", "ar"],
         "SKeyMap": ["skey", "spid"],
         "DigMsg": ["sndr", "msgtype", "rcvr", "songid", "ti"],
         "SASum": ["aid", "sumtype", "start", "end", "ttlsongs"],
@@ -956,8 +1057,8 @@ def update_existing_DigAcc(context, fields):
 def insert_new_Song(cnx, cursor, fields):
     fields = app2db_Song(fields)
     stmt = (
-        "INSERT INTO Song (created, modified, aid, path, ti, ar, ab, smti, smar, smab, el, al, kws, rv, fq, nt, lp, pd, pc, srcid, srcrat, spid) "
-        "VALUES (%(created)s, %(modified)s, %(aid)s, %(path)s, %(ti)s, %(ar)s, %(ab)s, %(smti)s, %(smar)s, %(smab)s, %(el)s, %(al)s, %(kws)s, %(rv)s, %(fq)s, %(nt)s, %(lp)s, %(pd)s, %(pc)s, %(srcid)s, %(srcrat)s, %(spid)s)")
+        "INSERT INTO Song (created, modified, aid, path, ti, ar, ab, smti, smar, smab, el, al, kws, rv, fq, nt, lp, pd, pc, mdtn, srcid, srcrat, spid) "
+        "VALUES (%(created)s, %(modified)s, %(aid)s, %(path)s, %(ti)s, %(ar)s, %(ab)s, %(smti)s, %(smar)s, %(smab)s, %(el)s, %(al)s, %(kws)s, %(rv)s, %(fq)s, %(nt)s, %(lp)s, %(pd)s, %(pc)s, %(mdtn)s, %(srcid)s, %(srcrat)s, %(spid)s)")
     data = {
         'created': fields.get("created"),
         'modified': fields.get("modified"),
@@ -978,6 +1079,7 @@ def insert_new_Song(cnx, cursor, fields):
         'lp': fields.get("lp", entdefs["Song"]["lp"]["dv"]),
         'pd': fields.get("pd", entdefs["Song"]["pd"]["dv"]),
         'pc': fields.get("pc", entdefs["Song"]["pc"]["dv"]),
+        'mdtn': fields.get("mdtn", entdefs["Song"]["mdtn"]["dv"]),
         'srcid': fields.get("srcid", entdefs["Song"]["srcid"]["dv"]),
         'srcrat': fields.get("srcrat", entdefs["Song"]["srcrat"]["dv"]),
         'spid': fields.get("spid", entdefs["Song"]["spid"]["dv"])}
@@ -1015,6 +1117,68 @@ def update_existing_Song(context, fields):
         result[field] = fields[field]
     result = db2app_Song(result)
     dblogmsg("UPD", "Song", result)
+    entcache.cache_remove(result)
+    return result
+
+
+# Write a new Bookmark row, using the given field values or defaults.
+def insert_new_Bookmark(cnx, cursor, fields):
+    fields = app2db_Bookmark(fields)
+    stmt = (
+        "INSERT INTO Bookmark (created, modified, aid, bmtype, ar, ab, smar, smab, nt, url, upi, ai, ti, si, sd, cs, cst) "
+        "VALUES (%(created)s, %(modified)s, %(aid)s, %(bmtype)s, %(ar)s, %(ab)s, %(smar)s, %(smab)s, %(nt)s, %(url)s, %(upi)s, %(ai)s, %(ti)s, %(si)s, %(sd)s, %(cs)s, %(cst)s)")
+    data = {
+        'created': fields.get("created"),
+        'modified': fields.get("modified"),
+        'aid': fields.get("aid", entdefs["Bookmark"]["aid"]["dv"]),
+        'bmtype': fields.get("bmtype", entdefs["Bookmark"]["bmtype"]["dv"]),
+        'ar': fields.get("ar", entdefs["Bookmark"]["ar"]["dv"]),
+        'ab': fields.get("ab", entdefs["Bookmark"]["ab"]["dv"]),
+        'smar': fields.get("smar", entdefs["Bookmark"]["smar"]["dv"]),
+        'smab': fields.get("smab", entdefs["Bookmark"]["smab"]["dv"]),
+        'nt': fields.get("nt", entdefs["Bookmark"]["nt"]["dv"]),
+        'url': fields.get("url", entdefs["Bookmark"]["url"]["dv"]),
+        'upi': fields.get("upi", entdefs["Bookmark"]["upi"]["dv"]),
+        'ai': fields.get("ai", entdefs["Bookmark"]["ai"]["dv"]),
+        'ti': fields.get("ti", entdefs["Bookmark"]["ti"]["dv"]),
+        'si': fields.get("si", entdefs["Bookmark"]["si"]["dv"]),
+        'sd': fields.get("sd", entdefs["Bookmark"]["sd"]["dv"]),
+        'cs': fields.get("cs", entdefs["Bookmark"]["cs"]["dv"]),
+        'cst': fields.get("cst", entdefs["Bookmark"]["cst"]["dv"])}
+    cursor.execute(stmt, data)
+    fields["dsId"] = cursor.lastrowid
+    cnx.commit()
+    fields = db2app_Bookmark(fields)
+    dblogmsg("ADD", "Bookmark", fields)
+    return fields
+
+
+# Update the specified Bookmark row with the given field values.
+def update_existing_Bookmark(context, fields):
+    fields = app2db_Bookmark(fields, fill=False)
+    dsId = int(fields["dsId"])  # Verify int value
+    stmt = ""
+    for field in fields:  # only updating the fields passed in
+        if stmt:
+            stmt += ", "
+        stmt += field + "=(%(" + field + ")s)"
+    stmt = "UPDATE Bookmark SET " + stmt + " WHERE dsId=" + str(dsId)
+    if context["vck"] != "override":
+        stmt += " AND modified=\"" + context["vck"] + "\""
+    data = {}
+    for field in fields:
+        data[field] = fields[field]
+    context["cursor"].execute(stmt, data)
+    if context["cursor"].rowcount < 1 and context["vck"] != "override":
+        logging.error(stmt + " " + json.dumps(data))
+        entcache.cache_clean()  # out of sync, clear it all
+        raise ValueError("Bookmark" + str(dsId) + " update received outdated version check value " + context["vck"] + ".")
+    context["cnx"].commit()
+    result = context["existing"]
+    for field in fields:
+        result[field] = fields[field]
+    result = db2app_Bookmark(result)
+    dblogmsg("UPD", "Bookmark", result)
     entcache.cache_remove(result)
     return result
 
@@ -1309,6 +1473,8 @@ def write_entity(inst, vck="1234-12-12T00:00:00Z"):
                     return update_existing_DigAcc(context, inst)
                 if entity == "Song":
                     return update_existing_Song(context, inst)
+                if entity == "Bookmark":
+                    return update_existing_Bookmark(context, inst)
                 if entity == "SKeyMap":
                     return update_existing_SKeyMap(context, inst)
                 if entity == "DigMsg":
@@ -1327,6 +1493,8 @@ def write_entity(inst, vck="1234-12-12T00:00:00Z"):
                 return insert_new_DigAcc(cnx, cursor, inst)
             if entity == "Song":
                 return insert_new_Song(cnx, cursor, inst)
+            if entity == "Bookmark":
+                return insert_new_Bookmark(cnx, cursor, inst)
             if entity == "SKeyMap":
                 return insert_new_SKeyMap(cnx, cursor, inst)
             if entity == "DigMsg":
@@ -1383,15 +1551,29 @@ def query_DigAcc(cnx, cursor, where):
 
 def query_Song(cnx, cursor, where):
     query = "SELECT dsId, created, modified, "
-    query += "aid, path, ti, ar, ab, smti, smar, smab, el, al, kws, rv, fq, nt, lp, pd, pc, srcid, srcrat, spid"
+    query += "aid, path, ti, ar, ab, smti, smar, smab, el, al, kws, rv, fq, nt, lp, pd, pc, mdtn, srcid, srcrat, spid"
     query += " FROM Song " + where
     cursor.execute(query)
     res = []
-    for (dsId, created, modified, aid, path, ti, ar, ab, smti, smar, smab, el, al, kws, rv, fq, nt, lp, pd, pc, srcid, srcrat, spid) in cursor:
-        inst = {"dsType": "Song", "dsId": dsId, "created": created, "modified": modified, "aid": aid, "path": path, "ti": ti, "ar": ar, "ab": ab, "smti": smti, "smar": smar, "smab": smab, "el": el, "al": al, "kws": kws, "rv": rv, "fq": fq, "nt": nt, "lp": lp, "pd": pd, "pc": pc, "srcid": srcid, "srcrat": srcrat, "spid": spid}
+    for (dsId, created, modified, aid, path, ti, ar, ab, smti, smar, smab, el, al, kws, rv, fq, nt, lp, pd, pc, mdtn, srcid, srcrat, spid) in cursor:
+        inst = {"dsType": "Song", "dsId": dsId, "created": created, "modified": modified, "aid": aid, "path": path, "ti": ti, "ar": ar, "ab": ab, "smti": smti, "smar": smar, "smab": smab, "el": el, "al": al, "kws": kws, "rv": rv, "fq": fq, "nt": nt, "lp": lp, "pd": pd, "pc": pc, "mdtn": mdtn, "srcid": srcid, "srcrat": srcrat, "spid": spid}
         inst = db2app_Song(inst)
         res.append(inst)
     dblogmsg("QRY", "Song", res)
+    return res
+
+
+def query_Bookmark(cnx, cursor, where):
+    query = "SELECT dsId, created, modified, "
+    query += "aid, bmtype, ar, ab, smar, smab, nt, url, upi, ai, ti, si, sd, cs, cst"
+    query += " FROM Bookmark " + where
+    cursor.execute(query)
+    res = []
+    for (dsId, created, modified, aid, bmtype, ar, ab, smar, smab, nt, url, upi, ai, ti, si, sd, cs, cst) in cursor:
+        inst = {"dsType": "Bookmark", "dsId": dsId, "created": created, "modified": modified, "aid": aid, "bmtype": bmtype, "ar": ar, "ab": ab, "smar": smar, "smab": smab, "nt": nt, "url": url, "upi": upi, "ai": ai, "ti": ti, "si": si, "sd": sd, "cs": cs, "cst": cst}
+        inst = db2app_Bookmark(inst)
+        res.append(inst)
+    dblogmsg("QRY", "Bookmark", res)
     return res
 
 
@@ -1480,6 +1662,8 @@ def query_entity(entity, where):
                 return query_DigAcc(cnx, cursor, where)
             if entity == "Song":
                 return query_Song(cnx, cursor, where)
+            if entity == "Bookmark":
+                return query_Bookmark(cnx, cursor, where)
             if entity == "SKeyMap":
                 return query_SKeyMap(cnx, cursor, where)
             if entity == "DigMsg":
@@ -1520,6 +1704,18 @@ def visible_DigAcc_fields(obj, audience):
 def visible_Song_fields(obj, audience):
     filtobj = {}
     for fld, val in obj.items():
+        filtobj[fld] = val
+    return filtobj
+
+
+def visible_Bookmark_fields(obj, audience):
+    filtobj = {}
+    for fld, val in obj.items():
+        if fld == "upi":
+            if obj["upi"]:
+                val = obj["dsId"]
+            else:
+                val = ""
         filtobj[fld] = val
     return filtobj
 
@@ -1576,6 +1772,8 @@ def visible_fields(obj, audience="public"):
         return visible_DigAcc_fields(obj, audience)
     if obj["dsType"] == "Song":
         return visible_Song_fields(obj, audience)
+    if obj["dsType"] == "Bookmark":
+        return visible_Bookmark_fields(obj, audience)
     if obj["dsType"] == "SKeyMap":
         return visible_SKeyMap_fields(obj, audience)
     if obj["dsType"] == "DigMsg":

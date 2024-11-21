@@ -17,7 +17,7 @@ app.refmgr = (function () {
 
     var cache = {};
 
-    var persistentTypes = ["DigAcc", "Song", "SKeyMap", "DigMsg", "SASum", "StInt", "AppService"];
+    var persistentTypes = ["DigAcc", "Song", "Bookmark", "SKeyMap", "DigMsg", "SASum", "StInt", "AppService"];
 
 
     //All json fields are initialized to {} so they can be accessed directly.
@@ -55,6 +55,12 @@ app.refmgr = (function () {
             break;
         case "Song":
             break;
+        case "Bookmark":
+            reconstituteFieldJSONObject("ai", obj);
+            reconstituteFieldJSONObject("ti", obj);
+            reconstituteFieldJSONObject("si", obj);
+            reconstituteFieldJSONObject("sd", obj);
+            break;
         case "SKeyMap":
             reconstituteFieldJSONObject("notes", obj);
             break;
@@ -88,6 +94,12 @@ app.refmgr = (function () {
             break;
         case "Song":
             break;
+        case "Bookmark":
+            obj.ai = JSON.stringify(obj.ai);
+            obj.ti = JSON.stringify(obj.ti);
+            obj.si = JSON.stringify(obj.si);
+            obj.sd = JSON.stringify(obj.sd);
+            break;
         case "SKeyMap":
             obj.notes = JSON.stringify(obj.notes);
             break;
@@ -118,6 +130,8 @@ app.refmgr = (function () {
             obj.status = "";
             break;
         case "Song":
+            break;
+        case "Bookmark":
             break;
         case "SKeyMap":
             break;
@@ -162,7 +176,7 @@ return {
         if(persistentTypes.indexOf(dsType) < 0) {
             jt.log("refmgr.getFull: unknown dsType " + dsType);
             console.trace(); }
-        var url = app.dr("/api/fetchobj?dt=" + dsType + "&di=" + dsId +
+        var url = app.util.dr("/api/fetchobj?dt=" + dsType + "&di=" + dsId +
                          jt.ts("&cb=", "second"));
         var sem = jt.semaphore("refmgr.getFull" + dsType + dsId);
         if(sem && sem.critsec === "processing") {
@@ -195,7 +209,7 @@ return {
     serverUncache: function (dsType, dsId, contf, errf) {
         app.refmgr.uncache(dsType, dsId);
         var logpre = "refmgr.serverUncache " + dsType + " " + dsId + " ";
-        var url = app.dr("/api/uncache?dt=" + dsType + "&di=" + dsId +
+        var url = app.util.dr("/api/uncache?dt=" + dsType + "&di=" + dsId +
                          jt.ts("&cb=", "second"));
         jt.call("GET", url, null,
                 function () {

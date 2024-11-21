@@ -153,30 +153,27 @@ Your music on tap. What you want for what you feel.
 
 <div class="annoscrdiv">
 <div>Select one of your albums to play.</div>
-<img src="docs/screenshots/01SuggAlb.png"/>
+<div class="scrnshotdiv"><img src="docs/screenshots/01SuggAlb.png"/></div>
 </div>
 
 <div class="annoscrdiv">
-<div>Adjust knobs, keys, stars, and comment to reflect what you feel.</div>
-<img src="docs/screenshots/02AlbPlayRating.png"/>
+<div>Adjust knobs, keys, stars, and comment to reflect what you feel as you're listening. </div>
+<div class="scrnshotdiv"><img src="docs/screenshots/02AlbPlayRating.png"/></div>
 </div>
 
 <div class="annoscrdiv">
-<div>Set the filters for what you want to hear.</div>
-<img src="docs/screenshots/03DeckFilters.png"/>
+<div>Continuous select autoplay everything you've listened to, filtering for what you want to hear.</div>
+<div class="scrnshotdiv"><img src="docs/screenshots/03DeckFilters.png"/></div>
 </div>
 
+<!--
 <div class="annoscrdiv">
-<div>Fine tune what's on deck.</div>
-<img src="docs/screenshots/04DeckAction.png"/>
+<div>Fast find what you want by artist, album, title, comment.</div>
+<div class="scrnshotdiv"><img src="docs/screenshots/04Search.png"/></div>
 </div>
+-->
 
 <div id="hubacctdiv">
-<div id="featurelistdiv">Digger features: <ul>
-<li>Switch between album, autoplay and search anytime.
-<li>Describe songs as you listen.
-<li>Autoplay what you want to hear.
-</ul></div>
 <div>Connect to <em>DiggerHub</em> for backup, sync, and
 optional rating collaboration. </div>
 <div id="hubaccountcontentdiv" class="boxedcontentdiv"></div>
@@ -185,7 +182,7 @@ optional rating collaboration. </div>
 <div class="textsectionspacerdiv"></div>
 
 <div class="textcontentdiv convocontentdiv"> The Digger Custom Autoplay
-Mixer can reach across genres, time periods and artists, preferring
+Mixer reaches across genres, time periods and artists, preferring
 what you've least recently heard.  Rediscover your music library.  <a
 href="#showdownloadlinks" onclick="app.login.scrollToTopOfContent();return
 false">Dig into your music</a>. </div>

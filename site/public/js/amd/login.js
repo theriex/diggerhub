@@ -10,7 +10,7 @@ app.login = (function () {
 
     //manager dispatch function string - shorthand for event defs
     function mdfs (mgrfname, ...args) {
-        var pstr = app.paramstr(args); var fstr;
+        var pstr = app.util.paramstr(args); var fstr;
         mgrfname = mgrfname.split(".");
         fstr = "app.login.dispatch('" + mgrfname[0] + "','" +
             mgrfname[1] + "'" + pstr + ")";
@@ -76,7 +76,7 @@ app.login = (function () {
             if(!ret) {
                 return errf(403, "Cookie read failed"); }
             const ps = {an:ret.authname, at:ret.authtoken};
-            jt.call("POST", app.dr("/api/acctok"), jt.objdata(ps),
+            jt.call("POST", app.util.dr("/api/acctok"), jt.objdata(ps),
                     contf, errf); }
     };  //end mgrs.ap returned functions
     }());
@@ -94,7 +94,7 @@ app.login = (function () {
                 if(cookauth) {
                     auth = {an:cookauth.authname, at:cookauth.authtoken}; } }
             if(auth) {
-                jt.call("POST", app.dr("/api/acctok"), jt.objdata(auth),
+                jt.call("POST", app.util.dr("/api/acctok"), jt.objdata(auth),
                         contf, errf); }
             else {
                 errf(403, "No authentication parameters given"); } }
@@ -108,6 +108,7 @@ app.login = (function () {
         initDisplay: function (dispdiv) {
             dispdiv = dispdiv || haid;
             if(!jt.byId(dispdiv)) { return; }  //no account access
+            app.top.dispatch("aaa", "initialize");
             app.top.dispatch("afg", "runOutsideApp", dispdiv);
             initialSignIn(
                 function (accntok) {
@@ -155,7 +156,7 @@ app.login = (function () {
     mgrs.hsi = (function () {
         var context = null;
         function getAccount (ao, errf) {
-            jt.call("POST", app.dr("/api/acctok"), jt.objdata(ao),
+            jt.call("POST", app.util.dr("/api/acctok"), jt.objdata(ao),
                 function (accntok) {
                     app.top.dispatch("hcu", "deserializeAccount", accntok[0]);
                     app.top.dispatch("aaa", "reflectAccountChangeInRuntime",
@@ -184,7 +185,7 @@ app.login = (function () {
     return {
         signIn: function (formDispId, callbackfunc) {
             var acct = app.top.dispatch("aaa", "getAccount");
-            if(acct) {
+            if(acct && acct.dsId !== "101") {
                 return callbackfunc(acct); }
             context = {divid:formDispId, cbf:callbackfunc};
             acctFromParameters(); }
@@ -346,7 +347,8 @@ app.login = (function () {
                          ["div", {id:"btpixdiv"}]]));
                     if(!btst) {  //verify beta test still active first
                         callstat("Checking beta test program status...");
-                        const url = app.cb("api/betastat", {sitype:bprgnm});
+                        const url = app.util.cb("api/betastat",
+                                                {sitype:bprgnm});
                         return jt.call("GET", url, null,
                             function (statrets) {
                                 callstat("");
@@ -355,7 +357,7 @@ app.login = (function () {
                             errf); }
                     if(!isopen()) {
                         jt.out("btpirwrdp", "This round of beta testing is now closed and all gift cards have been reserved.  You are welcome to sign up for priority consideration in any future testing."); }
-                    if(!acct) {  //sign in first, help dumb bots move on
+                    if(!acct || acct.dsId === "101") {  //sign in first
                         const siid = "hubaccountcontentdiv";  //like main page
                         jt.out("btpixdiv", jt.tac2html(
                             ["div", {id:"hubacctdiv"},
@@ -370,7 +372,8 @@ app.login = (function () {
                         const data = jt.objdata(
                             {an:acct.email, at:acct.token, sitype:bprgnm,
                              confcode:app.startParams.confcode});
-                        return jt.call("POST", app.dr("/api/betastat"), data,
+                        return jt.call("POST", app.util.dr("/api/betastat"),
+                            data,
                             function (stints) {
                                 callstat("");
                                 stint = stints[0];
@@ -405,14 +408,14 @@ app.login = (function () {
                     else if(stint.status === "Abandoned") {
                         jt.out("btpnavdiv", "Your beta testing was incomplete. After 3 weeks it was marked as abandoned to make room for another tester to go ahead.  If you would like to inquire whether it might be possible to re-activate your beta test, contact " + supplink + ". Your DiggerHub account is still active, your song impressions continue to be saved, and hopefully Digger will continue to be a valuable music listening tool for you."); }
                     else {  //!isopen() or status "Queued" or whatever
-                        jt.out("btpnavdiv", "Thanks for your interest in beta testing Digger! This beta testing round is now closed, but your place in line has been noted and we'll be in touch if there's any more budget for gift cards. Meanwhile if you want to record your music impressions while listening, then autoplay your music, you can download Digger at no cost from " + hublink + "."); } } },
+                        jt.out("btpnavdiv", "Thanks for your interest in beta testing Digger! This beta testing round is now closed, but your place in line has been noted and we'll be in touch if there's any more budget for gift cards. Meanwhile if you want to record your music impressions while listening and enjoy continuous select autoplay, you can download Digger at no cost from " + hublink + "."); } } },
             rating:{  //use digger, monitor progress
                 cmp:function () {
                     return (cnts && cnts.ttl >= 50 && cnts.mto >= 6); },
                 display:function () {
                     jt.out("btpnavdiv", "Your beta test has started! If you have not already installed Digger for " + stint.stdat.pretest.whichplat + ", click the download link on " + hublink + " to request a promo code, then sign in with the app and start listening.  Return to this page to see your progress.  If you have any questions email " + supplink + ". Thanks for testing!");
                     if(cnts && cnts.ttl > 0) {
-                        jt.out("btpnavdiv", "So far you've described " + over50(cnts.ttl) + " songs from your collection and listened to " + over50(cnts.mto) + " songs more than once.  After listening to 50 songs or more, use the filter toggles and range selectors in the deck display to see how well autoplay works for two listening situations of your choosing.  Come back here for some final exit questions and you're beta test is complete.  If you have any questions, concerns, comments or anything else email " + supplink + ". Thanks for testing!"); }
+                        jt.out("btpnavdiv", "So far you've described <b>" + over50(cnts.ttl) + "</b> songs from your collection and listened to <b>" + over50(cnts.mto) + "</b> songs more than once.  After listening to 50+ songs, use the filter toggles and range selectors to try continuous select autoplay in a couple (2) of your common listening situations.  If you have any questions, concerns, comments or anything else email " + supplink + ". Thanks for testing!"); }
                     jt.out("btpdetdiv", jt.tac2html(
                         ["a", {href:"#refreshCounts",
                                onclick:mdfs("btp.refreshSongCounts")},
@@ -453,7 +456,7 @@ app.login = (function () {
         function helloLineHTML () {
             const gw = "Thanks for your interest in the Digger Beta Testing Program!";
             const sw = "Welcome back $DIGNAME!";
-            if(acct) {
+            if(acct && acct.dsId !== "101") {
                 return sw.replace(/\$DIGNAME/g, acct.firstname); }
             return gw; }
     return {
@@ -463,7 +466,7 @@ app.login = (function () {
             const data = jt.objdata(
                 {an:acct.email, at:acct.token, sitype:bprgnm,
                  action:"songCounts", platform:stint.stdat.pretest.whichplat});
-            jt.call("POST", app.dr("/api/betastat"), data,
+            jt.call("POST", app.util.dr("/api/betastat"), data,
                 function (songs) {
                     callstat("");
                     updateCountsFromSongs(songs);
@@ -474,7 +477,7 @@ app.login = (function () {
             const data = jt.objdata(
                 {an:acct.email, at:acct.token, sitype:bprgnm,
                  action:"sendInvite"});  //text and auth server side
-            jt.call("POST", app.dr("/api/betastat"), data,
+            jt.call("POST", app.util.dr("/api/betastat"), data,
                 function () {
                     jt.out("btpdetdiv",
                            "Invitation sent, check your email."); },
@@ -484,7 +487,7 @@ app.login = (function () {
             const data = jt.objdata(
                 {an:acct.email, at:acct.token, sitype:bprgnm,
                  action:"save", stdat:JSON.stringify(stint.stdat)});
-            jt.call("POST", app.dr("/api/betastat"), data,
+            jt.call("POST", app.util.dr("/api/betastat"), data,
                 function (stints) {
                     stint = stints[0];
                     stint.stdat = JSON.parse(stint.stdat);
@@ -552,14 +555,14 @@ app.login = (function () {
             droidp: "Request a dpem(promotional link) to evaluate Digger at no cost, or help support ongoing development and link(buy Digger for Android).",
             webapp: "Digger is a microserver you access using a web browser.  If you have a relatively recent computer, link(Download Digger) as a prebuilt package.  If you have an older computer, or if you already have node.js installed, follow the $gitinstall instructions.  For setup details, see the $webappdoc description page." };
         function iosPromoEmailLink () {
-            const emaddr = app.subPlaceholders(null, null, "SUPPEMAIL");
+            const emaddr = app.docs.subPlaceholders(null, null, "SUPPEMAIL");
             const subj = "Digger for iOS promo code";
             const body = "Hi,\n\nI'd like to help evaluate Digger for iOS. Please send me a promotional code to get Digger at no cost from the App Store.\n\nThanks,\n";
             const link = "mailto:" + emaddr + "?subject=" + jt.dquotenc(subj) +
                   "&body=" + jt.dquotenc(body);
             return link; }
         function droidPromoEmailLink () {
-            const emaddr = app.subPlaceholders(null, null, "SUPPEMAIL");
+            const emaddr = app.docs.subPlaceholders(null, null, "SUPPEMAIL");
             const subj = "Digger for Android promo code";
             const body = "Hi,\n\nPI'd like to help evaluate Digger for Android. Please send me a promotional link to get Digger at no cost from Google Play.\n\nThanks,\n";
             const link = "mailto:" + emaddr + "?subject=" + jt.dquotenc(subj) +
@@ -775,7 +778,7 @@ app.login = (function () {
                 jt.out("sgfdiv", "Fetching Song " + app.startParams.songid);
                 const dat = {an:authobj.email, at:authobj.token,
                              songid:app.startParams.songid};
-                jt.call("POST", app.dr("/api/songtip"), jt.objdata(dat),
+                jt.call("POST", app.util.dr("/api/songtip"), jt.objdata(dat),
                         function (songs) {
                             mgrs.sgf.makeFindDisplay(songs[0]); },
                         function (code, errtxt) {
@@ -798,9 +801,7 @@ app.login = (function () {
             if(ricd && ricd.offsetWidth > 600) {
                 ricd.style.display = "table";
                 ricd.style.margin = "0px auto"; } }
-    return {
-        initialize: function () {
-            app.svc.dispatch("gen", "initplat", "web");  //doc content retrieval
+        function activateOverlayDisplayForNavBarElements () {
             const contactdiv = jt.byId("contactdiv");
             if(contactdiv) {
                 Array.from(contactdiv.children).forEach(function (a) {
@@ -809,22 +810,26 @@ app.login = (function () {
                         const sd = jt.byId("docdispxdiv");
                         if(sd) {
                             sd.scrollIntoView(); }
-                        app.displayDoc("hpgoverlaydiv",
-                                       event.target.href); }); }); }
-            app.overlaydiv = "hpgoverlaydiv";
+                        app.docs.displayDoc("hpgoverlaydiv",
+                                            event.target.href); }); }); }
+            app.overlaydiv = "hpgoverlaydiv"; }
+    return {
+        initialize: function () {
+            activateOverlayDisplayForNavBarElements();
+            app.svc.init("web");
             if(app.startPath.startsWith("/plink") ||
                app.startPath.startsWith("/listener")) {
                 return adjustReportDisplay(); }
             switch(app.startPath) {
             case "/iosappstore": return mgrs.mmd.iosappstore();
-            case "/account": return mgrs.had.display();
+            //case "/account": return mgrs.had.display();
             case "/beta": return mgrs.btp.display();
-            case "/songfinder": return mgrs.sgf.display();
-            case "/digger": return app.initDiggerModules();
+            //case "/songfinder": return mgrs.sgf.display();
+            //case "/digger": return app.boot.initDiggerModules();
             default: jt.log("Standard site homepage display"); }
-            mgrs.hua.initDisplay();
             //setTimeout(mgrs.mrq.runMarquee, 12000);
-            mgrs.sld.runSlideshow(); },
+            //mgrs.sld.runSlideshow();
+            mgrs.hua.initDisplay(); },
         scrollToTopOfContent: function () {
             const div = jt.byId("sitecontentdiv");
             div.scrollTo({top:0, left:0, behavior:"smooth"}); }

@@ -41,12 +41,37 @@ CREATE TABLE Song (  -- Rating and play information
   lp VARCHAR(256),
   pd VARCHAR(256),
   pc INT,
+  mdtn INT,
   srcid BIGINT,
   srcrat VARCHAR(256),
   spid VARCHAR(256),
   PRIMARY KEY (dsId)
 );
 ALTER TABLE Song AUTO_INCREMENT = 2020;
+
+CREATE TABLE Bookmark (  -- A link to web music
+  dsId BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE,
+  created VARCHAR(256) NOT NULL,
+  modified VARCHAR(256) NOT NULL,
+  batchconv VARCHAR(256),
+  aid BIGINT NOT NULL,
+  bmtype VARCHAR(256),
+  ar VARCHAR(256),
+  ab VARCHAR(256) NOT NULL,
+  smar VARCHAR(256),
+  smab VARCHAR(256),
+  nt LONGTEXT,
+  url LONGTEXT,
+  upi LONGBLOB,
+  ai LONGTEXT,
+  ti LONGTEXT,
+  si LONGTEXT,
+  sd LONGTEXT,
+  cs LONGTEXT,
+  cst VARCHAR(256),
+  PRIMARY KEY (dsId)
+);
+ALTER TABLE Bookmark AUTO_INCREMENT = 2020;
 
 CREATE TABLE SKeyMap (  -- Song Title/Artist/Album key mappings
   dsId BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE,
