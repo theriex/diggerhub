@@ -132,8 +132,20 @@ FLOWCONTENTHTML = """
 
 <div id="toptextdiv" class="textcontentdiv boxedcontentdiv">
 <div>
-Your music on tap. What you want for what you feel.
+The Digger Listening Collection Music Player
 </div>
+</div>
+
+<div id="playfeaturesdiv" class="boxedcontentdiv">
+<table>
+<tr><td><img class="featureico" src="img/search.png"/></td><td>Search across artists, albums, titles, genres and notes to find what you want to play fast.</td></tr>
+<tr><td><img class="featureico" src="img/album.png"/></td><td>Play albums.</td></tr>
+<tr><td><img class="featureico" src="img/deck.png"/></td><td>Continuously autoplay songs matching your filter settings.</td></tr>
+</table>
+</div>
+
+<div id="quickdispdiv" class="textcontentctrdiv">
+Put yourself into your music.  Record how you feel and play forever.
 </div>
 
 <div id="downloadsdiv" class="boxedcontentdiv">
@@ -151,18 +163,22 @@ Your music on tap. What you want for what you feel.
   <div class="platoptdescdiv"></div>
 </div>
 
+<div id="gettingstartedtitlediv" class="textcontentctrdiv">
+- Getting started -
+</div>
+
 <div class="annoscrdiv">
 <div>Select one of your albums to play.</div>
 <div class="scrnshotdiv"><img src="docs/screenshots/01SuggAlb.png"/></div>
 </div>
 
 <div class="annoscrdiv">
-<div>Adjust knobs, keys, stars, and comment to reflect what you feel as you're listening. </div>
+<div>Adjust knobs, keys, stars, and comments to reflect what you feel as you're listening. </div>
 <div class="scrnshotdiv"><img src="docs/screenshots/02AlbPlayRating.png"/></div>
 </div>
 
 <div class="annoscrdiv">
-<div>Continuous select autoplay everything you've listened to, filtering for what you want to hear.</div>
+<div>Continuous select autoplay filtering what you want to hear.</div>
 <div class="scrnshotdiv"><img src="docs/screenshots/03DeckFilters.png"/></div>
 </div>
 
@@ -181,11 +197,12 @@ optional rating collaboration. </div>
 
 <div class="textsectionspacerdiv"></div>
 
-<div class="textcontentdiv convocontentdiv"> The Digger Custom Autoplay
-Mixer reaches across genres, time periods and artists, preferring
-what you've least recently heard.  Rediscover your music library.  <a
-href="#showdownloadlinks" onclick="app.login.scrollToTopOfContent();return
-false">Dig into your music</a>. </div>
+<div class="textcontentdiv convocontentdiv"> Digger reaches across genres,
+time periods and artists, preferring what you've least recently heard.
+Digger apps are open source respecting your data, your music, and you.
+Rediscover your music library.  <a href="#showdownloadlinks"
+onclick="app.login.scrollToTopOfContent();return false">Dig into your
+music</a>. </div>
 
 <div id="headertextdiv">
   <div id="marqueeplaceholderdiv">&nbsp;</div>
