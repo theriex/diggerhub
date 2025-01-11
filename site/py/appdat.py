@@ -182,7 +182,9 @@ def write_song(updsong, digacc, forcenew=False):
 
 
 def find_hub_push_songs(digacc, prevsync):
-    maxsongs = 200
+    # Avg size of a song 07jan25 is 630 bytes.  Minimize round trip calls
+    # within some kind of acceptable limit.  Figuring 800k probably ok.
+    maxsongs = 1300
     where = ("WHERE aid = " + digacc["dsId"] +
              " AND modified > \"" + prevsync + "\""
              " ORDER BY modified LIMIT " + str(maxsongs))

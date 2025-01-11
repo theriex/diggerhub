@@ -37,7 +37,7 @@ def appversion():
     return util.version()
 
 @app.route('/api/doctext')
-def doctext():  #params: docurl
+def doctext():  # params: docurl
     return util.doctext()
 
 ####### Account actions:
@@ -59,11 +59,11 @@ def mailpwr():  # params: email, returl
     return util.secure(util.mailpwr)
 
 @app.route('/api/emsupp', methods=['GET', 'POST'])
-def emsupp():  #params: auth, subj, body
+def emsupp():  # params: auth, subj, body
     return util.secure(util.emsupp)
 
 @app.route('/api/deleteme', methods=['GET', 'POST'])
-def deleteme():  #params: auth, tzoff
+def deleteme():  # params: auth, tzoff
     return util.secure(util.deleteme)
 
 ####### Local song data and collaboration actions:
@@ -89,7 +89,7 @@ def fancollab():  # params: auth, mfid, ctype
     return util.secure(appdat.fancollab)
 
 @app.route('/api/fanmsg', methods=['GET', 'POST'])
-def fanmsg():  #params: auth, action, idcsv
+def fanmsg():  # params: auth, action, idcsv
     return util.secure(appdat.fanmsg)
 
 @app.route('/api/musfdat')
@@ -105,11 +105,11 @@ def suggdown():  # params: auth, suggtype
     return util.secure(appdat.suggdown)
 
 @app.route('/api/nosugg', methods=['GET', 'POST'])
-def nosugg():  #params: auth, artist, album, fq
+def nosugg():  # params: auth, artist, album, fq
     return util.secure(appdat.nosugg)
 
 @app.route('/api/betastat', methods=['GET', 'POST'])
-def betastat():  #params: auth if post
+def betastat():  # params: auth if post
     return appdat.betastat()
 
 
@@ -128,7 +128,7 @@ def playerr():  # params: auth, type, spid, error
     return util.secure(appdat.playerr)
 
 @app.route('/api/songtip', methods=['GET', 'POST'])
-def songtip():  #parms: auth, songid
+def songtip():  # params: auth, songid
     return util.secure(appdat.songtip)
 
 

@@ -57,7 +57,6 @@ module.exports = (function () {
      //    ig: ignore flag, hide this keyword from display even if used
      //    dsc: description of what the keyword means
      //*2 settings:
-     //    ctrls: last saved state of the UI control values
      //    waitcodedays: player.js mgrs.tun B/Z/O time overrides
      //    songcounts: fetched, posschg, totals
      //    xps: playlist exports by platform, then by playlist name
