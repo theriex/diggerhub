@@ -41,6 +41,7 @@ CREATE TABLE Song (  -- Rating and play information
   lp VARCHAR(256),
   pd VARCHAR(256),
   pc INT,
+  mddn INT,
   mdtn INT,
   srcid BIGINT,
   srcrat VARCHAR(256),
@@ -61,14 +62,13 @@ CREATE TABLE Bookmark (  -- A link to web music
   smar VARCHAR(256),
   smab VARCHAR(256),
   nt LONGTEXT,
-  url LONGTEXT,
+  url VARCHAR(256),
   upi LONGBLOB,
   ai LONGTEXT,
   ti LONGTEXT,
   si LONGTEXT,
   sd LONGTEXT,
-  cs LONGTEXT,
-  cst VARCHAR(256),
+  cs VARCHAR(256),
   PRIMARY KEY (dsId)
 );
 ALTER TABLE Bookmark AUTO_INCREMENT = 2020;

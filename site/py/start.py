@@ -12,7 +12,7 @@ import py.dbacc as dbacc
 import io
 from PIL import Image, ImageDraw, ImageFont
 
-CACHE_BUST_PARAM = "v=250111"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=250115"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -244,10 +244,15 @@ def weekly_top20_content_html(sasum):
     baseurl = "https://diggerhub.com/"
     moday = month_and_day_from_dbtimestamp(sasum["end"])
     html = "<div id=\"reptoplinediv\">" + sasum["digname"] + "</div>\n"
-    html += ("<div id=\"reptitlelinediv\"><a href=\"" + baseurl + "listener/" +
-             sasum["digname"] + "\">Weekly Top 20</a> - <a href=\"" + baseurl +
-             "plink/wt20/" + sasum["digname"] + "/" + sasum["end"][0:10] +
-             "\"><span class=\"datevalspan\">" + moday + "</span></a></div>\n")
+    html += "<div id=\"reptabsdiv\"></div>"
+    html += "<div id=\"reptbodydiv\">"
+    html += ("<div id=\"reptitlelinediv\">" +
+             "<span id=\"hrtlspan\" data-dnm=\"" + sasum["digname"] +
+             "\">Weekly Top 20</span> - " +
+             "<span id=\"hrtpspan\" class=\"datevalspan\"" +
+             " data-plink=\"plink/wt20/" + sasum["digname"] + "/" +
+             sasum["end"][0:10] + "\">" + moday + "</span>" +
+             "</div>\n")
     html += "<ol>\n"
     for song in util.load_json_or_default(sasum["songs"], []):
         html += "<li>" + song_html(song) + "\n"
@@ -263,6 +268,7 @@ def weekly_top20_content_html(sasum):
     html += ("<div id=\"repsongtotaldiv\">" + str(sasum["ttlsongs"]) +
              " songs synchronized to <a href=\"https://diggerhub.com\">" +
              "DiggerHub</a></div>\n")
+    html += "</div>";  # end reptbodydiv
     return html
 
 

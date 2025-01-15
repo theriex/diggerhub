@@ -132,6 +132,17 @@ def songtip():  # params: auth, songid
     return util.secure(appdat.songtip)
 
 
+####### Bookmark access
+
+@app.route('/api/bookmarks')
+def bookmarks():  # params: accid, befiso, collstat, bmrkid
+    return appdat.bookmarks()
+
+@app.route('/api/updbmrk', methods=['GET', 'POST'])
+def updbmrk():  # params: auth, Bookmark
+    return util.secure(appdat.updbmrk)
+
+
 ######################################################################
 #  General site access
 #

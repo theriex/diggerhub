@@ -794,13 +794,79 @@ app.login = (function () {
     }());
 
 
-    //The general manager handles top level page setup and actions
-    mgrs.gen = (function () {
+    //The report manager handles wt20 and bookmarks display
+    mgrs.rpt = (function () {
+        const tabs = {wt20:{name:"WT20"},
+                      bmrk:{name:"Bookmarks"},
+                      acct:{name:"Sign In"}};
+        var navactive = false;
+        function tabHTML (key) {
+            const tab = tabs[key];
+            if(tab.selected) {
+                return jt.tac2html(
+                    ["span", {cla:"rptnavtabselspan"},
+                     tab.name]); }
+            return jt.tac2html(
+                ["a", {cla:"reptablink",
+                       onclick:mdfs("rpt.displayTab", key)},
+                 tab.name]); }
+        function redisplayNavTabs () {
+            if(!navactive) { return ""; }
+            jt.out("reptabsdiv", jt.tac2html(
+                ["div", {id:"reptabscontentdiv"},
+                 Object.keys(tabs).map((key, idx) =>
+                     [["span", {cla:"rptnavtabsepspan"},
+                       (idx? "&nbsp;&nbsp;|&nbsp;&nbsp;" : "")],
+                      ["div", {cla:"rptnavtabdiv"},
+                       tabHTML(key)]])])); }
+        function displayBookmarkContent (/*key*/) {
+            return "bookmark content goes here"; }
+        function isListenerPage () {
+            return window.location.href.search(/listener/) >= 0; }
+        function activatePermalink () {
+            const span = jt.byId("hrtpspan");
+            span.innerHTML = jt.tac2html(
+                ["a", {href:app.util.dr(span.dataset.plink)},
+                 span.innerHTML]); }
+        function activateListenerLink () {
+            const span = jt.byId("hrtlspan");
+            span.innerHTML = jt.tac2html(
+                ["a", {href:app.util.dr("listener/" + span.dataset.dnm)},
+                 span.innerHTML]); }
         function adjustReportDisplay () {
             const ricd = jt.byId("reportinnercontentdiv");
             if(ricd && ricd.offsetWidth > 600) {
                 ricd.style.display = "table";
+                ricd.style.minWidth = "600px";
+                ricd.style.maxWidth = "600px";
                 ricd.style.margin = "0px auto"; } }
+    return {
+        initialize: function () {
+            if(isListenerPage()) {
+                activatePermalink();
+                tabs.wt20.selected = true;
+                tabs.wt20.html = jt.byId("reptbodydiv").innerHTML;
+                tabs.bmrk.html = displayBookmarkContent;
+                tabs.acct.html = "Not implemented yet";
+                redisplayNavTabs(); }
+            else {
+                activateListenerLink(); }
+            adjustReportDisplay(); },
+        displayTab: function (key) {
+            var html = tabs[key].html;
+            Object.values(tabs).forEach(function (tab) {
+                tab.selected = false; });
+            tabs[key].selected = true;
+            redisplayNavTabs();
+            if(typeof html === "function") {
+                html = html(key); }
+            jt.out("reptbodydiv", html); }
+    };  //end mgrs.rpot returned functions
+    }());
+
+
+    //The general manager handles top level page setup and actions
+    mgrs.gen = (function () {
         function activateOverlayDisplayForNavBarElements () {
             const contactdiv = jt.byId("contactdiv");
             if(contactdiv) {
@@ -819,7 +885,7 @@ app.login = (function () {
             app.svc.init("web");
             if(app.startPath.startsWith("/plink") ||
                app.startPath.startsWith("/listener")) {
-                return adjustReportDisplay(); }
+                return mgrs.rpt.initialize(); }
             switch(app.startPath) {
             case "/iosappstore": return mgrs.mmd.iosappstore();
             //case "/account": return mgrs.had.display();

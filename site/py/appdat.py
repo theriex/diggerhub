@@ -1322,3 +1322,58 @@ def songtip():
     except ValueError as e:
         return util.serve_value_error(e)
     return util.respJSON([song])
+
+
+# Fetch and return the N most recently modified bookmarks for the given
+# accid, updated befiso or now, including the bmrkid bookmark if given,
+# and matching the collstat value if given.  Page through on modified
+# rather than created.  If you just bought something you noted years ago
+# that's more important than when you first created a bookmark for it.
+def bookmarks():
+    try:
+        accid = dbacc.reqarg("accid", "dbid", required=True)
+        befiso = dbacc.reqarg("befiso", "string")
+        if not befiso:
+            befiso = dbacc.nowISO()
+        collstat = dbacc.reqarg("collstat", "string")
+        if collstat:
+            collstat = " AND cs = \"" + collstat + "\""
+        bmrkid = dbacc.reqarg("bmrkid", "dbid")
+        if not bmrkid:
+            bmrkid = 0
+        where = ("WHERE aid = " + str(accid) +
+                 " AND ((created < \"" + befiso + "\"" + collstat + ")" +
+                 "       OR" +
+                 "      (dsId = " + str(bmrkid) + "))" +
+                 " ORDER BY created DESC LIMIT 300")
+        bkms = dbacc.query_entity("Bookmark", where)
+    except ValueError as e:
+        return util.serve_value_error(e)
+    return util.respJSON(bkms)
+
+
+# Create or update the given bookmark.
+def updbmrk():
+    try:
+        digacc, _ = util.authenticate()
+        artist = dbacc.reqarg("ar", "string", required=True)
+        album = dbacc.reqarg("ab", "string", required=True)
+        bmrk = {"dsType": "Bookmark", "aid": digacc["dsId"],
+                "dsId": dbacc.reqarg("dsId", "dbid"),  # specified if update
+                "modified":dbacc.reqarg("modified", "string"),
+                "bmtype": dbacc.reqarg("bmtype", "string", required=True),
+                "ar": artist, "ab": album,
+                "smar": standardized_colloquial_match(artist),
+                "smab": standardized_colloquial_match(album),
+                "nt": dbacc.reqarg("nt", "text"),
+                "url": dbacc.reqarg("url", "url", required=True),
+                "upi": dbacc.reqarg("upi", "image"),
+                "ai": dbacc.reqarg("ai", "json"),
+                "ti": dbacc.reqarg("ti", "json"),
+                "si": dbacc.reqarg("si", "json"),
+                "sd": dbacc.reqarg("sd", "json"),
+                "cs": dbacc.reqarg("cs", "string", required=True)}
+        bmrk = dbacc.write_entity(bmrk, vck=bmrk["modified"])
+    except ValueError as e:
+        return util.serve_value_error(e)
+    return util.respJSON([bmrk])

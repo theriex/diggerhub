@@ -203,3 +203,10 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
 .repsummarylabelspan { padding-right:5px; font-size:medium; font-style:italic;
   font-weight:bold; }
 #repsongtotaldiv { font-size:small; padding:10px 0px; text-align:center; }
+
+#reptabsdiv { padding:0px 0px 10px 40px; }
+#reptabscontentdiv { display:table; padding:0px 5px; font-size:small;
+  background-image:url("../img/white60percent.png"); }
+.rptnavtabdiv { display:inline-block; font-weight:bold; padding:2px 4px;
+  cursor:pointer; }
+.rptnavtabselspan { font-weight:normal; color:#666; }

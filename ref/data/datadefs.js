@@ -130,25 +130,26 @@ module.exports = (function () {
         {f:"smar", d:"string", c:"standardized match artist"},
         {f:"smab", d:"string", c:"standardized match album"},
         {f:"nt", d:"text", c:"note text (whatever the user writes)"},
-        {f:"url", d:"text", c:"public web source to hear this album"},
+        {f:"url", d:"string", c:"public web source to listen *2"},
         {f:"upi", d:"image", c:"url link preview image"},
         {f:"ai", d:"json", c:"album info like release year, label etc"},
         {f:"ti", d:"json", c:"track info, names and ordering"},
-        {f:"si", d:"json", c:"song info, digger songs summary (*2)"},
+        {f:"si", d:"json", c:"song info, digger songs summary (*3)"},
         {f:"sd", d:"json", c:"supporting details release year, label etc"},
-        {f:"cs", d:"text", c:"collection status (*3)"},
-        {f:"cst", d:"isodate", c:"last collection status value change"}],
+        {f:"cs", d:"string", c:"collection status (*4)"}],
      //Informational fields might not have anything in them.
-     //*1 ab: Album name should match for all contained songs.
-     //*2 si: song info on display request, may be old/missing.
-     //*3 cs: most recent change day stamp kept in sd field
-     //       "Pending" - Haven't listened to it yet.
-     //       "Listened" - Listened to it, see my comments if I bothered.
-     //       "Notable" - Worth hearing, not considering owning.
-     //       "Considering" - Might add this to my collection.
-     //       "Collected" - Own this, might have associated song ratings.
-     //   Album.cst is used similarly to Song.lp for appropriate retrieval.
-     cache:{minutes:0},
+     //*1  ab: Album name should match for all contained songs.  If bmtype
+     //        "Song" this is the song title, if "Performance" then some kind
+     //        of "live at" or whatever identification.
+     //*2 url: Permalink limited to 128 char indexable string limit.  aid+url
+     //        is an alternate key.
+     //*3 si:  song info on display request, may be old/missing.
+     //*4 cs:  most recent change day stamp kept in sd field
+     //        "Listened" - Listened to it, see my comments if I bothered.
+     //        "Notable" - Worth hearing, not considering owning.
+     //        "Considering" - Might add this to my collection.
+     //        "Collected" - Own this, might have associated song ratings.
+        cache:{minutes:0},
      logflds:["aid", "ab", "ar"]},
 
     {entity:"SKeyMap", descr:"Song Title/Artist/Album key mappings", fields:[
