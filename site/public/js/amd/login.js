@@ -794,12 +794,16 @@ app.login = (function () {
     }());
 
 
-    //The report manager handles wt20 and bookmarks display
+    //The report manager handles wt20 and bookmarks display.  Permalink
+    //reports are web artifacts and do not have a nav bar displayed, only a
+    //single link to the listener page.  The listener page shows the nav
+    //bar, and any shareable reports have a link to the associated permalink
+    //report for sharing.
     mgrs.rpt = (function () {
         const tabs = {wt20:{name:"WT20"},
                       bmrk:{name:"Bookmarks"},
                       acct:{name:"Sign In"}};
-        var navactive = false;
+        var navactive = false;  //disable nav until tab impl finished
         function tabHTML (key) {
             const tab = tabs[key];
             if(tab.selected) {

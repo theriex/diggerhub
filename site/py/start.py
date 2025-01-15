@@ -199,8 +199,8 @@ optional rating collaboration. </div>
 
 <div class="textcontentdiv convocontentdiv"> Digger reaches across genres,
 time periods and artists, preferring what you've least recently heard.
-Digger apps are open source respecting your data, your music, and you.
-Rediscover your music library.  <a href="#showdownloadlinks"
+Digger apps are open source, respecting the music you've chosen to be part
+of your life.  Rediscover your music library.  <a href="#showdownloadlinks"
 onclick="app.login.scrollToTopOfContent();return false">Dig into your
 music</a>. </div>
 
