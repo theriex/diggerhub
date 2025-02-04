@@ -25,6 +25,11 @@ import py.mconf as mconf
 def version():
     return "v1.4.4"
 
+def supnm():
+    return "sup2"
+
+def domnm():
+    return "diggerhub.com"
 
 def srverr(msg, code=400):
     # 400 Bad Request
@@ -224,7 +229,8 @@ def administrator_auth():
 
 # If the caller is outside of the context of a web request, then the domain
 # must be passed in.  The support address must be set up in the hosting env.
-def send_mail(emaddr, subj, body, domain=None, sender="support", replyto=""):
+def send_mail(emaddr, subj, body, domain=None, sender=None, replyto=""):
+    sender = sender or supnm()
     domain = domain or flask.request.url.split("/")[2]
     fromaddr = "@".join([sender, domain])
     emaddr = emaddr or fromaddr
@@ -252,7 +258,7 @@ def verify_new_email_valid(emaddr, digacc=None):
         # something @ something . something
         raise ValueError("Invalid email address: " + emaddr)
     emaddr = normalize_email(emaddr)
-    if emaddr == "support@diggerhub.com":
+    if emaddr == supnm() + "@" + domnm():
         raise ValueError("Address reserved for default account")
     existing = dbacc.cfbk("DigAcc", "email", emaddr)
     if existing and (not digacc or existing["dsId"] != digacc["dsId"]):
@@ -442,7 +448,7 @@ def emsupp():
         sendhdr = "From " + digacc["firstname"] + " " + digacc["email"] + "\n"
         sendhdr += "Sent " + dbacc.nowISO()
         body = sendhdr + "\n" + body
-        send_mail("support@diggerhub.com", subj, body)
+        send_mail(supnm + "@" + domnm(), subj, body)
     except ValueError as e:
         logging.info("emsupp failed: " + str(e))
         return serve_value_error(e)

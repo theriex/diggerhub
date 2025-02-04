@@ -105,8 +105,8 @@ def send_hub_summary():
            daily_reminders()]
     body = "\n".join(sta) + "\n"
     if runinfo["mode"] in ["all", "summary"]:
-        util.send_mail("support@diggerhub.com", subj, body,
-                       domain="diggerhub.com")
+        util.send_mail(util.supnm() + "@" + util.domnm(), subj, body,
+                       domain=util.domnm())
     else:
         logging.info("send_hub_summary mode " + runinfo["mode"] + "\n" + body)
 

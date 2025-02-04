@@ -317,7 +317,7 @@ app.login = (function () {
     //The beta test program display manager handles a beta testing process
     mgrs.btp = (function () {
         const supplink = jt.tac2html(
-            ["a", {href:"mailto:support@diggerhub.com"}, "support"]);
+            ["a", {href:"mailto:" + app.supnm + "@" + app.domain}, "support"]);
         const hublink = jt.tac2html(
             ["a", {href:"https://diggerhub.com"}, "DiggerHub"]);
         const bprgnm = "beta1";
