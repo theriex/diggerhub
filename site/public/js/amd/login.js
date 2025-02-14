@@ -113,7 +113,7 @@ app.login = (function () {
             initialSignIn(
                 function (accntok) {
                     app.top.dispatch("hcu", "deserializeAccount", accntok[0]);
-                    app.top.dispatch("aaa", "reflectAccountChangeInRuntime",
+                    app.top.dispatch("aaa", "setCurrentAccount",
                                      accntok[0], accntok[1]);
                     authobj = app.top.dispatch("aaa", "getAccount");
                     mgrs.ap.save();
@@ -159,7 +159,7 @@ app.login = (function () {
             jt.call("POST", app.util.dr("/api/acctok"), jt.objdata(ao),
                 function (accntok) {
                     app.top.dispatch("hcu", "deserializeAccount", accntok[0]);
-                    app.top.dispatch("aaa", "reflectAccountChangeInRuntime",
+                    app.top.dispatch("aaa", "setCurrentAccount",
                                      accntok[0], accntok[1]);
                     authobj = app.top.dispatch("aaa", "getAccount");
                     mgrs.ap.save();
@@ -330,7 +330,10 @@ app.login = (function () {
         function isopen () {
             //the penultimate tester does not see a "testing closed" notice
             return (!btst || (btst.active + btst.complete <= progmax)); }
-        function callstat (txt) { jt.out("btpcpdiv", txt); }
+        function callstat (txt) {
+            if(txt) {  //new message, not clearing the display
+                jt.log("btp.callstat " + txt); }
+            jt.out("btpcpdiv", txt); }
         function errf (code, errtxt) { jt.out("btpcpdiv", "Call failed code " +
                                               code + ": " + errtxt); }
         function over50 (cnt) {
@@ -341,9 +344,9 @@ app.login = (function () {
                 cmp:function () {
                     return (btst && acct && stint); },
                 display:function () {
-                    jt.out("btpnavdiv", "To participate, you must have at least 50 songs on an Android or iOS device you will listen to with Digger.  Using Digger, you'll record your impressions of these songs as you listen, then try Digger autoplay in a couple of different listening situations of your choosing.  What you tell us will be vital to the Digger project.");
+                    jt.out("btpnavdiv", "To participate, you must have at least 50 songs on your Android or iOS device you will listen to using Digger.  You'll record your impressions as you listen, then check out continuous select autoplay in a couple of different listening situations of your choosing.  What you tell us about your experience will be vital to the Digger project.");
                     jt.out("btpdetdiv", jt.tac2html(
-                        [["p", {id:"btpirwrdp"}, "As a small gesture of thanks for testing, you will be sent a $50 Bandcamp or Amazon gift card, whichever you prefer.  You'll also have the opportunity to be directly involved in the Digger project if you like, including new feature development."],
+                        [["p", {id:"btpirwrdp"}, "As a small gesture of thanks for testing, you will be sent a $50 Bandcamp or Amazon gift card, whichever you prefer.  You'll also have the opportunity to be directly involved in new feature development if you like."],
                          ["div", {id:"btpixdiv"}]]));
                     if(!btst) {  //verify beta test still active first
                         callstat("Checking beta test program status...");
@@ -359,13 +362,12 @@ app.login = (function () {
                         jt.out("btpirwrdp", "This round of beta testing is now closed and all gift cards have been reserved.  You are welcome to sign up for priority consideration in any future testing."); }
                     if(!acct || acct.dsId === "101") {  //sign in first
                         const siid = "hubaccountcontentdiv";  //like main page
-                        jt.out("btpixdiv", jt.tac2html(
-                            ["div", {id:"hubacctdiv"},
-                             [["p", "To continue, sign in."],
-                              ["div", {id:siid, cla:"boxedcontentdiv"}]]]));
+                        jt.out("btpixdiv", "To continue, sign in.");
+                        jt.byId("hubaccountcontentdiv").style.display = "block";
                         return mgrs.hsi.signIn(siid, function (siacc) {
                             acct = siacc;
                             mgrs.btp.dispCurrStep(); }); }
+                    jt.byId("hubaccountcontentdiv").style.display = "none";
                     if(!stint) {  //init stint to register interest
                         jt.out("btpixdiv", "");
                         callstat("Fetching your testing info...");
@@ -415,7 +417,7 @@ app.login = (function () {
                 display:function () {
                     jt.out("btpnavdiv", "Your beta test has started! If you have not already installed Digger for " + stint.stdat.pretest.whichplat + ", click the download link on " + hublink + " to request a promo code, then sign in with the app and start listening.  Return to this page to see your progress.  If you have any questions email " + supplink + ". Thanks for testing!");
                     if(cnts && cnts.ttl > 0) {
-                        jt.out("btpnavdiv", "So far you've described <b>" + over50(cnts.ttl) + "</b> songs from your collection and listened to <b>" + over50(cnts.mto) + "</b> songs more than once.  After listening to 50+ songs, use the filter toggles and range selectors to try continuous select autoplay in a couple (2) of your common listening situations.  If you have any questions, concerns, comments or anything else email " + supplink + ". Thanks for testing!"); }
+                        jt.out("btpnavdiv", "So far you've described <b>" + over50(cnts.ttl) + "</b> songs from your collection and listened to <b>" + over50(cnts.mto) + "</b> songs more than once.  After listening to 50+ songs, use the filter toggles and range selectors to try continuous select autoplay in at least two different listening situations.  If you have any questions, concerns, comments or anything else email " + supplink + ". Thanks for testing!"); }
                     jt.out("btpdetdiv", jt.tac2html(
                         ["a", {href:"#refreshCounts",
                                onclick:mdfs("btp.refreshSongCounts")},
@@ -508,8 +510,14 @@ app.login = (function () {
                      ["img", {src:"img/appicon.png"}]]],
                    ["div", {id:"btptitlediv"}, "Digger Beta Test"]]],
                  ["div", {id:"btpcontentdiv"},
-                  btpdivs.map((d) => ["div", {id:d}])]]));
-            mgrs.btp.dispCurrStep(); }
+                  btpdivs.map((d) => ["div", {id:d}])],
+                 ["div", {id:"btpacctformdiv"},
+                  ["div", {id:"hubaccountcontentdiv", cla:"boxedcontentdiv",
+                           style:"display:none"}]]]));
+            app.top.dispatch("aaa", "initialize");
+            app.top.dispatch("afg", "runOutsideApp", "hubaccountcontentdiv");
+            app.pdat.addApresDataNotificationTask("betaDisplay", function () {
+                mgrs.btp.dispCurrStep(); }); }
     };  //end mgrs.btp returned function
     }());
 
