@@ -7,5 +7,5 @@
 gunicorn -b :8081 --pythonpath 'site/' main:app &
 echo "gunicorn main process: $!"
 nginx -c $HOME/general/dev/diggerhub/dloc/nginx.conf
-echo "# mysql.server start"
+echo "# brew services start mysql"
 
