@@ -124,7 +124,9 @@ def find_users_and_write_backup_files():
         os.mkdir(bakdir)
     modts = dbacc.timestamp(-1 * 60 * 26)
     users = dbacc.query_entity("DigAcc", "WHERE modified > \"" + modts + "\"" +
-                               "ORDER BY modified DESC")
+                               " OR dsId IN (SELECT DISTINCT(aid) FROM Song" +
+                               " WHERE modified >= \"" + modts + "\")")
+    logging.info(str(len(users)) + " users active since " + modts)
     for user in users:
         logging.info("Processing DigAcc" + str(user["dsId"]) + " " +
                      user["firstname"])
