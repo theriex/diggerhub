@@ -1388,7 +1388,7 @@ def backdat(path):
             raise ValueError("Invalid backup data path")
         logging.info("backdat fetching data for " + str(digacc["dsId"]) +
                      json.dumps(backup))
-        path = backup.get("file")
+        path = util.runtime_home_dir() + backup.get("file")
         with open(path, "r", encoding="utf-8") as datfile:
             bdat = datfile.read()
     except ValueError as e:

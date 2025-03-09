@@ -377,6 +377,10 @@ def runtime_decorate_account(digacc):
     digacc["hubdat"] = json.dumps(hubdat)
 
 
+def runtime_home_dir():
+    return mconf.rundir
+
+
 ############################################################
 ## API endpoints:
 
