@@ -4,6 +4,7 @@
 #pylint: disable=wrong-import-position
 #pylint: disable=wrong-import-order
 #pylint: disable=ungrouped-imports
+#pylint: disable=consider-using-from-import
 import py.mconf as mconf
 import logging
 import logging.handlers
@@ -150,6 +151,8 @@ def updbmrk():  # params: auth, Bookmark
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def startpage(path):
+    if path.startswith("api/bd"):  # leading slash stripped in path match
+        return util.secure(lambda: appdat.backdat(path))
     refer = flask.request.referrer or ""
     return util.secure(lambda: start.startpage(path, refer))
 

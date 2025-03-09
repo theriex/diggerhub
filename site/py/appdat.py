@@ -69,7 +69,7 @@ def song_string(song):
     return song["ti"] + " - " + song.get("ar") + " - " + song.get("ab")
 
 
-def is_unrated_song(song):
+def is_unrated_song(song):  # matches deck.js isUnrated
     unrated = (not song["kws"]) and (song["el"] == 49) and (song["al"] == 49)
     return unrated
 
@@ -166,7 +166,7 @@ def write_song(updsong, digacc, forcenew=False):
     song = None
     if not forcenew:
         song = find_song(updsong)
-    if not song:  # create new
+    if not song:  # create new song shell to fill
         song = {"dsType":"Song", "aid":digacc["dsId"], "modified":""}
     else: # updating existing song instance
         # updsong not from db, and no rating info to save: Client data sync.
@@ -185,24 +185,23 @@ def write_song(updsong, digacc, forcenew=False):
     return updsong
 
 
-def find_hub_push_songs(digacc, prevsync):
+def find_hubsync_merge_songs(hsd, digacc):
     # Avg size of a song 07jan25 is 630 bytes.  Minimize round trip calls
-    # within some kind of acceptable limit.  Figuring 800k probably ok.
-    maxsongs = 1300
+    # within some kind of acceptable limit.  800k worked, but was a noticeable
+    # transmission hit. 400k seems about right.
+    maxsongs = 650
     where = ("WHERE aid = " + digacc["dsId"] +
-             " AND modified > \"" + prevsync + "\""
-             " ORDER BY modified LIMIT " + str(maxsongs))
+             " AND lp > \"" + hsd["syncts"] + "\"" +
+             " ORDER BY lp LIMIT " + str(maxsongs + 1))
     retsongs = dbacc.query_entity("Song", where)
-    for song in retsongs:
-        if not song["path"]:  # bad previous lib handling, fill default
-            song["path"] = make_song_path(0, 0, song.get("ar", "Unknown"),
-                                          song.get("ab", "Singles"),
-                                          song["ti"])
-    if len(retsongs) >= maxsongs:  # let client know more to download
-        digacc["syncsince"] = retsongs[-1]["modified"]
-    else:  # let client know downloads are up to date
-        digacc["syncsince"] = ""
-    return digacc, retsongs
+    if retsongs: # have at least one song that needs to be merged
+        hsd["action"] = "merge"
+        hsd["provdat"] = "complete"
+        if len(retsongs) > maxsongs:
+            hsd["provdat"] = "partial"
+            retsongs = retsongs[0:maxsongs]
+        hsd["syncts"] = retsongs[len(retsongs) - 1]["lp"]
+    return retsongs
 
 
 def unWSRW(matchobj):
@@ -222,27 +221,22 @@ def unescape_song_fields(song):
                                    unWSRW, song[fld])
 
 
-def receive_updated_songs(digacc, updacc, songs):
-    maxsongs = 200
-    if len(songs) > maxsongs:
-        raise ValueError("Request exceeded max " + str(maxsongs) + " songs")
+def update_hubsync_uploaded_songs(hsd, digacc, uplds):
     retsongs = []
-    for song in songs:
+    for song in uplds:
         unescape_song_fields(song)
-        # if any given song write fails, continue so the client doesn't
-        # just retry forever.  Leave for general log monitoring.
-        try:
-            retsongs.append(write_song(song, digacc))
-        except ValueError as e:
-            logging.warning("receive_updated_songs write_song " + str(e))
-    # updacc may contain updates to client fields.  It may not contain
-    # updates to hub server fields like email.
-    for ecf in ["kwdefs", "igfolds", "settings", "musfs"]:
-        if updacc.get(ecf) and updacc[ecf] != digacc[ecf]:
-            digacc[ecf] = updacc[ecf]
-    # always update the account so modified reflects latest sync
-    digacc = dbacc.write_entity(digacc, digacc["modified"])
-    return digacc, retsongs
+        if not is_unrated_song(song):
+            try:  # if any given song write fails, continue with rest
+                retsongs.append(write_song(song, digacc))
+            except ValueError as e:
+                logpre = "update_hubsync_uploaded_songs write_song call: "
+                logging.warning(logpre + str(e))
+    hsd["action"] = "received"
+    hsd["provdat"] = ""  # reset any previous value
+    hsd["syncts"] = ""
+    if retsongs:
+        hsd["syncts"] = retsongs[len(retsongs) - 1]["lp"]
+    return retsongs
 
 
 # When importing from Spotify, title details like parenthetical expressions
@@ -871,19 +865,17 @@ def hubsync():
         digacc, _ = util.authenticate()
         syncdata = json.loads(dbacc.reqarg("syncdata", "json", required=True))
         updacc = syncdata[0]
-        prevsync = updacc.get("syncsince") or updacc["modified"]
-        # provide context for subsequent log messages
-        logging.info("hubsync -> " + digacc["email"] + " prevsync: " + prevsync)
-        if prevsync < digacc["modified"]:  # hub push
-            racc, rsongs = find_hub_push_songs(digacc, prevsync)
-            msg = "hub push"
-        else: # hub receive
-            racc, rsongs = receive_updated_songs(digacc, updacc, syncdata[1:])
-            msg = "hub receive"
-        racc["hubVersion"] = util.version()
-        syncdata = [racc] + rsongs
-        logging.info(msg + " " + digacc["email"] + " " + str(len(rsongs)) +
-                     " songs")
+        settings = json.loads(updacc.get("settings") or "{}")
+        hsd = settings["hubsync"]
+        songs = find_hubsync_merge_songs(hsd, digacc)
+        if not songs:  # nothing needs to be merged, process uploaded songs
+            uplds = syncdata[1:101]  # process max 100 songs per call
+            songs = update_hubsync_uploaded_songs(hsd, digacc, uplds)
+        digacc["settings"] = json.dumps(settings)  # reserialize w/updated hsd
+        digacc["hubVersion"] = util.version()  # app version checking support
+        syncdata = [digacc] + songs
+        les = ["hubsync return", digacc["email"], json.dumps(hsd)]
+        logging.info(" ".join(les))
     except ValueError as e:
         return util.serve_value_error(e)
     return util.respJSON(syncdata, audience="private")  # include email
@@ -1381,3 +1373,24 @@ def updbmrk():
     except ValueError as e:
         return util.serve_value_error(e)
     return util.respJSON([bmrk])
+
+
+# Fetch the latest backup data for the account
+def backdat(path):
+    try:
+        digacc, _ = util.authenticate()
+        settings = json.loads(digacc.get("settings") or "{}")
+        backup = settings.get("backup")
+        if not backup:
+            raise ValueError("No backup data for account")
+        burl = backup.get("url")
+        if not burl or burl != path[4:]:
+            raise ValueError("Invalid backup data path")
+        logging.info("backdat fetching data for " + str(digacc["dsId"]) +
+                     json.dumps(backup))
+        path = backup.get("file")
+        with open(path, "r", encoding="utf-8") as datfile:
+            bdat = datfile.read()
+    except ValueError as e:
+        return util.serve_value_error(e)
+    return util.respond(bdat)
