@@ -12,7 +12,7 @@ import py.dbacc as dbacc
 import io
 from PIL import Image, ImageDraw, ImageFont
 
-CACHE_BUST_PARAM = "v=250311"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=250313"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -138,9 +138,9 @@ FLOWCONTENTHTML = """
 
 <div id="playfeaturesdiv" class="boxedcontentdiv">
 <table>
-<tr><td><img class="featureico" src="img/search.png"/></td><td>Search across artists, albums, titles, genres and notes to find what you want to play fast.</td></tr>
-<tr><td><img class="featureico" src="img/album.png"/></td><td>Play albums.</td></tr>
-<tr><td><img class="featureico" src="img/deck.png"/></td><td>Continuously autoplay songs matching your filter settings.</td></tr>
+<tr><td><img class="featureico" src="img/search.png"/></td><td>Search across artists, albums, titles, genres and notes to grab what you want to play.</td></tr>
+<tr><td><img class="featureico" src="img/album.png"/></td><td>Play albums. Get album suggestions.</td></tr>
+<tr><td><img class="featureico" src="img/deck.png"/></td><td>Autoplay songs matching your filter settings.</td></tr>
 </table>
 </div>
 
