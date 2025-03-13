@@ -145,7 +145,7 @@ FLOWCONTENTHTML = """
 </div>
 
 <div id="quickdispdiv" class="textcontentctrdiv">
-Put yourself into your music.  Record how you feel and play forever.
+Put <a href="#you" onclick="app.login.dldet(event);return false">you</a> into your music.  Record what you feel and play forever.
 </div>
 
 <div id="downloadsdiv" class="boxedcontentdiv">

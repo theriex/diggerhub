@@ -559,6 +559,7 @@ app.login = (function () {
         const posdiv = "downloadsdiv";
         const dispdiv = "dloverlaydiv";
         const templates = {
+            you: "Your music collection is missing you.  Literally.  Without knowing what you think and feel, your library can't help find what you want to hear next.<p>Use the highly optimized intuitive song characterization interface to easily record what you think as you listen.  Filter what you want and let Digger fetch and play.</p>infolinkbuttons",
             iosp: "ipem(Request a promotional code) to evaluate Digger at no cost, or help support ongoing development and link(buy Digger for iOS).",
             droidp: "Request a dpem(promotional link) to evaluate Digger at no cost, or help support ongoing development and link(buy Digger for Android).",
             webapp: "Digger is a microserver you access using a web browser.  If you have a relatively recent computer, link(Download Digger) as a prebuilt package.  If you have an older computer, or if you already have node.js installed, follow the $gitinstall instructions.  For setup details, see the $webappdoc description page." };
@@ -576,6 +577,15 @@ app.login = (function () {
             const link = "mailto:" + emaddr + "?subject=" + jt.dquotenc(subj) +
                   "&body=" + jt.dquotenc(body);
             return link; }
+        function infoLinkButtonsHTML () {
+            return jt.tac2html(
+                ["div", {cla:"dlgbuttonsdiv"},
+                 [["button", {type:"button",
+                              onclick:jt.fs("app.login.closeDLOver()")},
+                   "Get Digger"],
+                  ["button", {type:"button",
+                              onclick:mdfs("dld.openManual")},
+                   "More Info"]]]); }
         function displayOverlay (tid, targ) {
             var txt = templates[tid];
             txt = txt.replace(/link\(([^)]*)\)/, function (ignore, linkt) {
@@ -589,6 +599,7 @@ app.login = (function () {
             txt = txt.replace(/ipem\(([^)]*)\)/, function (ignore, linkt) {
                 return jt.tac2html(
                     ["a", {href:iosPromoEmailLink()}, linkt]); });
+            txt = txt.replace("infolinkbuttons", infoLinkButtonsHTML());
             const repls = [
                 {u:"docs/websrvapp.html",
                  m:"$webappdoc",
@@ -616,12 +627,19 @@ app.login = (function () {
             dd.style.width = pos.w + "px";
             jt.out(dispdiv, txt); }
     return {
+        displayInterstitial: function () {
+            displayOverlay("you"); },
+        openManual: function () {
+            mgrs.dld.closeOverlay();
+            app.docs.displayDoc("hpgoverlaydiv", "manual.html"); },
         closeOverlay: function () {
             jt.out(dispdiv, "");
             jt.byId(dispdiv).style.display = "none"; },
         detail: function (event) {
             if(event && event.target && event.target.href) {
-                if(event.target.href.includes("apple")) {
+                if(event.target.href.includes("you")) {
+                    displayOverlay("you", event.target); }
+                else if(event.target.href.includes("apple")) {
                     displayOverlay("iosp", event.target,
                                    iosPromoEmailLink()); }
                 else if(event.target.href.includes("play.google")) {
@@ -907,6 +925,7 @@ app.login = (function () {
             default: jt.log("Standard site homepage display"); }
             //setTimeout(mgrs.mrq.runMarquee, 12000);
             //mgrs.sld.runSlideshow();
+            setTimeout(mgrs.dld.displayInterstitial, 1200);
             mgrs.hua.initDisplay(); },
         scrollToTopOfContent: function () {
             const div = jt.byId("sitecontentdiv");
