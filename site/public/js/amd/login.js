@@ -559,7 +559,7 @@ app.login = (function () {
         const posdiv = "downloadsdiv";
         const dispdiv = "dloverlaydiv";
         const templates = {
-            you: "Your music collection is missing you.  Literally.  Without knowing what you think and feel, your library can't help find what you want to hear next.<p>Use the highly optimized intuitive song characterization interface to easily record what you think as you listen.  Filter what you want and let Digger fetch and play.</p>infolinkbuttons",
+            you: "Your music collection is missing you.  Literally.  Without knowing what you think and feel, your library can't help find what you want to hear next.<p>Adjust the song rating controls to match how you feel about what you are hearing. Comment and share if you are inspired. Filter what you want and let Digger fetch and play.</p>infolinkbuttons",
             iosp: "ipem(Request a promotional code) to evaluate Digger at no cost, or help support ongoing development and link(buy Digger for iOS).",
             droidp: "Request a dpem(promotional link) to evaluate Digger at no cost, or help support ongoing development and link(buy Digger for Android).",
             webapp: "Digger is a microserver you access using a web browser.  If you have a relatively recent computer, link(Download Digger) as a prebuilt package.  If you have an older computer, or if you already have node.js installed, follow the $gitinstall instructions.  For setup details, see the $webappdoc description page." };
