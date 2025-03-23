@@ -344,7 +344,7 @@ app.login = (function () {
                 cmp:function () {
                     return (btst && acct && stint); },
                 display:function () {
-                    jt.out("btpnavdiv", "To participate, you must have at least 50 songs on your Android or iOS device you will listen to using Digger.  You'll record your impressions as you listen, then check out continuous select autoplay in a couple of different listening situations of your choosing.  What you tell us about your experience will be vital to the Digger project.");
+                    jt.out("btpnavdiv", "To participate, you must have at least 50 songs on your Android or iOS device you will listen to using Digger.  You'll record your impressions as you listen, then check out filtered continuous selection in a couple of different listening situations of your choosing.  What you tell us about your experience will be vital to the Digger project.");
                     jt.out("btpdetdiv", jt.tac2html(
                         [["p", {id:"btpirwrdp"}, "As a small gesture of thanks for testing, you will be sent a $50 Bandcamp or Amazon gift card, whichever you prefer.  You'll also have the opportunity to be directly involved in new feature development if you like."],
                          ["div", {id:"btpixdiv"}]]));
@@ -410,14 +410,14 @@ app.login = (function () {
                     else if(stint.status === "Abandoned") {
                         jt.out("btpnavdiv", "Your beta testing was incomplete. After 3 weeks it was marked as abandoned to make room for another tester to go ahead.  If you would like to inquire whether it might be possible to re-activate your beta test, contact " + supplink + ". Your DiggerHub account is still active, your song impressions continue to be saved, and hopefully Digger will continue to be a valuable music listening tool for you."); }
                     else {  //!isopen() or status "Queued" or whatever
-                        jt.out("btpnavdiv", "Thanks for your interest in beta testing Digger! This beta testing round is now closed, but your place in line has been noted and we'll be in touch if there's any more budget for gift cards. Meanwhile if you want to record your music impressions while listening and enjoy continuous select autoplay, you can download Digger at no cost from " + hublink + "."); } } },
+                        jt.out("btpnavdiv", "Thanks for your interest in beta testing Digger! This beta testing round is now closed, but your place in line has been noted and we'll be in touch if there's any more budget for gift cards. Meanwhile if you want to record your music impressions while listening and enjoy filtered continuous selection, you can download Digger at no cost from " + hublink + "."); } } },
             rating:{  //use digger, monitor progress
                 cmp:function () {
                     return (cnts && cnts.ttl >= 50 && cnts.mto >= 6); },
                 display:function () {
                     jt.out("btpnavdiv", "Your beta test has started! If you have not already installed Digger for " + stint.stdat.pretest.whichplat + ", click the download link on " + hublink + " to request a promo code, then sign in with the app and start listening.  Return to this page to see your progress.  If you have any questions email " + supplink + ". Thanks for testing!");
                     if(cnts && cnts.ttl > 0) {
-                        jt.out("btpnavdiv", "So far you've described <b>" + over50(cnts.ttl) + "</b> songs from your collection and listened to <b>" + over50(cnts.mto) + "</b> songs more than once.  After listening to 50+ songs, use the filter toggles and range selectors to try continuous select autoplay in at least two different listening situations.  If you have any questions, concerns, comments or anything else email " + supplink + ". Thanks for testing!"); }
+                        jt.out("btpnavdiv", "So far you've described <b>" + over50(cnts.ttl) + "</b> songs from your collection and listened to <b>" + over50(cnts.mto) + "</b> songs more than once.  After listening to 50+ songs, use the filter toggles and range selectors to try filtered continuous selection in at least two different listening situations.  If you have any questions, concerns, comments or anything else email " + supplink + ". Thanks for testing!"); }
                     jt.out("btpdetdiv", jt.tac2html(
                         ["a", {href:"#refreshCounts",
                                onclick:mdfs("btp.refreshSongCounts")},
@@ -659,7 +659,7 @@ app.login = (function () {
             fos:1.2,   //fade-out seconds
             dts:8};    //text display time seconds
         const mhds = [
-            "Autoplay your music collection",
+            "Filter what you want to hear",
             "Buy an album this week",
             "Record your impressions",
             "Connect to DiggerHub with the app"];

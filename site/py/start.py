@@ -12,7 +12,7 @@ import py.dbacc as dbacc
 import io
 from PIL import Image, ImageDraw, ImageFont
 
-CACHE_BUST_PARAM = "v=250315"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=250322"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -138,8 +138,8 @@ FLOWCONTENTHTML = """
 
 <div id="playfeaturesdiv" class="boxedcontentdiv">
 <table>
-<tr><td><img class="featureico" src="img/deck.png"/></td><td>Autoplay your music from what you think and want.</td></tr>
-<tr><td><img class="featureico" src="img/album.png"/></td><td>Switch between albums and autoplay anytime.</td></tr>
+<tr><td><img class="featureico" src="img/deck.png"/></td><td>Filter continuous selections from what you think and want.</td></tr>
+<tr><td><img class="featureico" src="img/album.png"/></td><td>Switch between albums and continuous select anytime.</td></tr>
 <tr><td><img class="featureico" src="img/search.png"/></td><td>Fast find across artists, albums, titles, genres and your personal notes.</td></tr>
 </table>
 </div>
@@ -178,7 +178,7 @@ Put <a href="#you" onclick="app.login.dldet(event);return false">you</a> into yo
 </div>
 
 <div class="annoscrdiv">
-<div>Continuous select autoplay filtering what you want to hear.</div>
+<div>Filter continuous selection for the music you want to hear.</div>
 <div class="scrnshotdiv"><img src="docs/screenshots/03DeckFilters.png"/></div>
 </div>
 
