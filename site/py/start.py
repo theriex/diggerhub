@@ -12,7 +12,7 @@ import py.dbacc as dbacc
 import io
 from PIL import Image, ImageDraw, ImageFont
 
-CACHE_BUST_PARAM = "v=250322"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=250323"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>

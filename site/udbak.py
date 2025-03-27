@@ -113,9 +113,18 @@ def write_backup(user, settings):
     write_song_data_file(user, "csv")
     # zip_song_data_file(user, "csv")
     write_backup_info_to_settings(user, settings)
-    logging.info("write_backup " + json.dumps(settings["backup"]))
     user["settings"] = json.dumps(settings)
-    dbacc.write_entity(user, user["modified"])
+    try:
+        dbacc.write_entity(user, user["modified"])
+    except ValueError:  # version check may fail due to competing cron job
+        where = "WHERE dsId = " + str(user["dsId"]) + " LIMIT 1"
+        updus = dbacc.query_entity("DigAcc", where)
+        updu = updus[0]
+        updu["settings"] = user["settings"]
+        dbacc.write_entity(updu, updu["modified"])
+        user = updu
+    logging.info("write_backup DigAcc" + str(user["dsId"]) + ": " +
+                 json.dumps(settings["backup"]))
 
 
 def find_users_and_write_backup_files():
