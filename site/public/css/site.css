@@ -16,6 +16,7 @@ body { padding:0; border:0; }
   background-attachment: fixed; }
 #logodiv { float:left; }
 #logodiv img { max-height:64px; }
+#topsectiondiv { /*no height, floated logodiv content only*/ }
 
 h2 { text-align:center; }
 h3 { font-weight:normal; text-align:center; margin-bottom:0px; }

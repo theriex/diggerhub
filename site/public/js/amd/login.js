@@ -344,7 +344,7 @@ app.login = (function () {
                 cmp:function () {
                     return (btst && acct && stint); },
                 display:function () {
-                    jt.out("btpnavdiv", "To participate, you must have at least 50 songs on your Android or iOS device you will listen to using Digger.  You'll record your impressions as you listen, then check out filtered continuous selection in a couple of different listening situations of your choosing.  What you tell us about your experience will be vital to the Digger project.");
+                    jt.out("btpnavdiv", "To participate, you must have at least 50 songs on your Android or iOS device you will listen to with Digger.  You'll record your impressions as you listen, then try filtered continuous selection in a couple of different listening situations of your choosing.  What you tell us about your experience will be vital to the Digger project.");
                     jt.out("btpdetdiv", jt.tac2html(
                         [["p", {id:"btpirwrdp"}, "As a small gesture of thanks for testing, you will be sent a $50 Bandcamp or Amazon gift card, whichever you prefer.  You'll also have the opportunity to be directly involved in new feature development if you like."],
                          ["div", {id:"btpixdiv"}]]));
@@ -362,7 +362,7 @@ app.login = (function () {
                         jt.out("btpirwrdp", "This round of beta testing is now closed and all gift cards have been reserved.  You are welcome to sign up for priority consideration in any future testing."); }
                     if(!acct || acct.dsId === "101") {  //sign in first
                         const siid = "hubaccountcontentdiv";  //like main page
-                        jt.out("btpixdiv", "To continue, sign in.");
+                        jt.out("btpixdiv", "To continue, join or sign in.");
                         jt.byId("hubaccountcontentdiv").style.display = "block";
                         return mgrs.hsi.signIn(siid, function (siacc) {
                             acct = siacc;
@@ -504,11 +504,11 @@ app.login = (function () {
         display: function () {
             window.history.replaceState({}, document.title, "/beta");
             jt.out("sitecontentdiv", jt.tac2html(
-                [["div", {id:"topsectiondiv"},  //old float handling e:240527
-                  [["div", {id:"logodiv"},
-                    ["a", {href:"/"},
-                     ["img", {src:"img/appicon.png"}]]],
-                   ["div", {id:"btptitlediv"}, "Digger Beta Test"]]],
+                [["div", {id:"topsectiondiv"},  //float handling e:250404
+                  ["div", {id:"logodiv"},
+                   ["a", {href:"/"},
+                    ["img", {src:"img/appicon.png"}]]]],
+                 ["div", {id:"btptitlediv"}, "Digger Beta Test"],
                  ["div", {id:"btpcontentdiv"},
                   btpdivs.map((d) => ["div", {id:d}])],
                  ["div", {id:"btpacctformdiv"},
