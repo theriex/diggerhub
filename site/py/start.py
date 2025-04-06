@@ -12,7 +12,7 @@ import py.dbacc as dbacc
 import io
 from PIL import Image, ImageDraw, ImageFont
 
-CACHE_BUST_PARAM = "v=250404"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=250406"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -132,7 +132,7 @@ FLOWCONTENTHTML = """
 
 <div id="toptextdiv" class="textcontentdiv boxedcontentdiv">
 <div>
-<em>Digger</em>: The Listening Collection Music Player
+<em>Digger</em> Collection Listening
 </div>
 </div>
 
@@ -198,11 +198,12 @@ optional rating collaboration. </div>
 <div class="textsectionspacerdiv"></div>
 
 <div class="textcontentdiv convocontentdiv"> Digger reaches across genres,
-time periods and artists, preferring what you've least recently heard.
-Digger apps are open source, respecting the music you've chosen to be part
-of your life.  Rediscover your music library.  <a href="#showdownloadlinks"
-onclick="app.login.scrollToTopOfContent();return false">Dig into your
-music</a>. </div>
+styles, time periods and geography, preferring what you've least recently
+heard.  Digger apps are open source, respecting the music you've chosen to
+be part of your life.  Rediscover your music library. 
+<a href="#showdownloadlinks"
+  onclick="app.login.scrollToTopOfContent();return false">
+Dig into your music</a>. </div>
 
 <div id="headertextdiv">
   <div id="marqueeplaceholderdiv">&nbsp;</div>
