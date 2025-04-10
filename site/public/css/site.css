@@ -119,8 +119,8 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
 /* -------------------- */
 /* beta test program display */
 
-#btptitlediv { font-size:x-large; font-weight:bold; padding:10px;
-  display:inline-block; }
+#btpcontentcontainerdiv { height:100vh; padding:10px; }
+#btptitlediv { font-size:x-large; font-weight:bold; }
 #btpcontentdiv, #btpacctformdiv { padding:10px; clear:both;
   max-width:600px; margin:auto; }
 #btphellodiv { padding-bottom:8px; font-style:italic; }

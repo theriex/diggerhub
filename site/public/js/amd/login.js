@@ -504,16 +504,16 @@ app.login = (function () {
         display: function () {
             window.history.replaceState({}, document.title, "/beta");
             jt.out("sitecontentdiv", jt.tac2html(
-                [["div", {id:"topsectiondiv"},  //float handling e:250404
-                  ["div", {id:"logodiv"},
-                   ["a", {href:"/"},
-                    ["img", {src:"img/appicon.png"}]]]],
-                 ["div", {id:"btptitlediv"}, "Digger Beta Test"],
-                 ["div", {id:"btpcontentdiv"},
-                  btpdivs.map((d) => ["div", {id:d}])],
-                 ["div", {id:"btpacctformdiv"},
-                  ["div", {id:"hubaccountcontentdiv", cla:"boxedcontentdiv",
-                           style:"display:none"}]]]));
+                ["div", {id:"btpcontentcontainerdiv"},
+                 [["div", {id:"btptitlediv"},
+                   [["a", {href:"/"}, 
+                     ["img", {src:"img/appicon.png", style:"max-height:64px"}]],
+                    "Digger Beta Test"]],
+                  ["div", {id:"btpcontentdiv"},
+                   btpdivs.map((d) => ["div", {id:d}])],
+                  ["div", {id:"btpacctformdiv"},
+                   ["div", {id:"hubaccountcontentdiv", cla:"boxedcontentdiv",
+                            style:"display:none"}]]]]));
             app.top.dispatch("aaa", "initialize");
             app.top.dispatch("afg", "runOutsideApp", "hubaccountcontentdiv");
             app.pdat.addApresDataNotificationTask("betaDisplay", function () {
