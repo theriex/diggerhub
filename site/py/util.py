@@ -23,7 +23,7 @@ import py.dbacc as dbacc
 import py.mconf as mconf
 
 def version():
-    return "v1.5.1"
+    return "v1.5.2"
 
 def supnm():
     return "sup2"

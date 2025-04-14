@@ -12,7 +12,7 @@ import py.dbacc as dbacc
 import io
 from PIL import Image, ImageDraw, ImageFont
 
-CACHE_BUST_PARAM = "v=250411"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=250414"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -350,6 +350,13 @@ def listener_page(stinf):
     return replace_and_respond(stinf)
 
 
+def bookmarks_page(stinf):
+    pes = stinf["rawpath"].split("/")
+    if len(pes) < 2:
+        return fail404()
+    digname = pes[1]
+
+
 def delete_me_instruct(stinf):
     stinf["replace"]["$CONTENTHTML"] = REPORTFRAMEHTML
     stinf["replace"]["$REPORTHTML"] = DELETEMEINSTHTML
@@ -393,4 +400,6 @@ def startpage(path, refer):
         return delete_me_instruct(stinf)
     if stinf["path"].startswith("listener"):
         return listener_page(stinf)
+    if stinf["path"].startswith("bookmarks"):
+        return bookmarks_page(stinf)
     return fail404()
