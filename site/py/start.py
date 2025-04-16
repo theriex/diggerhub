@@ -4,6 +4,7 @@
 #pylint: disable=missing-function-docstring
 #pylint: disable=consider-using-from-import
 #pylint: disable=wrong-import-order
+#pylint: disable=too-many-return-statements
 
 import logging
 import py.mconf as mconf
@@ -12,7 +13,7 @@ import py.dbacc as dbacc
 import io
 from PIL import Image, ImageDraw, ImageFont
 
-CACHE_BUST_PARAM = "v=250415"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=250416"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -241,24 +242,26 @@ def month_and_day_from_dbtimestamp(timestamp):
     return moday
 
 
-def weekly_top20_content_html(sasum):
-    baseurl = "https://diggerhub.com/"
-    moday = month_and_day_from_dbtimestamp(sasum["end"])
-    html = "<div id=\"reptoplinediv\">" + sasum["digname"] + "</div>\n"
+def listener_report_page_html(digname, tline, content):
+    html = "<div id=\"reptoplinediv\">" + digname + "</div>\n"
     html += "<div id=\"reptabsdiv\"></div>"
-    html += "<div id=\"reptbodydiv\">"
-    html += ("<div id=\"reptitlelinediv\">" +
-             "<span id=\"hrtlspan\" data-dnm=\"" + sasum["digname"] +
+    html += "<div id=\"reptitlelinediv\">" + tline + "</div>\n"
+    html += "<div id=\"reptbodydiv\">" + content + "</div>\n"
+    return html
+
+
+def weekly_top20_content_html(sasum):
+    digname = sasum["digname"]
+    moday = month_and_day_from_dbtimestamp(sasum["end"])
+    tline = ("<span id=\"hrtlspan\" data-dnm=\"" + sasum["digname"] +
              "\">Weekly Top 20</span> - " +
              "<span id=\"hrtpspan\" class=\"datevalspan\"" +
              " data-plink=\"plink/wt20/" + sasum["digname"] + "/" +
-             sasum["end"][0:10] + "\">" + moday + "</span>" +
-             "</div>\n")
-    html += "<ol>\n"
+             sasum["end"][0:10] + "\">" + moday + "</span>")
+    html = "<ol>\n"
     for song in util.load_json_or_default(sasum["songs"], []):
         html += "<li>" + song_html(song) + "\n"
     html += "</ol>\n\n"
-    # html += "<div id=\"repextrafieldsdiv\">"
     labs = [{"name":"Easiest", "fld":"easiest"},
             {"name":"Hardest", "fld":"hardest"},
             {"name":"Most Chill", "fld":"chillest"},
@@ -269,8 +272,7 @@ def weekly_top20_content_html(sasum):
     html += ("<div id=\"repsongtotaldiv\">" + str(sasum["ttlsongs"]) +
              " songs synchronized to <a href=\"https://diggerhub.com\">" +
              "DiggerHub</a></div>\n")
-    html += "</div>";  # end reptbodydiv
-    return html
+    return listener_report_page_html(digname, tline, html)
 
 
 def weekly_top20_page(stinf, sasum):
@@ -350,13 +352,6 @@ def listener_page(stinf):
     return replace_and_respond(stinf)
 
 
-def bookmarks_page(stinf):
-    pes = stinf["rawpath"].split("/")
-    if len(pes) < 2:
-        return fail404()
-    digname = pes[1]
-
-
 def delete_me_instruct(stinf):
     stinf["replace"]["$CONTENTHTML"] = REPORTFRAMEHTML
     stinf["replace"]["$REPORTHTML"] = DELETEMEINSTHTML
@@ -400,6 +395,4 @@ def startpage(path, refer):
         return delete_me_instruct(stinf)
     if stinf["path"].startswith("listener"):
         return listener_page(stinf)
-    if stinf["path"].startswith("bookmarks"):
-        return bookmarks_page(stinf)
     return fail404()

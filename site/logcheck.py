@@ -90,8 +90,8 @@ def check_log_files():
                              [])
     errsrch = check_log_file(mconf.errsdir + "error.log",
                              " %b %d %H:",
-                             [" [:error] "],
-                             ["PCRE limits exceeded"])
+                             [" [error] "],
+                             [])
     return appsrch + "\n" + errsrch + "\n"
 
 

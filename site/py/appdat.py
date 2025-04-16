@@ -187,9 +187,10 @@ def write_song(updsong, digacc, forcenew=False):
 
 def find_hubsync_merge_songs(hsd, digacc):
     # Avg size of a song 07jan25 is 630 bytes.  Minimize round trip calls
-    # within some kind of acceptable limit.  800k worked, but was a noticeable
-    # transmission hit. 400k seems about right.
-    maxsongs = 650
+    # within some kind of acceptable limit.  800k worked, but was a
+    # noticeable transmission hit. 400k (650 songs) seems about right.
+    # ep15mar25 still PCRE so half again.
+    maxsongs = 325
     where = ("WHERE aid = " + digacc["dsId"] +
              " AND lp > \"" + hsd["syncts"] + "\"" +
              " ORDER BY lp LIMIT " + str(maxsongs + 1))
