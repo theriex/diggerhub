@@ -24,7 +24,7 @@ import urllib.parse
 
 
 def base_dir_for_backups():
-    return "bax"
+    return "diggerhub.com/bax"
 
 
 def base_backup_file_name_for_user(user):
@@ -117,6 +117,7 @@ def write_backup(user, settings):
     try:
         dbacc.write_entity(user, user["modified"])
     except ValueError:  # version check may fail due to competing cron job
+        # refetch DigAcc and redo write_entity with the updated modified
         where = "WHERE dsId = " + str(user["dsId"]) + " LIMIT 1"
         updus = dbacc.query_entity("DigAcc", where)
         updu = updus[0]
