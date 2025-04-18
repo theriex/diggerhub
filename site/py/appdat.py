@@ -1385,7 +1385,7 @@ def backdat(path):
         if not backup:
             raise ValueError("No backup data for account")
         burl = backup.get("url")
-        if not burl or burl != path[4:]:
+        if not burl or burl != path[4:]:  # path is "api/bd..."
             raise ValueError("Invalid backup data path")
         logging.info("backdat fetching data for " + str(digacc["dsId"]) +
                      json.dumps(backup))

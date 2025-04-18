@@ -22,19 +22,19 @@ import random
 import string
 import urllib.parse
 
-
-def base_dir_for_backups():
-    return "diggerhub.com/bax"
-
+SITE_API_BASE_DIR = "bax"
+CRON_WRITE_DIR = "diggerhub.com/" + SITE_API_BASE_DIR
 
 def base_backup_file_name_for_user(user):
     # use the same filename each run to overwrite any previous run files
     return "bd" + str(user["dsId"])
 
 
-def path_for_file_type(user, ctype):
-    return (base_dir_for_backups() + "/" +
-            base_backup_file_name_for_user(user) + "." + ctype)
+def path_for_file_type(user, ctype, rel="cron"):
+    basedir = CRON_WRITE_DIR
+    if rel == "api":
+        basedir = SITE_API_BASE_DIR
+    return basedir + "/" + base_backup_file_name_for_user(user) + "." + ctype
 
 
 def escquot(txt):
@@ -101,7 +101,7 @@ def zip_song_data_file(user, ctype):
 def write_backup_info_to_settings(user, settings):
     bakset = settings["backup"]
     bakset["writ"] = dbacc.nowISO()
-    bakset["file"] = path_for_file_type(user, "csv")
+    bakset["file"] = path_for_file_type(user, "csv", rel="api")
     num3 = "".join(str(random.randint(0, 9)) for _ in range(3))
     let3 = "".join(random.choice(string.ascii_lowercase) for _ in range(3))
     bakset["url"] = "bd" + num3 + let3
@@ -129,12 +129,14 @@ def write_backup(user, settings):
 
 
 def find_users_and_write_backup_files():
-    bakdir = base_dir_for_backups()
-    if not os.path.isdir(bakdir):
-        os.mkdir(bakdir)
+    if not os.path.isdir(CRON_WRITE_DIR):
+        os.mkdir(CRON_WRITE_DIR)
+    # look back a little more than 24hrs in case the cron job is running late
     modts = dbacc.timestamp(-1 * 60 * 26)
-    users = dbacc.query_entity("DigAcc", "WHERE modified > \"" + modts + "\"" +
-                               " OR dsId IN (SELECT DISTINCT(aid) FROM Song" +
+    # only check for modified songs. The DigAcc is modified here and other
+    # places which should not trigger a new backup file to be written.
+    users = dbacc.query_entity("DigAcc", "WHERE dsId IN" +
+                               " (SELECT DISTINCT(aid) FROM Song" +
                                " WHERE modified >= \"" + modts + "\")")
     logging.info(str(len(users)) + " users active since " + modts)
     for user in users:
