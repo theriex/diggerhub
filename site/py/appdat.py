@@ -34,8 +34,9 @@ def strl2inexp(strl):
 # possible to avoid that by tracking the aid and path, in reality paths
 # change more frequently than metadata and are not reliable. Not worth the
 # overhead and complexity from trying.  Always look up by logical key.
-def find_song(spec, ovrs=None):
+def find_song(spec):
     """ Lookup by aid/title/artist/album, return song instance or None """
+    ret = None
     where = ("WHERE aid = " + spec["aid"] +
              " AND ti = \"" + dqe(spec["ti"]) + "\"" +
              " AND ar = \"" + dqe(spec["ar"]) + "\"" +
@@ -45,24 +46,19 @@ def find_song(spec, ovrs=None):
     songs = dbacc.query_entity("Song", where)
     if len(songs) > 0:
         ret = songs[0]
-        if ovrs:
-            for key, val in ovrs.items():
-                ret[key] = val
-        return ret
-    return None
+    return ret
 
 
-def normalize_song_fields(updsong, digacc):
-    """ Verify needed fields are defined and not padded. """
+def verify_required_song_field_values(updsong, digacc):
+    """ Fill and strip field values, complain if required data missing. """
     updsong["dsType"] = "Song"
     updsong["aid"] = digacc["dsId"]
     for matchfield in ["ti", "ar", "ab"]:
         updsong[matchfield] = updsong.get(matchfield, "")
         updsong[matchfield] = updsong[matchfield].strip()
-    if not updsong["ti"] and updsong.get("path"):
-        # better to save with synthetic metadata than to ignore, even if
-        # ti != path due to truncation
-        updsong["ti"] = updsong.get("path")
+    for reqfield in ["ti", "ar"]:
+        if not updsong.get(reqfield):
+            raise ValueError("Missing " + reqfield + " value in update song")
 
 
 def song_string(song):
@@ -136,81 +132,89 @@ def rebuild_derived_song_fields(song):
 
 
 def update_song_fields(updsong, dbsong):
+    """ Update dbsong with field values from updsong """
     reset_dead_spid_if_metadata_changed(updsong, dbsong)
     flds = {  # do NOT copy general db fields from client data. only these:
         # see dbacc.py for field defs
-        "path": {"pt": "string", "un": False, "dv": ""},
-        "ti": {"pt": "string", "un": False, "dv": ""},
-        "ar": {"pt": "string", "un": False, "dv": ""},
-        "ab": {"pt": "string", "un": False, "dv": ""},
-        "el": {"pt": "int", "un": False, "dv": 0},
-        "al": {"pt": "int", "un": False, "dv": 0},
-        "kws": {"pt": "string", "un": False, "dv": ""},
-        "rv": {"pt": "int", "un": False, "dv": 0},
-        "fq": {"pt": "string", "un": False, "dv": ""},
-        "lp": {"pt": "string", "un": False, "dv": ""},
-        "pd": {"pt": "string", "un": False, "dv": ""},
-        "nt": {"pt": "string", "un": False, "dv": ""},
-        "pc": {"pt": "int", "un": False, "dv": 0},
-        "srcid": {"pt": "string", "un": False, "dv": ""},
-        "srcrat": {"pt": "string", "un": False, "dv": ""}}
+        "path": {"pt": "string", "dv": ""},
+        "ti": {"pt": "string", "dv": ""},
+        "ar": {"pt": "string", "dv": ""},
+        "ab": {"pt": "string", "dv": ""},
+        "el": {"pt": "int", "dv": 0},
+        "al": {"pt": "int", "dv": 0},
+        "kws": {"pt": "string", "dv": ""},
+        "rv": {"pt": "int", "dv": 0},
+        "fq": {"pt": "string", "dv": ""},
+        "lp": {"pt": "string", "dv": ""},
+        "pd": {"pt": "string", "dv": ""},
+        "nt": {"pt": "string", "dv": ""},
+        "pc": {"pt": "int", "dv": 0},
+        "srcid": {"pt": "string", "dv": ""},
+        "srcrat": {"pt": "string", "dv": ""}}
     for field, fdesc in flds.items():
         dbsong[field] = updsong.get(field, fdesc["dv"])
     rebuild_derived_song_fields(dbsong)
 
 
-def write_song(updsong, digacc, forcenew=False):
-    """ Write the given update song. """
-    normalize_song_fields(updsong, digacc)
-    # logging.info("appdat.write_song " + str(updsong))
-    song = None
-    if not forcenew:
-        song = find_song(updsong)
-    if not song:  # create new song shell to fill
-        song = {"dsType":"Song", "aid":digacc["dsId"], "modified":""}
-    else: # updating existing song instance
-        # updsong not from db, and no rating info to save: Client data sync.
-        if not updsong.get("dsId") and is_unrated_song(updsong):
-            song["path"] = updsong["path"]  # echo path for client lookup
-            return song  # return without write to avoid sync date churn
-        # hub push before receive should prevent client from sending old data
-        # but losing all rating info is particularly bad so avoid attempt.
-        if is_unrated_song(updsong) and not is_unrated_song(song):
-            song["path"] = updsong["path"]
-            updsong = song  # ignore updsong values to avoid information loss
-            logging.info("write_song not unrating " + song_string(song))
-        song["modified"] = choose_modified_value(updsong, song)
-    update_song_fields(updsong, song)
-    updsong = dbacc.write_entity(song, song.get("modified") or "")
+# This function requires substantial database work.  There is one call to
+# find the song, and another to insert or update it.  Calling this function
+# in a loop risks bogging down the server.  Calling from a web API endpoint
+# risks exceeding processing time/effort limits.
+def write_upd_song(updsong, digacc):
+    """ Write the given updated song information. """
+    verify_required_song_field_values(updsong, digacc)
+    # logging.info("appdat.write_upd_song " + str(updsong))
+    dbsong = find_song(updsong)  # calls dbacc.query_entity
+    if not dbsong:  # create new song shell to fill
+        dbsong = {"dsType":"Song", "aid":digacc["dsId"], "modified":""}
+    update_song_fields(updsong, dbsong)
+    updsong = dbacc.write_entity(dbsong, dbsong.get("modified") or "")
     return updsong
 
 
-def find_hubsync_merge_songs(hsd, digacc):
-    # Avg size of a song 07jan25 is 630 bytes.  Minimize round trip calls
-    # within some kind of acceptable limit.  800k worked, but was a
-    # noticeable transmission hit. 400k (650 songs) seems about right.
-    # ep15mar25 still PCRE so half again.
-    maxsongs = 325
+# hubsync continuation tokens dict (single use tokens by dsId)
+hsctd = {}
+def new_hubsync_continuation_token(digaccid):
+    hsctd[str(digaccid)] = util.make_activation_code()
+    return hsctd[str(digaccid)]
+def hubsync_authenticate(digaccid):
+    contok = hsctd.get(str(digaccid))
+    hsct = dbacc.reqarg("hsct", "string")
+    if contok and hsct:  # authenticating via hsct
+        if contok != hsct:
+            raise ValueError("Invalid hsct for DigAcc " + str(digaccid))
+        digacc = dbacc.cfbk("DigAcc", "dsId", digaccid, required=True)
+    else:  # authenticating via email/token
+        digacc, _ = util.authenticate()
+    # ensure no repeat authentication with the same hsct
+    hsctd[str(digaccid)] = new_hubsync_continuation_token(digaccid)
+    return digacc
+
+
+# Avg size of a song 07jan25 is 630 bytes.  800k is possible to send, but is
+# a noticeable transmission hit.  400k (650 songs) seems reasonable but was
+# still flagged by PCRE ep15mar25.  If client is substantially outdated, it
+# is more efficient for a client to restore from backup data ep22apr25.
+HSMAXDOWN = 300
+def find_hs_merge_songs(hsd, digacc):
     where = ("WHERE aid = " + digacc["dsId"] +
              " AND lp > \"" + hsd["syncts"] + "\"" +
-             " ORDER BY lp LIMIT " + str(maxsongs + 1))
+             " ORDER BY lp LIMIT " + str(HSMAXDOWN + 1))
     retsongs = dbacc.query_entity("Song", where)
     if retsongs: # have at least one song that needs to be merged
-        hsd["action"] = "merge"
         hsd["provdat"] = "complete"
-        if len(retsongs) > maxsongs:
+        if len(retsongs) > HSMAXDOWN:
             hsd["provdat"] = "partial"
-            retsongs = retsongs[0:maxsongs]
+            retsongs = retsongs[0:HSMAXDOWN]
         hsd["syncts"] = retsongs[len(retsongs) - 1]["lp"]
     return retsongs
 
 
-def unWSRW(matchobj):
+def unWSRW(matchobj):  # Web Safe Reverse Word
     rval = matchobj.group(0)[4:]  # remove "WSRW"
     return rval[::-1]             # unreverse original mixed case value
-
-# undo client svc.js txSong modifications
 def unescape_song_fields(song):
+    # undo client svc.js txSong modifications
     for fld in ["path", "ti", "ar", "ab", "nt"]:
         if song.get(fld):
             song[fld] = song[fld].replace("ESCOPENPAREN", "(")
@@ -220,18 +224,60 @@ def unescape_song_fields(song):
             for rw in ["having", "select", "union", "within"]:
                 song[fld] = re.sub(re.compile("WSRW" + rw[::-1], re.I),
                                    unWSRW, song[fld])
+    return song
 
 
-def update_hubsync_uploaded_songs(hsd, digacc, uplds):
+def strip_surrounding_quotes(txt):
+    # Encoded txt will have any embedded double quotes as %22, file input
+    # may have surrounding quotes, so protect just in case that happens.
+    if txt.startswith("\"") and txt.endswith("\""):
+        txt = txt[1:-1]  # remove surrounding quotes
+    return txt
+def ucsv(txt):  # unescape csv string value
+    txt = urllib.parse.unquote(strip_surrounding_quotes(txt))
+    return txt
+def pciv(txt):
+    return int(strip_surrounding_quotes(txt))
+def csv2song(csv):
+    cnvdefs = {"dsId":pciv, "ti":ucsv, "ar":ucsv, "ab":ucsv,
+               "el":pciv, "al":pciv, "kws":ucsv, "rv":pciv, "fq":ucsv,
+               "nt":ucsv, "lp":ucsv, "pd":ucsv, "pc":pciv}
+    vals = csv.split(",")
+    song = {}
+    for fld, cnvf in cnvdefs.items():
+        val = vals.pop(0)
+        song[fld] = cnvf(val)
+    return song
+def estr(val):
+    return "\"" + urllib.parse.quote(str(val)) + "\""
+def cint(val):
+    return str(val)
+def song2csv(song):
+    cnvdefs = {"dsId":estr, "ti":estr, "ar":estr, "ab":estr,
+               "el":cint, "al":cint, "kws":estr, "rv":cint, "fq":estr,
+               "nt":estr, "lp":estr, "pd":estr, "pc":cint}
+    cvals = []
+    for fld, cnvf in cnvdefs.items():
+        cvals.append(cnvf(song[fld]))
+    return ",".join(cvals)
+
+
+# Each uploaded song needs to be queried and updated, which is substantial
+# database work.  Average length of a song is 3min15sec or roughly 20 songs
+# per hour.  More than that in a single upload is unreasonable load.
+HSMAXUP = 20
+def upd_hs_upload_songs(hsd, digacc, uplds):
+    uplds = [csv2song(u) for u in uplds]
+    uplds = [unescape_song_fields(s) for s in uplds]
+    uplds = [s for s in uplds if not is_unrated_song(s)]
+    uplds = uplds[0:HSMAXUP]
     retsongs = []
     for song in uplds:
-        unescape_song_fields(song)
-        if not is_unrated_song(song):
-            try:  # if any given song write fails, continue with rest
-                retsongs.append(write_song(song, digacc))
-            except ValueError as e:
-                logpre = "update_hubsync_uploaded_songs write_song call: "
-                logging.warning(logpre + str(e))
+        try:  # if any given song write fails, continue with rest
+            retsongs.append(write_upd_song(song, digacc))
+        except ValueError as e:
+            logpre = "upd_hs_uploaded_songs write_upd_song call failed: "
+            logging.warning(logpre + str(e))
     hsd["action"] = "received"
     hsd["provdat"] = ""  # reset any previous value
     hsd["syncts"] = ""
@@ -486,41 +532,6 @@ def fetch_matching_songs(digacc, fvs, limit):
     if fvs.get("startsongid"):
         songs.insert(0, user_song_by_songid(digacc, int(fvs["startsongid"])))
     return songs
-
-
-# Returns a list of saved songs corresponging to the uploaded songs, or
-# raises an error.  The uplds list may contain multiple songs (with
-# different paths) that save to the same Song dsId, so avoid writing
-# multiple times to keep the "modified" value consistent.  Reset the
-# checksince value for all music fans.
-def save_uploaded_songs(digacc, uplds, maxret):
-    if len(uplds) > maxret:
-        raise ValueError("Max song uplds: " + maxret +
-                         ", received " + str(len(uplds)))
-    prevsaved = {}
-    prcsongs = []
-    for song in uplds:
-        if not song.get("ti"):
-            raise ValueError("Missing ti (title) value " + song.get("path"))
-        if not song.get("ar"):
-            raise ValueError("Missing ar (artist) value " + song.get("ti"))
-        if not song.get("path"):
-            raise ValueError("Missing path value " + song.get("ti", "") +
-                             " - " + song.get("ar", ""))
-        normalize_song_fields(song, digacc)
-        skey = dbacc.get_song_key(song)
-        if not prevsaved.get(skey):
-            prevsaved[skey] = find_song(song, ovrs={"path":song["path"]})
-        if not prevsaved.get(skey):
-            prevsaved[skey] = write_song(song, digacc, forcenew=True)
-        prcsongs.append(prevsaved.get(skey))
-    if len(prcsongs) > 0:
-        musfs = json.loads(digacc.get("musfs") or "[]")
-        for mf in musfs:
-            mf["checksince"] = "1970-01-01T00:00:00Z"
-        digacc["musfs"] = json.dumps(musfs)
-        digacc = dbacc.write_entity(digacc, digacc["modified"])
-    return [digacc] + prcsongs
 
 
 def append_default_ratings_from_fan(digacc, mf, prcsongs, maxret):
@@ -861,25 +872,37 @@ def send_share_messages(digacc, idcsv):
 
 # Received syncdata is the DigAcc followed by zero or more updated Songs.
 # See digger/docroot/docs/hubsyncNotes.txt
-def hubsync():
+def hubsync(path="hubsync"):  # non-default path is "api/xx..."
     try:
-        digacc, _ = util.authenticate()
+        digaccid = path[6:]
+        digacc = hubsync_authenticate(digaccid)  # ValueError if auth fails
         syncdata = json.loads(dbacc.reqarg("syncdata", "json", required=True))
-        updacc = syncdata[0]
-        settings = json.loads(updacc.get("settings") or "{}")
-        hsd = settings["hubsync"]
-        songs = find_hubsync_merge_songs(hsd, digacc)
-        if not songs:  # nothing needs to be merged, process uploaded songs
-            uplds = syncdata[1:101]  # process max 100 songs per call
-            songs = update_hubsync_uploaded_songs(hsd, digacc, uplds)
-        digacc["settings"] = json.dumps(settings)  # reserialize w/updated hsd
-        digacc["hubVersion"] = util.version()  # app version checking support
-        syncdata = [digacc] + songs
+        if not syncdata:
+            raise ValueError("No syncdata received")
+        if len(syncdata) > 11:  # [hsd, csv1, csv2...]
+            raise ValueError("Max 10 songs per upload call")
+        hsd = json.loads(syncdata[0])  # hub sync directive: action etc
+        hsd["hsct"] = hsctd[str(digaccid)]  # update communications token
+        upsongs = syncdata[1:]  # uploaded songs if provided
+        downsongs = []
+        if hsd["action"] == "start":
+            hsd["action"] = "started"
+        elif hsd["action"] == "pull":
+            downsongs = find_hs_merge_songs(hsd, digacc)
+            hsd["action"] = "merge"
+        elif hsd["action"] == "upload":
+            downsongs = upd_hs_upload_songs(hsd, digacc, upsongs)
+            hsd["action"] = "received"
+        else:
+            raise ValueError("Unknown hsd action: " + hsd["action"])
+        # not necessary to web escape song field values on return
+        downsongs = [song2csv(s) for s in downsongs]
+        syncdata = [json.dumps(hsd)] + downsongs
         les = ["hubsync return", digacc["email"], json.dumps(hsd)]
         logging.info(" ".join(les))
     except ValueError as e:
         return util.serve_value_error(e)
-    return util.respJSON(syncdata, audience="private")  # include email
+    return util.respJSON(syncdata)
 
 
 def songfetch():

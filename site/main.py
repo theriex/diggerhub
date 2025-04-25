@@ -149,10 +149,12 @@ def updbmrk():  # params: auth, Bookmark
 #
 
 @app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
+@app.route('/<path:path>', methods=['GET', 'POST'])
 def startpage(path):
     if path.startswith("api/bd"):  # leading slash stripped in path match
         return util.secure(lambda: appdat.backdat(path))
+    if path.startswith("api/da"):  # see top.js hcc.hubSyncEndpoint
+        return util.secure(lambda: appdat.hubsync(path))
     refer = flask.request.referrer or ""
     return util.secure(lambda: start.startpage(path, refer))
 
