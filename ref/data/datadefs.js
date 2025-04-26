@@ -191,6 +191,13 @@ module.exports = (function () {
      cache:{minutes:30},  //relatively small records, read-only data
      logflds:["aid", "sumtype", "start", "end", "ttlsongs"]},
 
+    {entity:"XConvo", descr:"Extended conversation e.g. hubsync", fields:[
+        {f:"xctype", d:"req string", c:"extended conversation type"},
+        {f:"aid", d:"req dbid", c:"the account this converation is with"},
+        {f:"xctok", d:"string", c:"random token to authorize next call"}],
+     cache:{minutes:0},
+     logflds:["xctype", "aid", "xctok"]},
+
     {entity:"StInt", descr:"Structured interaction e.g. beta test", fields:[
         {f:"aid", d:"req dbid", c:"interacting account"},
         {f:"email", d:"priv req unique email", c:"confirmed contact email" },

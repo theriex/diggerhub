@@ -17,7 +17,7 @@ app.refmgr = (function () {
 
     var cache = {};
 
-    var persistentTypes = ["DigAcc", "Song", "Bookmark", "SKeyMap", "DigMsg", "SASum", "StInt", "AppService"];
+    var persistentTypes = ["DigAcc", "Song", "Bookmark", "SKeyMap", "DigMsg", "SASum", "XConvo", "StInt", "AppService"];
 
 
     //All json fields are initialized to {} so they can be accessed directly.
@@ -73,6 +73,8 @@ app.refmgr = (function () {
             reconstituteFieldJSONObject("chillest", obj);
             reconstituteFieldJSONObject("ampest", obj);
             break;
+        case "XConvo":
+            break;
         case "StInt":
             reconstituteFieldJSONObject("stdat", obj);
             break;
@@ -112,6 +114,8 @@ app.refmgr = (function () {
             obj.chillest = JSON.stringify(obj.chillest);
             obj.ampest = JSON.stringify(obj.ampest);
             break;
+        case "XConvo":
+            break;
         case "StInt":
             obj.stdat = JSON.stringify(obj.stdat);
             break;
@@ -138,6 +142,8 @@ app.refmgr = (function () {
         case "DigMsg":
             break;
         case "SASum":
+            break;
+        case "XConvo":
             break;
         case "StInt":
             obj.email = "";

@@ -124,6 +124,18 @@ CREATE TABLE SASum (  -- Song activity summary, e.g. weekly top20
 );
 ALTER TABLE SASum AUTO_INCREMENT = 2020;
 
+CREATE TABLE XConvo (  -- Extended conversation e.g. hubsync
+  dsId BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE,
+  created VARCHAR(256) NOT NULL,
+  modified VARCHAR(256) NOT NULL,
+  batchconv VARCHAR(256),
+  xctype VARCHAR(256) NOT NULL,
+  aid BIGINT NOT NULL,
+  xctok VARCHAR(256),
+  PRIMARY KEY (dsId)
+);
+ALTER TABLE XConvo AUTO_INCREMENT = 2020;
+
 CREATE TABLE StInt (  -- Structured interaction e.g. beta test
   dsId BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE,
   created VARCHAR(256) NOT NULL,

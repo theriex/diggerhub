@@ -37,7 +37,7 @@ def strl2inexp(strl):
 def find_song(spec):
     """ Lookup by aid/title/artist/album, return song instance or None """
     ret = None
-    where = ("WHERE aid = " + spec["aid"] +
+    where = ("WHERE aid = " + str(spec["aid"]) +
              " AND ti = \"" + dqe(spec["ti"]) + "\"" +
              " AND ar = \"" + dqe(spec["ar"]) + "\"" +
              " AND ab = \"" + dqe(spec["ab"]) + "\"" +
@@ -49,10 +49,10 @@ def find_song(spec):
     return ret
 
 
-def verify_required_song_field_values(updsong, digacc):
+def verify_required_song_field_values(updsong, accid):
     """ Fill and strip field values, complain if required data missing. """
     updsong["dsType"] = "Song"
-    updsong["aid"] = digacc["dsId"]
+    updsong["aid"] = int(accid)
     for matchfield in ["ti", "ar", "ab"]:
         updsong[matchfield] = updsong.get(matchfield, "")
         updsong[matchfield] = updsong[matchfield].strip()
@@ -160,35 +160,37 @@ def update_song_fields(updsong, dbsong):
 # find the song, and another to insert or update it.  Calling this function
 # in a loop risks bogging down the server.  Calling from a web API endpoint
 # risks exceeding processing time/effort limits.
-def write_upd_song(updsong, digacc):
+def write_upd_song(updsong, accid):
     """ Write the given updated song information. """
-    verify_required_song_field_values(updsong, digacc)
+    verify_required_song_field_values(updsong, accid)
     # logging.info("appdat.write_upd_song " + str(updsong))
     dbsong = find_song(updsong)  # calls dbacc.query_entity
     if not dbsong:  # create new song shell to fill
-        dbsong = {"dsType":"Song", "aid":digacc["dsId"], "modified":""}
+        dbsong = {"dsType":"Song", "aid":int(accid), "modified":""}
     update_song_fields(updsong, dbsong)
     updsong = dbacc.write_entity(dbsong, dbsong.get("modified") or "")
     return updsong
 
 
-# hubsync continuation tokens dict (single use tokens by dsId)
-hsctd = {}
-def new_hubsync_continuation_token(digaccid):
-    hsctd[str(digaccid)] = util.make_activation_code()
-    return hsctd[str(digaccid)]
-def hubsync_authenticate(digaccid):
-    contok = hsctd.get(str(digaccid))
+def hubsync_authenticate(accid):
     hsct = dbacc.reqarg("hsct", "string")
-    if contok and hsct:  # authenticating via hsct
-        if contok != hsct:
-            raise ValueError("Invalid hsct for DigAcc " + str(digaccid))
-        digacc = dbacc.cfbk("DigAcc", "dsId", digaccid, required=True)
-    else:  # authenticating via email/token
+    if not hsct:
         digacc, _ = util.authenticate()
-    # ensure no repeat authentication with the same hsct
-    hsctd[str(digaccid)] = new_hubsync_continuation_token(digaccid)
-    return digacc
+        if not digacc:
+            raise ValueError("hubsync_authenticate failure for " + str(accid))
+        if str(digacc["dsId"]) != str(accid):
+            raise ValueError("accid does not match authenticated digacc")
+    xco = {"dsType":"XConvo", "xctype":"hubsync", "aid":int(accid), "xctok":""}
+    where = "WHERE xctype=\"hubsync\" AND aid=" + str(accid)
+    xcs = dbacc.query_entity("XConvo", where)
+    if xcs:
+        xco = xcs[0]
+    if hsct and hsct != xco["xctok"]:
+        raise ValueError("hubsync_authenticate hsct mismatch")
+    # authenticated. update hsct and return the new value
+    xco["xctok"] = util.make_activation_code()
+    updxco = dbacc.write_entity(xco, xco.get("modified") or "")
+    return updxco["xctok"]
 
 
 # Avg size of a song 07jan25 is 630 bytes.  800k is possible to send, but is
@@ -196,8 +198,8 @@ def hubsync_authenticate(digaccid):
 # still flagged by PCRE ep15mar25.  If client is substantially outdated, it
 # is more efficient for a client to restore from backup data ep22apr25.
 HSMAXDOWN = 300
-def find_hs_merge_songs(hsd, digacc):
-    where = ("WHERE aid = " + digacc["dsId"] +
+def find_hs_merge_songs(hsd, accid):
+    where = ("WHERE aid = " + str(accid) +
              " AND lp > \"" + hsd["syncts"] + "\"" +
              " ORDER BY lp LIMIT " + str(HSMAXDOWN + 1))
     retsongs = dbacc.query_entity("Song", where)
@@ -239,10 +241,13 @@ def ucsv(txt):  # unescape csv string value
 def pciv(txt):
     return int(strip_surrounding_quotes(txt))
 def csv2song(csv):
-    cnvdefs = {"dsId":pciv, "ti":ucsv, "ar":ucsv, "ab":ucsv,
+    # Skip first field value (dsId) as the song will be tiarab remapped and
+    # the dsId may change if metadata has changed.  Value can be "" if the
+    # song has not been saved to the hub before.
+    cnvdefs = {"ti":ucsv, "ar":ucsv, "ab":ucsv,
                "el":pciv, "al":pciv, "kws":ucsv, "rv":pciv, "fq":ucsv,
                "nt":ucsv, "lp":ucsv, "pd":ucsv, "pc":pciv}
-    vals = csv.split(",")
+    vals = csv.split(",")[1:]
     song = {}
     for fld, cnvf in cnvdefs.items():
         val = vals.pop(0)
@@ -266,7 +271,7 @@ def song2csv(song):
 # database work.  Average length of a song is 3min15sec or roughly 20 songs
 # per hour.  More than that in a single upload is unreasonable load.
 HSMAXUP = 20
-def upd_hs_upload_songs(hsd, digacc, uplds):
+def upd_hs_upload_songs(hsd, accid, uplds):
     uplds = [csv2song(u) for u in uplds]
     uplds = [unescape_song_fields(s) for s in uplds]
     uplds = [s for s in uplds if not is_unrated_song(s)]
@@ -274,7 +279,7 @@ def upd_hs_upload_songs(hsd, digacc, uplds):
     retsongs = []
     for song in uplds:
         try:  # if any given song write fails, continue with rest
-            retsongs.append(write_upd_song(song, digacc))
+            retsongs.append(write_upd_song(song, accid))
         except ValueError as e:
             logpre = "upd_hs_uploaded_songs write_upd_song call failed: "
             logging.warning(logpre + str(e))
@@ -874,32 +879,29 @@ def send_share_messages(digacc, idcsv):
 # See digger/docroot/docs/hubsyncNotes.txt
 def hubsync(path="hubsync"):  # non-default path is "api/xx..."
     try:
-        digaccid = path[6:]
-        digacc = hubsync_authenticate(digaccid)  # ValueError if auth fails
+        accid = path[6:]
+        hsct = hubsync_authenticate(accid)
         syncdata = json.loads(dbacc.reqarg("syncdata", "json", required=True))
         if not syncdata:
             raise ValueError("No syncdata received")
-        if len(syncdata) > 11:  # [hsd, csv1, csv2...]
-            raise ValueError("Max 10 songs per upload call")
         hsd = json.loads(syncdata[0])  # hub sync directive: action etc
-        hsd["hsct"] = hsctd[str(digaccid)]  # update communications token
+        hsd["hsct"] = hsct  # update communications token
         upsongs = syncdata[1:]  # uploaded songs if provided
         downsongs = []
         if hsd["action"] == "start":
             hsd["action"] = "started"
         elif hsd["action"] == "pull":
-            downsongs = find_hs_merge_songs(hsd, digacc)
+            downsongs = find_hs_merge_songs(hsd, accid)
             hsd["action"] = "merge"
         elif hsd["action"] == "upload":
-            downsongs = upd_hs_upload_songs(hsd, digacc, upsongs)
+            downsongs = upd_hs_upload_songs(hsd, accid, upsongs)
             hsd["action"] = "received"
         else:
             raise ValueError("Unknown hsd action: " + hsd["action"])
         # not necessary to web escape song field values on return
         downsongs = [song2csv(s) for s in downsongs]
         syncdata = [json.dumps(hsd)] + downsongs
-        les = ["hubsync return", digacc["email"], json.dumps(hsd)]
-        logging.info(" ".join(les))
+        logging.info("hubsync ret " + accid + ": " + json.dumps(hsd))
     except ValueError as e:
         return util.serve_value_error(e)
     return util.respJSON(syncdata)
@@ -1413,8 +1415,11 @@ def backdat(path):
         logging.info("backdat fetching data for " + str(digacc["dsId"]) +
                      json.dumps(backup))
         path = util.runtime_home_dir() + backup.get("file")
-        with open(path, "r", encoding="utf-8") as datfile:
-            bdat = datfile.read()
+        try:
+            with open(path, "r", encoding="utf-8") as datfile:
+                bdat = datfile.read()
+        except OSError as e:
+            raise ValueError("Error reading file " + path) from e
     except ValueError as e:
         return util.serve_value_error(e)
     return util.respond(bdat)
