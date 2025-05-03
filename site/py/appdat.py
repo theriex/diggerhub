@@ -879,6 +879,7 @@ def send_share_messages(digacc, idcsv):
 # See digger/docroot/docs/hubsyncNotes.txt
 def hubsync(path="hubsync"):  # non-default path is "api/xx..."
     try:
+        startTime = datetime.datetime.now()
         accid = path[6:]
         hsct = hubsync_authenticate(accid)
         syncdata = json.loads(dbacc.reqarg("syncdata", "json", required=True))
@@ -901,7 +902,9 @@ def hubsync(path="hubsync"):  # non-default path is "api/xx..."
         # not necessary to web escape song field values on return
         downsongs = [song2csv(s) for s in downsongs]
         syncdata = [json.dumps(hsd)] + downsongs
-        logging.info("hubsync ret " + accid + ": " + json.dumps(hsd))
+        difft = round((datetime.datetime.now() - startTime).total_seconds(), 4)
+        logging.info("hubsync " + accid + " " + hsd["action"] + " in " +
+                     str(difft) + " seconds")
     except ValueError as e:
         return util.serve_value_error(e)
     return util.respJSON(syncdata)
