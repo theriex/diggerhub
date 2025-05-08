@@ -1406,6 +1406,7 @@ def updbmrk():
 
 # Fetch the latest backup data for the account
 def backdat(path):
+    logging.info("backdat path: " + str(path));
     try:
         digacc, _ = util.authenticate()
         settings = json.loads(digacc.get("settings") or "{}")
