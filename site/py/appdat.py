@@ -879,8 +879,13 @@ def send_share_messages(digacc, idcsv):
 # See digger/docroot/docs/hubsyncNotes.txt
 def hubsync(path="hubsync"):  # non-default path is "api/xx..."
     try:
-        startTime = datetime.datetime.now()
+        # raise ValueError("hubsync offline")
+        if path == "hubsync":
+            raise ValueError("account specific hubsync call required")
         accid = path[6:]
+        # if accid == "2020":
+        #     raise ValueError("hubsync disabled for DigAcc " + accid)
+        startTime = datetime.datetime.now()
         hsct = hubsync_authenticate(accid)
         syncdata = json.loads(dbacc.reqarg("syncdata", "json", required=True))
         if not syncdata:
@@ -1406,7 +1411,7 @@ def updbmrk():
 
 # Fetch the latest backup data for the account
 def backdat(path):
-    logging.info("backdat path: " + str(path));
+    logging.info("backdat path: " + str(path))
     try:
         digacc, _ = util.authenticate()
         settings = json.loads(digacc.get("settings") or "{}")
