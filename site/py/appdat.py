@@ -1415,20 +1415,20 @@ def backdat(path):
     try:
         digacc, _ = util.authenticate()
         settings = json.loads(digacc.get("settings") or "{}")
+        bdat = ""  # new account might not have a backup yet
         backup = settings.get("backup")
-        if not backup:
-            raise ValueError("No backup data for account")
-        burl = backup.get("url")
-        if not burl or burl != path[4:]:  # path is "api/bd..."
-            raise ValueError("Invalid backup data path")
-        logging.info("backdat fetching data for " + str(digacc["dsId"]) +
-                     json.dumps(backup))
-        path = util.runtime_home_dir() + backup.get("file")
-        try:
-            with open(path, "r", encoding="utf-8") as datfile:
-                bdat = datfile.read()
-        except OSError as e:
-            raise ValueError("Error reading file " + path) from e
+        if backup:
+            burl = backup.get("url")
+            if not burl or burl != path[4:]:  # path is "api/bd..."
+                raise ValueError("Invalid backup data path")
+            logging.info("backdat fetching data for " + str(digacc["dsId"]) +
+                         json.dumps(backup))  # log the access
+            path = util.runtime_home_dir() + backup.get("file")
+            try:
+                with open(path, "r", encoding="utf-8") as datfile:
+                    bdat = datfile.read()
+            except OSError as e:
+                raise ValueError("Error reading file " + path) from e
     except ValueError as e:
         return util.serve_value_error(e)
     return util.respond(bdat)
