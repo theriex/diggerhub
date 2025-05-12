@@ -209,10 +209,6 @@ def cieq(s1, s2, field):
 
 def already_listed(song, songsum):
     for t20song in songsum["top20"]:
-        if t20song["path"] == song["path"]:
-            # This can happen if the song metadata was changed, leading to
-            # the song now mapping to a different dsId
-            return True
         if cieq(t20song, song, "smti") and cieq(t20song, song, "smar"):
             # smti/smar updated when song is written to db, so safe to use
             # and most intuitive match for avoiding dupes
