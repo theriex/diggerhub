@@ -1147,16 +1147,20 @@ def stint_summary_counts(sitype):
     return dbacc.custom_query(sql, stcs)
 
 
+# Determining platform by path is no longer possible since path is not
+# uploaded, but some platform information could be recorded in the path for
+# future testing so leaving the code commented for now.  Not currently
+# testing creation time since test started.
 def platform_song_counts_for_tester(digacc):
-    plat = dbacc.reqarg("platform", "string", required=True)
-    pathexprs = {"iOS": r"//item/item\..*\?id=",
-                 "Android": r"^/?storage/.*/Music/"}
-    regex = pathexprs.get(plat)
-    if not regex:
-        raise ValueError("No match for platform: " + plat)
+    # plat = dbacc.reqarg("platform", "string", required=True)
+    # pathexprs = {"iOS": r"//item/item\..*\?id=",
+    #              "Android": r"^/?storage/.*/Music/"}
+    # regex = pathexprs.get(plat)
+    # if not regex:
+    #     raise ValueError("No match for platform: " + plat)
     where = ("WHERE aid = " + str(digacc["dsId"]) +
              " AND (el != 49 OR al != 49 OR kws IS NOT NULL)" +
-             " AND path REGEXP \"" + regex + "\"" +
+             # " AND path REGEXP \"" + regex + "\"" +
              " ORDER BY modified DESC LIMIT 100")
     return dbacc.query_entity("Song", where)
 
