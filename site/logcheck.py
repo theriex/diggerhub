@@ -3,6 +3,7 @@
 #pylint: disable=wrong-import-order
 #pylint: disable=missing-function-docstring
 #pylint: disable=invalid-name
+#pylint: disable=consider-using-from-import
 import datetime
 import os.path
 import py.mconf as mconf
@@ -14,6 +15,7 @@ logging.basicConfig(
     handlers=[logging.handlers.TimedRotatingFileHandler(
         mconf.logsdir + "plg_logcheck.log", when='D', backupCount=10)])
 import py.util as util
+import re
 
 # Matches the cron job timing setup
 TIMEWINDOW = datetime.timedelta(minutes=-60)
@@ -26,7 +28,7 @@ def mail_error_notice(txt):
 
 def check_line_for_errs(summary, line, markers, skips):
     for marker in markers:
-        if marker in line:
+        if re.search(marker, line):
             iserr = True
             for skip in skips:
                 if skip in line:
@@ -53,7 +55,7 @@ def search_log_file(lfp, srchts, markers, skips):
         for marker in markers:
             summary[marker] = ""
         lc = 0
-        with open(lfp) as f:
+        with open(lfp, encoding="utf-8") as f:
             for line in f.readlines():
                 if is_relevant_log_line(lc, srchts, line):
                     lc += 1
@@ -86,7 +88,9 @@ def check_log_file(lfp, tfmt, markers, skips):
 def check_log_files():
     appsrch = check_log_file(mconf.logsdir + "plg_application.log",
                              "%Y-%m-%d %H:",
-                             ["ERROR", "WARNING", "ValueError"],
+                             ["ERROR", "WARNING",
+                              r"File \".*\.py\", line \d+", "ValueError",
+                              r"hubsync\s\d+.*seconds"],
                              [])
     errsrch = check_log_file(mconf.errsdir + "error.log",
                              " %b %d %H:",
