@@ -413,7 +413,8 @@ app.login = (function () {
                         jt.out("btpnavdiv", "Thanks for your interest in beta testing Digger! This beta testing round is now closed, but your place in line has been noted and we'll be in touch if there's any more budget for gift cards. Meanwhile if you want to record your music impressions while listening and enjoy filtered continuous selection, you can download Digger at no cost from " + hublink + "."); } } },
             rating:{  //use digger, monitor progress
                 cmp:function () {
-                    return (cnts && cnts.ttl >= 50 && cnts.mto >= 6); },
+                    return (stint.status === "Complete" || 
+                            (cnts && cnts.ttl >= 50 && cnts.mto >= 6)); },
                 display:function () {
                     jt.out("btpnavdiv", "Your beta test has started! If you have not already installed Digger for " + stint.stdat.pretest.whichplat + ", click the download link on " + hublink + " to request a promo code, then sign in with the app and start listening.  Return to this page to see your progress.  If you have any questions email " + supplink + ". Thanks for testing!");
                     if(cnts && cnts.ttl > 0) {
@@ -441,7 +442,7 @@ app.login = (function () {
             done:{  //gift card sent, thanks again
                 cmp:function () { return false; },
                 display:function () {
-                    jt.out("btpnavdiv", "Thanks again for testing! Your gift card has been sent.  If you think of anything else, email " + supplink +", the Digger project appreciates your help."); } } };
+                    jt.out("btpnavdiv", "Thanks again for testing. Your gift card has been sent.  If you think of anything else, email " + supplink +", the Digger project appreciates your help!"); } } };
         function updateCountsFromSongs (fetchedSongs) {
             const now = new Date().toISOString();
             cnts = {ttl:0, mto:0, calcts:now, oldest:now, newest:""};

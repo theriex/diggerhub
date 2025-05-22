@@ -1175,7 +1175,8 @@ def update_stint_for_tester(digacc, sitype, action):
     if len(stints) > 0:
         stint = stints[0]
         if stint["status"] == "Complete":
-            raise ValueError("Cannot modify StInt status Complete.")
+            # do not do any further calculations or updates on this record
+            return [stint]
     confcode = dbacc.reqarg("confcode", "string")
     if confcode:
         if confcode != stint["confcode"]:
