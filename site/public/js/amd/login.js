@@ -437,7 +437,7 @@ app.login = (function () {
                 cmp:function () {
                     return (stint.status === "Complete"); },
                 display:function () {
-                    jt.out("btpnavdiv", "Thanks for beta testing! Your responses have all been recorded and support will complete your beta test when they send out your gift card.  If you have any questions or concerns email " + supplink + ".  Thanks again for your effort and insights, they are very much appreciated."); } },
+                    jt.out("btpnavdiv", "Thanks for beta testing! Your responses have all been recorded and support will mark your testing complete when they send out your gift card.  If you have any questions or anything else occurs to you email " + supplink + ".  Your effort and insights are very much appreciated."); } },
             done:{  //gift card sent, thanks again
                 cmp:function () { return false; },
                 display:function () {
