@@ -98,6 +98,28 @@ app.login = (function () {
                         contf, errf); }
             else {
                 errf(403, "No authentication parameters given"); } }
+        function checkIfSignedIn () {
+            initialSignIn(
+                function (accntok) {
+                    app.top.dispatch("hcu", "deserializeAccount", accntok[0]);
+                    app.top.dispatch("aaa", "setCurrentAccount",
+                                     accntok[0], accntok[1]);
+                    authobj = app.top.dispatch("aaa", "getAccount");
+                    mgrs.ap.save();
+                    if(app.startParams.anchor === "resetpassword") {
+                        const accdiv = jt.byId("hubaccountcontentdiv");
+                        if(accdiv) {
+                            accdiv.scrollIntoView(); }
+                        app.top.dispatch("afg", "accountFanGroup",
+                                         "personal", 1); }  //change password
+                    else {
+                        app.top.dispatch("afg", "accountFanGroup",
+                                         "groups", 2); } },  //messages
+                function () {  //not signed in
+                    app.top.dispatch("afg", "accountFanGroup");
+                    if(jt.byId("newacctb")) { //switch to sign in form to start
+                        app.top.dispatch("afg", "accountFanGroup",
+                                         "offline", 1); } }); }
     return {
         signOut: function () {
             authobj = null;
@@ -110,19 +132,8 @@ app.login = (function () {
             if(!jt.byId(dispdiv)) { return; }  //no account access
             app.top.dispatch("aaa", "initialize");
             app.top.dispatch("afg", "runOutsideApp", dispdiv);
-            initialSignIn(
-                function (accntok) {
-                    app.top.dispatch("hcu", "deserializeAccount", accntok[0]);
-                    app.top.dispatch("aaa", "setCurrentAccount",
-                                     accntok[0], accntok[1]);
-                    authobj = app.top.dispatch("aaa", "getAccount");
-                    mgrs.ap.save();
-                    app.top.dispatch("afg", "accountFanGroup", "groups", 2); },
-                function () {  //not signed in
-                    app.top.dispatch("afg", "accountFanGroup");
-                    if(jt.byId("newacctb")) { //switch to sign in form to start
-                        app.top.dispatch("afg", "accountFanGroup",
-                                         "offline", 1); } }); }
+            app.pdat.addApresDataNotificationTask("hubCheckIfSignedIn",
+                                                  checkIfSignedIn); }
     };  //end mgrs.hua returned functions
     }());
 
