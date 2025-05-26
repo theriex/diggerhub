@@ -35,7 +35,7 @@ def check_line_for_errs(ctx, line, markers, skips):
                     iserr = False
             if iserr:
                 ctx["errc"] += 1
-                ctx["info"] += line + "\n"
+                ctx["info"] += line  # includes newline at end
 
 
 def is_relevant_log_line(lc, srchts, line):
@@ -50,6 +50,7 @@ def is_relevant_log_line(lc, srchts, line):
 
 def search_log_file(lfp, srchts, markers, skips, ctx):
     """ search the log file path filtering by the search timestamp prefix """
+    ctx["errc"] = 0  # reset any previous count
     if not os.path.isfile(lfp):
         ctx["errc"] += 1
         ctx["info"] += "Log file " + lfp + " not found.\n"
@@ -63,7 +64,7 @@ def search_log_file(lfp, srchts, markers, skips, ctx):
                     check_line_for_errs(ctx, line, markers, skips)
         ctx["info"] += "Finished checking " + lfp + "\n"
         ctx["info"] += str(mlc) + " lines matching \"" + srchts + "\"\n"
-        ctx["info"] += str(ctx["errc"]) + " errors found.\n"
+        ctx["info"] += str(ctx["errc"]) + " matches found.\n"
 
 
 def check_log_file(lfp, tfmt, markers, skips, ctx):
