@@ -93,16 +93,11 @@ def beta_activity_monitoring():
     return txt
 
 
-def daily_reminders():
-    return "Consider checking r/Music after email settled."
-
-
 def send_hub_summary():
     subj = "DiggerHub user activity send for " + runinfo["tdow"]
     sta = [daily_activity_totals(),
            user_weekly_top20_send_summary(),
-           beta_activity_monitoring(),
-           daily_reminders()]
+           beta_activity_monitoring()]
     body = "\n".join(sta) + "\n"
     if runinfo["mode"] in ["all", "summary"]:
         util.send_mail(util.supnm() + "@" + util.domnm(), subj, body,
@@ -152,7 +147,38 @@ def write_song_activity_summary(user, songsum):
     return pl
 
 
-def send_activity_summary(user, settings, songsum):
+def settings_for_user(user):
+    dfltset = {"sumact": dfltact}
+    settings = util.load_json_or_default(user["settings"], dfltset)
+    if not settings.get("sumact"):
+        settings["sumact"] = dfltact
+    return settings
+
+
+# user may have been interim updated by competing cron job
+def update_user_settings_sumact_lastsend(user, timestamp, retry=0):
+    if retry > 1:
+        logging.warning("Unable to update DigAcc" + str(user["dsId"]) +
+                        " settings.sumact.lastsend after " + str(retry) +
+                        " attempts. Bailing out.")
+        return
+    settings = settings_for_user(user)
+    settings["sumact"]["lastsend"] = timestamp
+    user["settings"] = json.dumps(settings)
+    try:
+        dbacc.write_entity(user, vck=user["modified"])
+    except ValueError as ve:
+        retrycount = retry + 1
+        logging.info("update_user_settings_sumact_lastsend " + str(ve) +
+                     " retrying (retry " + str(retrycount) + ")")
+        # get the most recent user, not via cfbk since cached probably stale
+        where = "WHERE dsId = " + str(user["dsId"]) + " LIMIT 1"
+        updus = dbacc.query_entity("DigAcc", where)
+        updu = updus[0]
+        update_user_settings_sumact_lastsend(updu, timestamp, retry=retrycount)
+
+
+def send_activity_summary(user, songsum):
     plink = write_song_activity_summary(user, songsum)
     if not plink:
         plink = "Set a digname for your account to publish weekly summaries"
@@ -172,9 +198,7 @@ def send_activity_summary(user, settings, songsum):
     body += "Let your friends know what they're missing.\n\n"
     if runinfo["mode"] == "all":
         util.send_mail(user["email"], subj, body, domain="diggerhub.com")
-        settings["sumact"]["lastsend"] = dbacc.nowISO()
-        user["settings"] = json.dumps(settings)
-        dbacc.write_entity(user, vck=user["modified"])
+        update_user_settings_sumact_lastsend(user, dbacc.nowISO())
     else:
         logging.info("Summary for " + str(user["dsId"]) + "\n" + body)
 
@@ -260,7 +284,7 @@ def check_user_activity(user, settings):
         logging.info(errpre + " not enough songs (" + str(usum["count"]) + ")")
         return
     songsum["ttlsongs"] = usum["count"]
-    send_activity_summary(user, settings, songsum)
+    send_activity_summary(user, songsum)
 
 
 def check_users():
@@ -272,10 +296,7 @@ def check_users():
     for user in users:
         runinfo["userttl"] += 1
         logging.info("Checking " + str(user["dsId"]) + " " + user["firstname"])
-        dfltset = {"sumact": dfltact}
-        settings = util.load_json_or_default(user["settings"], dfltset)
-        if not settings.get("sumact"):
-            settings["sumact"] = dfltact
+        settings = settings_for_user(user)
         check_user_activity(user, settings)
     send_hub_summary()
 

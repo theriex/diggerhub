@@ -64,7 +64,7 @@ def search_log_file(lfp, srchts, markers, skips, ctx):
                     check_line_for_errs(ctx, line, markers, skips)
         ctx["info"] += "Finished checking " + lfp + "\n"
         ctx["info"] += str(mlc) + " lines matching \"" + srchts + "\"\n"
-        ctx["info"] += str(ctx["errc"]) + " matches found.\n"
+        ctx["info"] += str(ctx["errc"]) + " expression matches found.\n"
 
 
 def check_log_file(lfp, tfmt, markers, skips, ctx):
