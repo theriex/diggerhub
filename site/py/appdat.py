@@ -1119,26 +1119,6 @@ def suggdown():
     return util.respJSON(songs)
 
 
-# Auth required
-def nosugg():
-    try:
-        digacc, _ = util.authenticate()
-        artist = dbacc.reqarg("artist", "string", required=True)
-        album = dbacc.reqarg("album", "string", required=True)
-        fq = dbacc.reqarg("fq", "string", required=True)
-        where = ("WHERE aid = " + str(digacc["dsId"]) +
-                 " AND ar = \"" + artist + "\"" +
-                 " AND ab = \"" + album + "\"")
-        res = []
-        songs = dbacc.query_entity("Song", where)
-        for song in songs:
-            song["fq"] = fq
-            res.append(dbacc.write_entity(song, song["modified"]))
-    except ValueError as e:
-        return util.serve_value_error(e)
-    return util.respJSON(res)
-
-
 def stint_summary_counts(sitype):
     stcs = ["Pending", "Active", "Complete"]
     sql = "SELECT sitype"

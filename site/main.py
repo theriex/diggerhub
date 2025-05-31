@@ -105,10 +105,6 @@ def songttls():  # params: auth
 def suggdown():  # params: auth, suggtype
     return util.secure(appdat.suggdown)
 
-@app.route('/api/nosugg', methods=['GET', 'POST'])
-def nosugg():  # params: auth, artist, album, fq
-    return util.secure(appdat.nosugg)
-
 @app.route('/api/betastat', methods=['GET', 'POST'])
 def betastat():  # params: auth if post
     return appdat.betastat()
