@@ -929,6 +929,7 @@ def savesongs():
     try:
         digacc, _ = util.authenticate()
         songs = json.loads(dbacc.reqarg("songs", "json", required=True))
+        songs = songs[0:20]  # update at most 20 songs at a time. heavy work
         upds = []
         for idx, song in enumerate(songs):
             unescape_song_fields(song)
@@ -1086,33 +1087,34 @@ def songttls():
     return util.respJSON([digacc], audience="private")
 
 
-# Auth required.
+# Auth required. Fetch the oldest hub songs to maybe transfer to device.
 def suggdown():
     try:
         digacc, _ = util.authenticate()
-        suggtype = dbacc.reqarg("suggtype", "string", required=True)
-        logging.info("suggdown " + suggtype + " for " + digacc["dsId"])
-        dls = []
-        having = "HAVING qc > 1"   # albums
-        if suggtype == "singles":
-            having = "HAVING qc = 1"
-        sql = ("SELECT ar, ab, COUNT(ti) AS qc, SUM(rv) AS sr, MAX(rv) AS mr," +
-               " MAX(lp) AS lp, GROUP_CONCAT(DISTINCT kws) AS kws" +
-               " FROM Song WHERE rv >= 5 AND lp IS NOT NULL" +
-               " AND ar IS NOT NULL AND LOWER(ar) NOT LIKE ('%unknown%')" +
-               " AND ab IS NOT NULL AND aid = " + digacc["dsId"] +
-               " AND (fq IS NULL OR (fq != 'M' AND fq != 'R'))" +
-               " GROUP BY ar, ab " + having + " ORDER BY lp LIMIT 1000")
-        rows = dbacc.custom_query(sql, ["ar", "ab", "qc", "sr", "mr",
-                                        "lp", "kws"])
-        for row in rows:
-            sug = {"ar":row["ar"], "ab":row["ab"], "qc":int(row["qc"]),
-                   "sr":int(row["sr"]), "mr":int(row["mr"]),
-                   "lp":row["lp"], "kws":row["kws"]}
-            dls.append(sug)
+        poskws = dbacc.reqarg("poskws", "string")
+        negkws = dbacc.reqarg("negkws", "string")
+        almin = dbacc.reqarg("almin", "string") or "0"
+        almax = dbacc.reqarg("almax", "string") or "100"
+        elmin = dbacc.reqarg("elmin", "string") or "0"
+        elmax = dbacc.reqarg("elmax", "string") or "100"
+        where = "WHERE aid = " + str(digacc["dsId"])
+        if poskws:
+            for poskw in poskws.split(","):
+                where += " AND find_in_set(\"" + poskw + "\", kws"
+        if negkws:
+            for negkw in negkws.split(","):
+                where += " AND NOT find_in_set(\"" + negkw + "\", kws"
+        where += (" AND al >= " + almin +
+                  " AND al <= " + almax +
+                  " AND el >= " + elmin +
+                  " and el <= " + elmax +
+                  " AND find_in_set(fq, \"N,P,B,Z,O\")" +
+                  # avg 10-15 tracks per album, need 5+1 albums worth
+                  "ORDER BY lp LIMIT 100")
+        songs = dbacc.query_entity("Song", where)
     except ValueError as e:
         return util.serve_value_error(e)
-    return util.respJSON(dls)
+    return util.respJSON(songs)
 
 
 # Auth required

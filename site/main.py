@@ -78,7 +78,7 @@ def songfetch():  # params: auth, fvs
     return util.secure(appdat.songfetch)
 
 @app.route('/api/savesongs', methods=['GET', 'POST'])
-def multipupd():  # params: auth, songs
+def savesongs():  # params: auth, songs
     return util.secure(appdat.savesongs)
 
 @app.route('/api/fangrpact', methods=['GET', 'POST'])
