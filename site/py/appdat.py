@@ -1100,17 +1100,19 @@ def suggdown():
         where = "WHERE aid = " + str(digacc["dsId"])
         if poskws:
             for poskw in poskws.split(","):
-                where += " AND find_in_set(\"" + poskw + "\", kws"
+                where += " AND find_in_set(\"" + poskw + "\", kws)"
         if negkws:
             for negkw in negkws.split(","):
-                where += " AND NOT find_in_set(\"" + negkw + "\", kws"
+                where += " AND NOT find_in_set(\"" + negkw + "\", kws)"
         where += (" AND al >= " + almin +
                   " AND al <= " + almax +
                   " AND el >= " + elmin +
                   " and el <= " + elmax +
                   " AND find_in_set(fq, \"N,P,B,Z,O\")" +
+                  " AND lp IS NOT NULL" +
                   # avg 10-15 tracks per album, need 5+1 albums worth
-                  "ORDER BY lp LIMIT 100")
+                  " ORDER BY lp LIMIT 100")
+        logging.info("suggdown query " + where)
         songs = dbacc.query_entity("Song", where)
     except ValueError as e:
         return util.serve_value_error(e)
