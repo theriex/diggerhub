@@ -1097,7 +1097,8 @@ def suggdown():
         almax = dbacc.reqarg("almax", "string") or "100"
         elmin = dbacc.reqarg("elmin", "string") or "0"
         elmax = dbacc.reqarg("elmax", "string") or "100"
-        where = "WHERE aid = " + str(digacc["dsId"])
+        where = ("WHERE aid = " + str(digacc["dsId"]) +
+                 " AND ab IS NOT NULL AND ab != \"\"")
         if poskws:
             for poskw in poskws.split(","):
                 where += " AND find_in_set(\"" + poskw + "\", kws)"
