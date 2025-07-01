@@ -132,6 +132,7 @@ module.exports = (function () {
         {f:"nt", d:"text", c:"note text (whatever the user writes)"},
         {f:"url", d:"string", c:"public web source to listen *2"},
         {f:"upi", d:"image", c:"url link preview image"},
+        {f:"haf", d:"string", c:"heard about from. optional friend/src name"},
         {f:"ai", d:"json", c:"album info like release year, label etc"},
         {f:"ti", d:"json", c:"track info, names and ordering"},
         {f:"si", d:"json", c:"song info, digger songs summary (*3)"},

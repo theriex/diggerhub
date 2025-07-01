@@ -13,7 +13,7 @@ import py.dbacc as dbacc
 import io
 from PIL import Image, ImageDraw, ImageFont
 
-CACHE_BUST_PARAM = "v=250614"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=250701"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -252,12 +252,13 @@ def listener_report_page_html(digname, tline, content):
 
 def weekly_top20_content_html(sasum):
     digname = sasum["digname"]
-    moday = month_and_day_from_dbtimestamp(sasum["end"])
+    mdstart = month_and_day_from_dbtimestamp(sasum["start"])
+    mdend = month_and_day_from_dbtimestamp(sasum["end"])
     tline = ("<span id=\"hrtlspan\" data-dnm=\"" + sasum["digname"] +
-             "\">Weekly Top 20</span> - " +
-             "<span id=\"hrtpspan\" class=\"datevalspan\"" +
+             "\">Top 20 songs from my collection</span>" +
+             " <span id=\"hrtpspan\" class=\"datevalspan\"" +
              " data-plink=\"plink/wt20/" + sasum["digname"] + "/" +
-             sasum["end"][0:10] + "\">" + moday + "</span>")
+             sasum["end"][0:10] + "\">" + mdstart + "-" + mdend + "</span>")
     html = "<ol>\n"
     for song in util.load_json_or_default(sasum["songs"], []):
         html += "<li>" + song_html(song) + "\n"
