@@ -288,11 +288,13 @@ def check_user_activity(user, settings):
 
 
 def check_users():
-    runinfo["userttl"] = 0
-    runinfo["usersgttl"] = 0
-    # skip checking users who have not accessed the hub in over a week
-    users = dbacc.query_entity("DigAcc",
-                               "WHERE modified > \"" + runinfo["wksts"] + "\"")
+    runinfo["userttl"] = 0     # number of active listeners
+    runinfo["usersgttl"] = 0   # songs updated
+    where = ("WHERE settings LIKE \"%sendon%:%" + runinfo["tdow"] + "%\"" +
+             " AND EXISTS (SELECT dsId FROM Song WHERE Song.aid = DigAcc.dsId" +
+             " AND lp >= \"" + runinfo["wksts"] + "\"" +
+             " AND lp < \"" + runinfo["wkets"] + "\")")
+    users = dbacc.query_entity("DigAcc", where)
     for user in users:
         runinfo["userttl"] += 1
         logging.info("Checking " + str(user["dsId"]) + " " + user["firstname"])
