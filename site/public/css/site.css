@@ -212,3 +212,11 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
 .rptnavtabdiv { display:inline-block; font-weight:bold; padding:2px 4px;
   cursor:pointer; }
 .rptnavtabselspan { font-weight:normal; color:#666; }
+
+#proftitlelinediv { height:64px; font-size:48px; font-weight:bold;
+  padding:10px 0px 0px 70px; margin-top:-10px; }
+#muwkdiv { padding:7px 0px; }
+#profmuwklabel { display:inline-block; font-size:small; font-weight:normal;
+  vertical-align:middle; padding:0px 2px 0px 0px; }
+#profmuwkday { font-style:italic; font-weight:bold; font-size:medium; }
+.pshmodtd { font-size:small; }

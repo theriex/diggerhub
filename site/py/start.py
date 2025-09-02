@@ -12,8 +12,10 @@ import py.util as util
 import py.dbacc as dbacc
 import io
 from PIL import Image, ImageDraw, ImageFont
+import json
+import datetime
 
-CACHE_BUST_PARAM = "v=250826"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=250902"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -46,6 +48,7 @@ INDEXHTML = """
       modules:[
           {name:"refmgr", desc:"Server data and client cache"},
           {name:"login", desc:"Authentication and account management"},
+          {name:"prof", desc:"Listener profile info and reports"},
           //svc determines "web" or "loc" run
           {name:"svc", type:"dm", desc:"webapp server interaction calls"},
           //player may redirect to load supporting libraries
@@ -53,6 +56,9 @@ INDEXHTML = """
           {name:"top", type:"dm", desc:"top panel functions"},
           {name:"filter", type:"dm", desc:"filter panel functions"},
           {name:"deck", type:"dm", desc:"deck panel functions"}]};
+</script>
+<script>
+  var rundata = "";
 </script>
 <script src="$RDRjs/jtmin.js?$CBPARAM"></script>
 <script src="$RDRjs/app.js?$CBPARAM"></script>
@@ -338,20 +344,41 @@ def find_latest_t20_summary(digname):
     return None
 
 
+def acct_by_digname(digname):
+    where = "WHERE digname = \"" + digname + "\""
+    accts = dbacc.query_entity("DigAcc", where)
+    if len(accts) > 0:
+        da = dbacc.visible_fields(accts[0])
+        return da
+    return ""
+
+
+def most_recent_songs(digacc):
+    if not digacc:
+        return ""
+    # 5 weeks back ought to be enough for reasonable data
+    dback = datetime.datetime.utcnow() - datetime.timedelta(days=35)
+    where = ("WHERE aid = " + digacc["dsId"] +
+             " AND modified >= \"" + dbacc.dt2ISO(dback) + "\"" +
+             " ORDER BY modified DESC")
+    songs = dbacc.query_entity("Song", where)
+    return songs
+
+
 def listener_page(stinf):
     pes = stinf["rawpath"].split("/")
     if len(pes) < 2:
         return fail404()
     digname = pes[1]
-    wt20 = "No recent listening info"
-    sasum = find_latest_t20_summary(digname)
-    logging.info("listener_page " + digname + " " + str(sasum))
-    if sasum:
-        wt20 = weekly_top20_content_html(sasum)
+    logging.info("listener_page " + digname + " " + digname)
+    digacc = acct_by_digname(digname)
+    rdo = {"acct": digacc,
+           "songs": most_recent_songs(digacc)}
     stinf["replace"]["$CONTENTHTML"] = REPORTFRAMEHTML
     stinf["replace"]["$REPORTHTML"] = PERSONALPAGEHTML
     stinf["replace"]["$RELROOT"] = stinf["replace"]["$RDR"]
-    stinf["replace"]["$LATESTTOP20"] = wt20
+    stinf["replace"]["$LATESTTOP20"] = ""
+    stinf["replace"]["rundata = \"\""] = "rundata = " + json.dumps(rdo)
     return replace_and_respond(stinf)
 
 

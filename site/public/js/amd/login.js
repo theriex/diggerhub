@@ -903,7 +903,7 @@ app.login = (function () {
             if(typeof html === "function") {
                 html = html(key); }
             jt.out("reptbodydiv", html); }
-    };  //end mgrs.rpot returned functions
+    };  //end mgrs.rpt returned functions
     }());
 
 
@@ -925,8 +925,9 @@ app.login = (function () {
         initialize: function () {
             activateOverlayDisplayForNavBarElements();
             app.svc.init("web");
-            if(app.startPath.startsWith("/plink") ||
-               app.startPath.startsWith("/listener")) {
+            if(app.startPath.startsWith("/listener")) {
+                return app.prof.init(); }
+            if(app.startPath.startsWith("/plink")) {
                 return mgrs.rpt.initialize(); }
             switch(app.startPath) {
             case "/iosappstore": return mgrs.mmd.iosappstore();

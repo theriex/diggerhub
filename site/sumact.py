@@ -261,7 +261,8 @@ def check_user_activity(user, settings):
     songs = dbacc.query_entity("Song", "WHERE aid = " + user["dsId"] +
                                " AND lp >= \"" + sincets + "\"" +
                                " AND lp < \"" + untilts + "\"" +
-                               " AND (pd IS NULL OR pd = \"played\")" +
+                               " AND (pd IS NULL OR pd IN (\"played\"" +
+                               ", \"iosqueue\", \"digaudpl\")" +
                                " AND kws LIKE \"%Social%\"" +
                                " AND rv >= 5" +
                                " ORDER BY rv DESC, lp DESC")

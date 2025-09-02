@@ -105,7 +105,9 @@ module.exports = (function () {
         {f:"spid", d:"string", c:"z:trackID, code:val or null/empty (*3)"}],
      //SHOW TABLE STATUS WHERE NAME="Song"\G
      //*1 pd: null or empty string if playback disposition unknown
-     //         "played": normal playback
+     //         "played": normal interactive playback
+     //         "iosqueue": queued background playback on iOS
+     //         "digaudpl": queued background playback on Android
      //         "dupe": processed as a duplicate of the song that was played
      //         "snoozed": fq bumped and lp updated, pulled from deck.
      //         "skipped": hit the skip button when playback started
