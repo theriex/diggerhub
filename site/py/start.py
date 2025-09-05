@@ -348,8 +348,8 @@ def acct_by_digname(digname):
     where = "WHERE digname = \"" + digname + "\""
     accts = dbacc.query_entity("DigAcc", where)
     if len(accts) > 0:
-        da = dbacc.visible_fields(accts[0])
-        return da
+        digacc = dbacc.visible_fields(accts[0])
+        return digacc
     return ""
 
 
@@ -365,6 +365,15 @@ def most_recent_songs(digacc):
     return songs
 
 
+def most_recent_bookmarks(digacc):
+    if not digacc:
+        return ""
+    where = ("WHERE aid = " + digacc["dsId"] +
+             " ORDER BY modified DESC LIMIT 100")
+    bkmks = dbacc.query_entity("Bookmark", where)
+    return bkmks
+
+
 def listener_page(stinf):
     pes = stinf["rawpath"].split("/")
     if len(pes) < 2:
@@ -373,7 +382,8 @@ def listener_page(stinf):
     logging.info("listener_page " + digname + " " + digname)
     digacc = acct_by_digname(digname)
     rdo = {"acct": digacc,
-           "songs": most_recent_songs(digacc)}
+           "songs": most_recent_songs(digacc),
+           "bkmks": most_recent_bookmarks(digacc)}
     stinf["replace"]["$CONTENTHTML"] = REPORTFRAMEHTML
     stinf["replace"]["$REPORTHTML"] = PERSONALPAGEHTML
     stinf["replace"]["$RELROOT"] = stinf["replace"]["$RDR"]

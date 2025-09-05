@@ -218,5 +218,9 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
 #muwkdiv { padding:7px 0px; }
 #profmuwklabel { display:inline-block; font-size:small; font-weight:normal;
   vertical-align:middle; padding:0px 2px 0px 0px; }
+#profmuwkdiv { padding-bottom:12px; }
 #profmuwkday { font-style:italic; font-weight:bold; font-size:medium; }
-.pshmodtd { font-size:small; }
+.profdescth { padding-left:42px; }
+.profmodtd { font-size:small; }
+.profsectiontitlediv { letter-spacing:0.4em; padding:0px 0px 5px 42px;
+  font-size:small; text-transform:uppercase; font-style:italic; }
