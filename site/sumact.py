@@ -133,8 +133,8 @@ def write_song_activity_summary(user, songsum):
     if not digname:
         return ""
     sasum = {"dsType":"SASum", "aid":user["dsId"], "digname":digname,
-             "sumtype":"wt20","start":songsum["sincets"], "end":dbacc.nowISO(),
-             "ttlsongs":songsum["ttlsongs"]}
+             "sumtype":"wt20","start":songsum["sincets"],
+             "end":songsum["untilts"], "ttlsongs":songsum["ttlsongs"]}
     for song in songsum["top20"]:
         trim_song_fields_for_reporting(song)
     sasum["songs"] = json.dumps(songsum["top20"])
@@ -245,7 +245,7 @@ def check_user_activity(user, settings):
     errpre = "check_user_activity skipping " + ustr
     senddow = send_day_of_week(settings)
     if runinfo["tdow"] != senddow:
-        logging.info(errpre +" sendon " + senddow)
+        logging.info(errpre + " sendon " + senddow)
         return
     lastsendts, sincets, untilts = get_last_played_timestamps(settings)
     if not sincets:
@@ -254,7 +254,7 @@ def check_user_activity(user, settings):
     logging.info("check_user_activity " + ustr + " " +
                  sincets[:10] + " - " + untilts[:10])
     usum = {"acct": user, "count": 0}
-    songsum = {"sincets":sincets, "top20":[]}
+    songsum = {"sincets":sincets, "untilts":untilts, "top20":[]}
     # The public Top 20 should not include anything you are not comfortable
     # playing for others, nor should it include anything you think is not
     # very good.  Otherwise it's no fun to see.
@@ -262,7 +262,7 @@ def check_user_activity(user, settings):
                                " AND lp >= \"" + sincets + "\"" +
                                " AND lp < \"" + untilts + "\"" +
                                " AND (pd IS NULL OR pd IN (\"played\"" +
-                               ", \"iosqueue\", \"digaudpl\")" +
+                               ", \"iosqueue\", \"digaudpl\"))" +
                                " AND kws LIKE \"%Social%\"" +
                                " AND rv >= 5" +
                                " ORDER BY rv DESC, lp DESC")
@@ -304,17 +304,27 @@ def check_users():
     send_hub_summary()
 
 
+# Write an SASum snapshot for any user whose listening week ended today,
+# using the latest song playback data.  If processing fails for any reason,
+# the snapshot can be remedially constructed, but only songs that have not
+# been played again more recently will be included.  Example usage:
+#   python sumact.py           # write SASum, log to console
+#   python sumact.py batch     # write SASum, email and update users
+#   python sumact.py remed 2025-08-27T00:00:00Z
 def run_with_params():
+    now = datetime.datetime.utcnow()
+    if len(sys.argv) > 1 and sys.argv[1] == "batch":
+        runinfo["mode"] = "all"  # send mail and update digaccs
+    if len(sys.argv) > 2:    # have specified ISO timestamp
+        now = dbacc.ISO2dt(sys.argv[2])
     sdnvs = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday",
              "Saturday", "Sunday", "Never"]
-    runinfo["tdow"] = sdnvs[datetime.datetime.today().weekday()]
-    now = datetime.datetime.utcnow()
+    runinfo["tdow"] = sdnvs[now.weekday()]
     runinfo["sod"] = now.replace(hour=0, minute=0, second=0, microsecond=0)
     runinfo["wkets"] = dbacc.dt2ISO(runinfo["sod"])
     runinfo["wksts"] = dbacc.dt2ISO(runinfo["sod"] - datetime.timedelta(days=7))
-    logging.info("Checking weekly activity summary for send " + runinfo["tdow"])
-    if len(sys.argv) > 1 and sys.argv[1] == "batch":
-        runinfo["mode"] = "all"
+    logging.info("Weekly activity summary " + runinfo["tdow"] +
+                 " " + runinfo["wksts"] + " to " + runinfo["wkets"])
     check_users()
 
 # run it
