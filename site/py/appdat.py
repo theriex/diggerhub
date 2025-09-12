@@ -1344,28 +1344,35 @@ def songtip():
     return util.respJSON([song])
 
 
-# Fetch and return the N most recently modified bookmarks for the given
-# accid, updated befiso or now, including the bmrkid bookmark if given,
-# and matching the collstat value if given.  Page through on modified
-# rather than created.  If you just bought something you noted years ago
-# that's more important than when you first created a bookmark for it.
-def bookmarks():
+# Fetch and return bookmarks for the authorized user according to any
+# specified match fields provided.  Literal matches only, except ar/ab which
+# are matched as smar/smab.  Possible to support a "before" match to page
+# back in time by modified value, but expecting that there are not going to
+# be enough bookmarks matching retrieval specifications that this will ever
+# actually be needed.  Query limit necessary for server resources.
+def bmrkfetch ():
     try:
-        accid = dbacc.reqarg("accid", "dbid", required=True)
-        befiso = dbacc.reqarg("befiso", "string")
-        if not befiso:
-            befiso = dbacc.nowISO()
-        collstat = dbacc.reqarg("collstat", "string")
-        if collstat:
-            collstat = " AND cs = \"" + collstat + "\""
-        bmrkid = dbacc.reqarg("bmrkid", "dbid")
-        if not bmrkid:
-            bmrkid = 0
-        where = ("WHERE aid = " + str(accid) +
-                 " AND ((created < \"" + befiso + "\"" + collstat + ")" +
-                 "       OR" +
-                 "      (dsId = " + str(bmrkid) + "))" +
-                 " ORDER BY created DESC LIMIT 300")
+        digacc, _ = util.authenticate()
+        where = "WHERE aid = " + str(digacc["dsId"])
+        bmt = dbacc.reqarg("bmt", "string")
+        if bmt:
+            where += " AND bmt = \"" + str(bmt) + "\""
+        ar = dbacc.reqarg("ar", "string")
+        if ar:
+            ar = standardized_colloquial_match(ar)
+            where += " AND smar LIKE \"%" + ar + "%\""
+        ab = dbacc.reqarg("ab", "string")
+        if ab:
+            ab = standardized_colloquial_match(ab)
+            where += " AND smab = LIKE \"%" + ab + "%\""
+        cs = dbacc.reqarg("cs", "string")
+        if cs:
+            where += " AND cs = \"" + cs + "\""
+        orderby = "DESC"  # most recently modified first
+        sortord = dbacc.reqarg("sortord", "string")
+        if sortord == "oldest":
+            orderby = "ASC"
+        where += " ORDER BY modified " + orderby + " LIMIT 200"
         bkms = dbacc.query_entity("Bookmark", where)
     except ValueError as e:
         return util.serve_value_error(e)
@@ -1381,7 +1388,7 @@ def updbmrk():
         bmrk = {"dsType": "Bookmark", "aid": digacc["dsId"],
                 "dsId": dbacc.reqarg("dsId", "dbid"),  # specified if update
                 "modified":dbacc.reqarg("modified", "string"),
-                "bmtype": dbacc.reqarg("bmtype", "string", required=True),
+                "bmt": dbacc.reqarg("bmt", "string", required=True),
                 "ar": artist, "ab": album,
                 "smar": standardized_colloquial_match(artist),
                 "smab": standardized_colloquial_match(album),

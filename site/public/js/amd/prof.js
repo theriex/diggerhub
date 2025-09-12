@@ -24,8 +24,246 @@ app.prof = (function () {
             return jt.tac2html(
                 [["span", {cla:"dsarspan"}, b.ar],
                  " - ",
-                 ["span", {cla:"dsabspan"}, b.ab]]); }
+                 ["span", {cla:"dsabspan"}, b.ab]]); },
+        v4f: function (fld) {
+            switch(fld) {
+            case "cs": return ["Listened","Notable","Considering","Collected"];
+            case "bmt": return ["Album","Performance","Song","Other"]; } }
     };  //end mgrs.util returned functions
+    }());
+
+
+    //The edit bookmark manager handles adding or updating a bookmark
+    mgrs.edb = (function () {
+        var bmk = null;
+        function verifyFields () {
+            var errs = [];
+            bmk.aid = app.login.getAuth().dsId;
+            if(!mgrs.util.v4f("bmt").includes(bmk.bmt)) {
+                errs.push({a:"bmt", e:"Invalid bookmark type"}); }
+            if(!bmk.ar.trim()) {
+                errs.push({a:"ar", e:"Artist name required"}); }
+            if(!bmk.ab.trim()) {
+                errs.push({a:"ab", e:"Identifying name needed"}); }
+            if(!bmk.url) {
+                errs.push({a:"url", e:"URL required"}); }
+            if(!mgrs.util.v4f("cs").includes(bmk.cs)) {
+                errs.push({a:"cs", e:"Invalid collection status value"}); }
+            return errs; }
+        function formValInput (fld, itype) {
+            const iphs = {
+                ar:"Artist name",
+                ab:"Title of album, performance, or song"};
+            switch(itype) {
+            case "string": return jt.tac2html(
+                ["input", {type:"text", id:"edbin" + fld, size:30,
+                           placeholder:iphs[fld],
+                           value:(bmk[fld] || "")}]);
+            case "select": return jt.tac2html(
+                ["select", {id:fld + "valsel"},
+                 mgrs.util.v4f(fld).map((val) =>
+                     ["option", {value:val,
+                                 selected:jt.toru(val === bmk[fld])},
+                      val])]);
+            case "text": return jt.tac2html(
+                ["div", {id:"edbntindiv", contenteditable:"plaintext-only",
+                         "data-placeholder":"Anything notable?"},
+                 (bmk[fld] || "")]); } }
+        function formAttrVal (fld, itype) {
+            return jt.tac2html(
+                [["div", {cla:"edbformattrdiv"}, fld],
+                 ["div", {cla:"edbformvalindiv"}, formValInput(fld, itype)]]); }
+        function formline (content) {
+            return ["div", {cla:"edbformlinediv"}, content]; }
+    return {
+        cancel: function () {
+            jt.out("profelemdetdiv", ""); },
+        rmbkmk: function () {
+            jt.out("edbformactmsgdiv", "Delete bookmark?");
+            jt.out("edbformactionsdiv", jt.tac2html(
+                [["button", {type:"button", id:"edbdelcancelb",
+                             onclick:mdfs("edb.editBookmark")}, "Cancel"],
+                 ["button", {type:"button", id:"edbdelconfb",
+                             onclick:mdfs("edb.rmbkconf")}, "Delete"]])); },
+        rmbkconf: function () {
+            //post the delete, reinit the bookmarks display to kill all cached
+            jt.log("rmbkconf not implemented yet"); },
+        save: function () {
+            //post the update, reinit bookmarks display to show fresh edit
+            jt.log("save not implemented yet"); },
+        editBookmark: function (bookmark) {
+            bmk = bookmark;
+            jt.out("profelemdetdiv", jt.tac2html(
+                ["div", {id:"edbform"},
+                 [["div", {id:"edbformtopdiv"},
+                   [["div", {id:"edbformtitlediv"}, "Bookmark"],
+                    ["div", {id:"edbformsharediv"},
+                     ["a", {href:"#share", onclick:mdfs("edb.share")},
+                      ["img", {cla:"plbimg", src:"img/share.png"}]]],
+                    ["div", {id:"edbformxdiv"},
+                     ["a", {href:"#close", onclick:mdfs("edb.cancel")}, "X"]]]],
+                  formline(formAttrVal("url", "string")),
+                  formline([formAttrVal("bmt", "select"),
+                            formAttrVal("cs", "select")]),
+                  formline(formAttrVal("ar", "string")),
+                  formline(formAttrVal("ab", "string")),
+                  formline(formAttrVal("nt", "text")),
+                  formline(formAttrVal("haf", "string")),
+                  ["div", {id:"edbformactionsdiv"},
+                   [["div", {id:"edbformactmsgdiv"}],
+                    ["div", {id:"edbformbuttonsdiv", cla:"dlgbuttonsdiv"},
+                     [["button", {type:"button", id:"edbdeleteb",
+                                  onclick:mdfs("edb.rmbkmk")}, "Delete"],
+                      ["button", {type:"button", id:"edbsaveb",
+                                  onclick:mdfs("edb.save")}, "Save"]]]]]]])); }
+    };  //end mgrs.edb returned functions
+    }());
+
+
+    //The bookmarks manager handles the interface for your bookmarks.
+    mgrs.bks = (function () {
+        const dst = {  //runtime display state
+            hfs:{
+                sortord:{t:"toggle", vi:0, vs:["recent", "oldest"],
+                         bmkfld:"modified"},
+                cs:{t:"select", vi:0, vs:["collstat", ...mgrs.util.v4f("cs")]},
+                bmt:{t:"select", vi:0, vs:["type", ...mgrs.util.v4f("bmt")]},
+                ar:{t:"search", val:"", lab:"artist"},
+                ab:{t:"search", val:"", lab:"album"}},
+            fbks:{}}; //fetched bookmarks by fetch key
+        function hfval (hfld) {
+            var val = "unknown";
+            const fldat = dst.hfs[hfld];
+            if(fldat.t !== "search") {
+                val = fldat.vs[fldat.vi]; }
+            else {
+                val = fldat.val || fldat.lab; }
+            return val; }
+        function fetchKey () {
+            return Object.keys(dst.hfs).map((k) => hfval(k)).join(""); }
+        function bkrowBackgroundColor (cs) {
+            switch(cs) {
+                case "Collected": return "#f6ee9f";   //yellow
+                case "Considering": return "#9ff6c1"; //green;
+                case "Notable": return "#9feaf6";     //blue;
+                default: return "inherit"; } }
+        function ftdhtml (fnm) {
+            return jt.tac2html(
+                ["td", {id:fnm + "htd", cla:"bmhtd",
+                        onclick:mdfs("bks.headerFieldClick", fnm)},
+                 hfval(fnm)]); }
+        function makeTabularDisplay (ctrs) {  //redraw matched header/content
+            jt.out("profcontdispdiv", jt.tac2html(
+                [["div", {cla:"profsectiontitlediv"},
+                  ["Bookmarks",
+                   ["a", {href:"#addbookmark", id:"addbookmarklink",
+                          onclick:mdfs("bks.showDetails", -1)},
+                    ["img", {src:app.util.dr("img/plusbutton.png"),
+                             cla:"featureico"}]]]],
+                 ["table", {id:"profbktable"},
+                  [["tr", {id:"profbktableheadertr"},
+                    Object.keys(dst.hfs).map((fnm) =>
+                        ["td", {id:fnm + "htd", cla:"bmhtd",
+                                onclick:mdfs("bks.headerFieldClick", fnm)},
+                         hfval(fnm)])],
+                   ...ctrs]]])); }  //content table rows
+        function displayBookmarks () {  //redraw header row to ensure data match
+            makeTabularDisplay(dst.fbks[fetchKey()].map((bmk, idx) =>
+                ["tr", {id:"bktr" + bmk.dsId, cla:"clickabletr",
+                        onclick:mdfs("bks.showDetails", idx),
+                        background:bkrowBackgroundColor(bmk.cs)},
+                 Object.keys(dst.hfs).map((hfk) => jt.tac2html(
+                     ["td", {cla:"bmfldtd"}, dst.hfs[hfk].bmkfld || hfk]))])); }
+        function dispErr (txt) {
+            makeTabularDisplay(
+                [["tr", ["td", {colspan:Object.keys(dst.hfs).length,
+                                id:"bmkerrtd"},
+                         txt]]]); }
+        function fetchAndDisplayBookmarks () {
+            if(dst.fbks[fetchKey()]) {
+                if(!dst.fbks[fetchKey()].length) {
+                    return dispErr("No bookmarks found"); }
+                return displayBookmarks(); }
+            const acct = app.login.getAuth();
+            const data = {an:acct.email, at:acct.token};
+            Object.keys(dst.hfs).forEach(function (fnm) {
+                const fldat = dst.hfs[fnm];
+                if(fldat.t === "toggle") {
+                    data[fnm] = fldat.vs[fldat.vi]; }
+                else if(fldat.t === "select" && fldat.vi > 0) {
+                    data[fnm] = fldat.vs[fldat.vi]; }
+                else if(fldat.t === "search" && fldat.val) {
+                    data[fnm] = fldat.val; } });
+            const url = app.util.cb(app.util.dr("/api/bmrkfetch"), data);
+            jt.call("GET", url, null,
+                    function (bms) {
+                        dst.fbks[fetchKey()] = bms;
+                        if(!bms.length) {
+                            return dispErr("No bookmarks found"); }
+                        displayBookmarks(); },
+                    function (code, errtxt) {
+                        dispErr("Fetch error " + code + ": " + errtxt); }); }
+    return {
+        headerFieldClick: function (fnm) {
+            var iref;
+            const fldat = dst.hfs[fnm];
+            switch(fldat.t) {
+            case "toggle":
+                fldat.vi = (fldat.vi? 0 : 1);
+                return fetchAndDisplayBookmarks();
+            case "select":
+                iref = jt.byId(fnm + "sel");
+                if(!iref) {
+                    return jt.out(fnm + "htd", jt.tac2html(
+                        ["select", {id:fnm + "sel"},
+                         fldat.vs.map((val, idx) =>
+                             ["option", {value:(idx? val : ""),
+                                         selected:jt.toru(idx === fldat.vi),
+                                         onchange:mdfs("bks.headerFieldClick",
+                                                       fnm)},
+                              val])])); }
+                else {  //have selection
+                    fldat.vi = iref.selectedIndex;
+                    return fetchAndDisplayBookmarks(); }
+            case "search":
+                iref = jt.byId(fnm + "srchin");
+                if(!iref) {
+                    jt.out(fnm + "htd", jt.tac2html(
+                        ["input", {type:"text",
+                                   id:fnm + "srchin", size:16}]));
+                    fldat.wiv = "";  //working input value
+                    fldat.wvsc = 0;  //working value stability count
+                    fldat.tmo = setTimeout(mgrs.bks.headerFieldClick,
+                                           800); }
+                else {  //have field value filter input
+                    iref = jt.byId(fnm + "srchin").value;
+                    if(iref !== fldat.wiv) {  //input value has changed
+                        fldat.wiv = iref;
+                        fldat.wvsc = 0;
+                        fldat.tmo = setTimeout(mgrs.bks.headerFieldClick,
+                                               800); }
+                    else {  //input value unchanged
+                        if(fldat.wvsc >= 3) {
+                            fldat.val = fldat.wiv;
+                            clearTimeout(fldat.tmo);  //just in case
+                            fetchAndDisplayBookmarks(); }
+                        else {  //still waiting
+                            fldat.wvsc += 1;
+                            fldat.tmo = setTimeout(mgrs.bks.headerFieldClick,
+                                                   800); } } }
+                break; } },
+        showDetails: function (bmidx) {
+            var bmk = {};
+            if(bmidx >= 0) {
+                bmk = dst.fbks[fetchKey()][bmidx]; }
+            mgrs.edb.editBookmark(bmk); },
+        initialize: function () {
+            jt.out("profnamespan", app.login.getAuth().digname);
+            jt.out("profelemdetdiv", "");
+            jt.out("profcontdispdiv", "");
+            dst.fbks = {};
+            fetchAndDisplayBookmarks(); }
+    };  //end mgrs.bks returned functions
     }());
 
 
@@ -69,12 +307,14 @@ app.prof = (function () {
                                                        "slentoga"),
                             cla:"profdescth"},
                       dst.slentoga]]]],
-                  ...dst.songs.slice(0, dst.slen).map((s) =>
+                  ...dst.songs.slice(0, dst.slen).map((s, i) =>
                       ["tr",
                        [["td", {cla:"profmodtd"}, modTimeStr(s)],
                         ["td", {cla:"psdt20td"}, t20star(s)],
                         ["td", {cla:"psdidenttd"},
-                         app.deck.dispatch("util", "songIdentHTML", s)]]])
+                         ["a", {href:"#" + s.dsId,
+                                onclick:mdfs("home.itemdet", "songs", i)},
+                          app.deck.dispatch("util", "songIdentHTML", s)]]]])
                  ]])); }
         function displayBookmarks () {
             if(!rundata.bkmks) {
@@ -99,11 +339,26 @@ app.prof = (function () {
                        [["td", {cla:"profmodtd"}, modTimeStr(b)],
                         ["td", {cla:"pbdcstd"}, b.cs],
                         ["td", {cla:"pbdidenttd"},
-                         mgrs.util.bookmarkIdentHTML(b)]]])
-                  ]])); }
+                         mgrs.util.bookmarkIdentHTML(b)]]])]]));
+            app.pdat.addApresDataNotificationTask("displayBookmarkPageAccess",
+                                                  displayBookmarkPageAccess); }
+        function displayBookmarkPageAccess () {
+            const acc = app.login.getAuth();
+            if(!acc) {
+                jt.out("profbkmkaccessdiv", jt.tac2html(
+                    ["a", {href:"#signin",
+                           onclick:mdfs("home.displayAndHookSignIn")},
+                     "Sign In"])); }
+            else {  //signed in, digname required for all accounts
+                const label = (acc.dsId === rundata.acct.dsId?
+                               "All Bookmarks" : "My Bookmarks");
+                jt.out("profbkmkaccessdiv", jt.tac2html(
+                    ["a", {href:"#managebookmarks",
+                           onclick:mdfs("bks.initialize")},
+                     label])); } }
         function emptyPlaceholder (afld) {
             const mod = "0000-00-00T--:--:--Z";
-            const nbsp8 = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+            const nbsp8 = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
             const spaces = nbsp8 + nbsp8 + nbsp8;
             const phs = {
                 bkmks:{modified:mod, cs:"-", ar:spaces, ab:""},
@@ -111,6 +366,13 @@ app.prof = (function () {
                        ti:spaces, ar:" ", ab:""}};
             const placeholder = phs[afld];
             dst[afld] = [placeholder]; }
+        function closeDets () {
+            jt.out("profelemdetdiv", ""); }
+        function wt20day () {
+            return (
+                (rundata.acct.settings &&
+                 rundata.acct.settings.sumact &&
+                 rundata.acct.settings.sumact.sendon) || "Default"); }
     return {
         toglen: function (lenfld, togafld) {
             if(dst[lenfld] === 5) {
@@ -143,6 +405,31 @@ app.prof = (function () {
             dst.bkmks = rundata.bkmks.filter((b) => b.cs === "Collected");
             emptyPlaceholder("bkmks");
             displayBookmarks(); },
+        itemdet: function (fld, idx) {
+            if(fld === "songs") {
+                const desc = app.player.dispatch("cmt", "clipboardTextForSong",
+                                                 dst.songs[idx])
+                      .replace(/\n/g, "<br/>\n");
+                return jt.out("profelemdetdiv", jt.tac2html(
+                    ["div", {id:"profelemdetcontdiv"},
+                     [["div", {id:"profelemdethdrdiv"},
+                       ["a", {href:"#copyTiArAbToClipboard",
+                              onclick:mdfs("home.copyTiArAbToClipboard", idx)},
+                        "Copy title - artist - album"]],
+                      ["div", {id:"profelemdetbodydiv"}, desc]]])); } },
+        copyTiArAbToClipboard: function (idx) {
+            const song = dst.songs[idx];
+            const txt = song.ti + " - " + song.ar + " - " + song.ab;
+            app.svc.copyToClipboard(txt, closeDets, closeDets); },
+        displayAndHookSignIn: function () {
+            const siid = "hubaccountcontentdiv";
+            jt.byId(siid).style.display = "block";
+            app.login.dispatch("hsi", "signIn", siid, function () {
+                jt.byId(siid).style.display = "none";
+                displayBookmarkPageAccess(); });
+            const emailin = jt.byId("emailin");
+            if(emailin) {
+                emailin.focus(); } },
         initialize: function () {
             if(!rundata) {
                 return jt.out("reptbodydiv",
@@ -151,19 +438,23 @@ app.prof = (function () {
             jt.out("reportinnercontentdiv", jt.tac2html(
                 [["div", {id:"proftitlelinediv"},
                   ["span", {id:"profnamespan"}, rundata.acct.digname]],
-                 ["div", {cla:"profsectiontitlediv"}, "Songs"],
-                 ["div", {id:"songsdiv"}],
-                 ["div", {id:"profmuwkdiv"},
-                  [["span", {id:"profmuwklabel"},
-                    "collection listening summary on"],
-                   ["span", {id:"profmuwkday"},
-                    ((rundata.acct.settings &&
-                      rundata.acct.settings.sumact &&
-                      rundata.acct.settings.sumact.sendon) || "Default")]]],
-                 ["div", {cla:"profsectiontitlediv"}, "Bookmarks"],
-                 ["div", {id:"bkmksdiv"}]]));
-            mgrs.home.byRecent();    //display songs
-            mgrs.home.byUpdated(); } //display bookmarks
+                 ["div", {id:"hubaccountcontentdiv", cla:"boxedcontentdiv",
+                          style:"display:none"}],
+                 ["div", {id:"profcontentdiv"},
+                  [["div", {id:"profcontdispdiv"},
+                    [["div", {cla:"profsectiontitlediv"}, "Songs"],
+                     ["div", {id:"songsdiv"}],
+                     ["div", {id:"profmuwkdiv"},
+                      [["span", {id:"profmuwklabel"},
+                        "collection listening summary"],  //weekday or "Default"
+                       ["span", {id:"profmuwkday"}, wt20day()],
+                       ["div", {id:"profbkmkaccessdiv"}]]],
+                     ["div", {cla:"profsectiontitlediv"}, "Bookmarks"],
+                     ["div", {id:"bkmksdiv"}]]],
+                   ["div", {id:"profelemdetdiv"}]]]]));
+            mgrs.home.byRecent();   //display songs
+            mgrs.home.byUpdated();  //display bookmarks
+            app.login.dispatch("hua", "initDisplay"); }
     };  //end mgrs.home returned functions
     }());
 

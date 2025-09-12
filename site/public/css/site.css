@@ -213,8 +213,17 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
   cursor:pointer; }
 .rptnavtabselspan { font-weight:normal; color:#666; }
 
+/* -------------------- */
+/* listener profile */
+
 #proftitlelinediv { height:64px; font-size:48px; font-weight:bold;
   padding:10px 0px 0px 70px; margin-top:-10px; }
+#profcontentdiv { position:relative; }
+#profelemdetdiv { position:absolute; left:8px; top:8px; 
+  background:#ffc2a4; background:linear-gradient(#ffc2a4, #ff9c6b); }
+#profelemdetcontdiv { padding:20px; border:2px solid black;
+  border-radius:12px; }
+#profelemdethdrdiv { padding:0px 0px 8px 8px; }
 #muwkdiv { padding:7px 0px; }
 #profmuwklabel { display:inline-block; font-size:small; font-weight:normal;
   vertical-align:middle; padding:0px 2px 0px 0px; }
@@ -224,3 +233,10 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
 .profmodtd { font-size:small; }
 .profsectiontitlediv { letter-spacing:0.4em; padding:0px 0px 5px 42px;
   font-size:small; text-transform:uppercase; font-style:italic; }
+#profbkmktitlediv { position:relative; }
+#profbkmkaccessdiv { display:inline-block; vertical-align:middle;
+  margin-left:8px; padding:5px; border-radius:12px; background:white;
+  font-size:small; }
+#addbookmarklink { margin-left:10px; }
+.bmhtd { background:white; color:#666; cursor:pointer; font-style:italic;
+  padding:2px 8px; border-radius:8px; }

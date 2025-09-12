@@ -131,9 +131,9 @@ def songtip():  # params: auth, songid
 
 ####### Bookmark access
 
-@app.route('/api/bookmarks')
-def bookmarks():  # params: accid, befiso, collstat, bmrkid
-    return appdat.bookmarks()
+@app.route('/api/bmrkfetch')
+def bmrkfetch():  # params: auth, sortord, bmt, ar, ab, cs
+    return appdat.bmrkfetch()
 
 @app.route('/api/updbmrk', methods=['GET', 'POST'])
 def updbmrk():  # params: auth, Bookmark
