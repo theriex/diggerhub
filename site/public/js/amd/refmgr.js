@@ -56,10 +56,10 @@ app.refmgr = (function () {
         case "Song":
             break;
         case "Bookmark":
-            reconstituteFieldJSONObject("ai", obj);
-            reconstituteFieldJSONObject("ti", obj);
+            reconstituteFieldJSONObject("abi", obj);
+            reconstituteFieldJSONObject("trk", obj);
             reconstituteFieldJSONObject("si", obj);
-            reconstituteFieldJSONObject("sd", obj);
+            reconstituteFieldJSONObject("det", obj);
             break;
         case "SKeyMap":
             reconstituteFieldJSONObject("notes", obj);
@@ -97,10 +97,10 @@ app.refmgr = (function () {
         case "Song":
             break;
         case "Bookmark":
-            obj.ai = JSON.stringify(obj.ai);
-            obj.ti = JSON.stringify(obj.ti);
+            obj.abi = JSON.stringify(obj.abi);
+            obj.trk = JSON.stringify(obj.trk);
             obj.si = JSON.stringify(obj.si);
-            obj.sd = JSON.stringify(obj.sd);
+            obj.det = JSON.stringify(obj.det);
             break;
         case "SKeyMap":
             obj.notes = JSON.stringify(obj.notes);

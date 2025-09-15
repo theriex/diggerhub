@@ -221,9 +221,18 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
 #profcontentdiv { position:relative; }
 #profelemdetdiv { position:absolute; left:8px; top:8px; 
   background:#ffc2a4; background:linear-gradient(#ffc2a4, #ff9c6b); }
-#profelemdetcontdiv { padding:20px; border:2px solid black;
+#profelemdetcontdiv { position:relative; padding:20px; border:2px solid black;
   border-radius:12px; }
-#profelemdethdrdiv { padding:0px 0px 8px 8px; }
+#profelemdetxdiv { position:absolute; top:0px; right:0px; padding:5px; }
+#pititlediv { font-style:italic; font-weight:bold; }
+#piartistdiv { font-size:medium; }
+#pialbumdiv { font-style:italic; }
+.profitemattrvaldiv { display:inline-block; }
+.piattrspan { font-size:small; padding-right:5px; }
+.pivalspan { font-size:medium; font-style:italic; padding-right:10px; }
+#pikwdsdiv { font-size:medium; font-style:italic; }
+#picommentdiv { font-size:medium; padding-top:5px; }
+#profelemitemsharediv { text-align:center; font-size:small; padding-top:10px; }
 #muwkdiv { padding:7px 0px; }
 #profmuwklabel { display:inline-block; font-size:small; font-weight:normal;
   vertical-align:middle; padding:0px 2px 0px 0px; }
@@ -235,8 +244,29 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
   font-size:small; text-transform:uppercase; font-style:italic; }
 #profbkmktitlediv { position:relative; }
 #profbkmkaccessdiv { display:inline-block; vertical-align:middle;
-  margin-left:8px; padding:5px; border-radius:12px; background:white;
-  font-size:small; }
+  margin-left:12px; padding:5px; border-radius:12px; background:white;
+  font-size:small; text-transform:none; letter-spacing:normal; }
 #addbookmarklink { margin-left:10px; }
+
+
+/* -------------------- */
+/* bookmark management page */
+
 .bmhtd { background:white; color:#666; cursor:pointer; font-style:italic;
   padding:2px 8px; border-radius:8px; }
+#edbform { padding:10px; border:3px solid yellow; }
+#edbformtopdiv { position:relative; }
+#edbformtitlediv { display:inline-block; }
+#edbformsharediv { display:inline-block; margin:5px 0px 5px 24px; }
+#edbformxdiv { display:inline-block; position:absolute; top:0px; right:0px; }
+.edbformlinediv { margin:5px 0px; }
+.edbformattrdiv { display:inline-block; text-align:right; font-size: small;
+  width:34px; margin-right: 5px; }
+.edbformvalindiv { display:inline-block; vertical-align:middle; }
+.clickabletr { cursor:pointer; }
+.bmfldtd {}
+.bmfldcentertd { text-align:center; }
+.bmfmodspan { font-size:small; }
+.bmfcsspan { font-size:small; }
+.bmfbmtspan { font-size:small; }
+.bmfabspan { font-style:italic; }

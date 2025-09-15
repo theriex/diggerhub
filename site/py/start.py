@@ -369,6 +369,7 @@ def most_recent_bookmarks(digacc):
     if not digacc:
         return ""
     where = ("WHERE aid = " + digacc["dsId"] +
+             " AND cs != \"Deleted\"" +
              " ORDER BY modified DESC LIMIT 100")
     bkmks = dbacc.query_entity("Bookmark", where)
     return bkmks

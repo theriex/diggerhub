@@ -1366,8 +1366,10 @@ def bmrkfetch ():
             ab = standardized_colloquial_match(ab)
             where += " AND smab = LIKE \"%" + ab + "%\""
         cs = dbacc.reqarg("cs", "string")
-        if cs:
+        if cs and cs != "Deleted":
             where += " AND cs = \"" + cs + "\""
+        else:
+            where += " AND cs != \"Deleted\""
         orderby = "DESC"  # most recently modified first
         sortord = dbacc.reqarg("sortord", "string")
         if sortord == "oldest":

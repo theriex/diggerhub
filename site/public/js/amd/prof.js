@@ -28,7 +28,24 @@ app.prof = (function () {
         v4f: function (fld) {
             switch(fld) {
             case "cs": return ["Listened","Notable","Considering","Collected"];
-            case "bmt": return ["Album","Performance","Song","Other"]; } }
+            case "bmt": return ["Album","Performance","Song","Other"]; } },
+        authdata: function (obj) {
+            const acct = app.login.getAuth();
+            const authobj = {an:acct.email, at:acct.token};
+            var authdat = jt.objdata(authobj);
+            if(obj) {
+                authdat += "&" + jt.objdata(obj); }
+            return authdat; },
+        deactivateButton: function (bid) {
+            const button = jt.byId(bid);
+            if(button) {
+                button.disabled = true;
+                button.style.opacity = 0.5; }},
+        activateButton: function (bid) {
+            const button = jt.byId(bid);
+            if(button) {
+                button.disabled = false;
+                button.style.opacity = 1.0; }}
     };  //end mgrs.util returned functions
     }());
 
@@ -36,24 +53,13 @@ app.prof = (function () {
     //The edit bookmark manager handles adding or updating a bookmark
     mgrs.edb = (function () {
         var bmk = null;
-        function verifyFields () {
-            var errs = [];
-            bmk.aid = app.login.getAuth().dsId;
-            if(!mgrs.util.v4f("bmt").includes(bmk.bmt)) {
-                errs.push({a:"bmt", e:"Invalid bookmark type"}); }
-            if(!bmk.ar.trim()) {
-                errs.push({a:"ar", e:"Artist name required"}); }
-            if(!bmk.ab.trim()) {
-                errs.push({a:"ab", e:"Identifying name needed"}); }
-            if(!bmk.url) {
-                errs.push({a:"url", e:"URL required"}); }
-            if(!mgrs.util.v4f("cs").includes(bmk.cs)) {
-                errs.push({a:"cs", e:"Invalid collection status value"}); }
-            return errs; }
         function formValInput (fld, itype) {
             const iphs = {
+                url:"Link address for bookmark",
                 ar:"Artist name",
-                ab:"Title of album, performance, or song"};
+                ab:"Title of album, performance, or song",
+                nt:"First impression? 2nd, 3rd?",
+                haf:"Heard about this from (name or site)"};
             switch(itype) {
             case "string": return jt.tac2html(
                 ["input", {type:"text", id:"edbin" + fld, size:30,
@@ -66,8 +72,8 @@ app.prof = (function () {
                                  selected:jt.toru(val === bmk[fld])},
                       val])]);
             case "text": return jt.tac2html(
-                ["div", {id:"edbntindiv", contenteditable:"plaintext-only",
-                         "data-placeholder":"Anything notable?"},
+                ["textarea", {id:"edbta" + fld, rows:4, cols:34,
+                              placeholder:iphs[fld]},
                  (bmk[fld] || "")]); } }
         function formAttrVal (fld, itype) {
             return jt.tac2html(
@@ -75,31 +81,87 @@ app.prof = (function () {
                  ["div", {cla:"edbformvalindiv"}, formValInput(fld, itype)]]); }
         function formline (content) {
             return ["div", {cla:"edbformlinediv"}, content]; }
+        function readFormFieldValues () {
+            bmk.url = jt.byId("edbinurl").value;
+            bmk.bmt = jt.byId("bmtvalsel").value;
+            bmk.cs = jt.byId("csvalsel").value;
+            bmk.ar = jt.byId("edbinar").value;
+            bmk.ab = jt.byId("edbinab").value;
+            bmk.nt = jt.byId("edbtant").value;
+            bmk.haf = jt.byId("edbinhaf").value; }
+        function verifyFields () {
+            var errs = [];
+            bmk.aid = app.login.getAuth().dsId;
+            if(!bmk.url) {
+                errs.push({a:"url", e:"URL required"}); }
+            if(!mgrs.util.v4f("bmt").includes(bmk.bmt)) {
+                errs.push({a:"bmt", e:"Invalid bookmark type"}); }
+            if(!mgrs.util.v4f("cs").includes(bmk.cs)) {
+                errs.push({a:"cs", e:"Invalid collection status value"}); }
+            if(!bmk.ar.trim()) {
+                errs.push({a:"ar", e:"Artist name required"}); }
+            if(!bmk.ab.trim()) {
+                errs.push({a:"ab", e:"Identifying title needed"}); }
+            return errs; }
+        function updateAndEnd (po) {  //params object.  bmk ready to save
+            jt.out("edbformactmsgdiv", po.waitmsg);
+            po.btids.forEach(function (btid) { 
+                mgrs.util.deactivateButton(btid); });
+            setTimeout(function () {  //reflect the display updates first
+                const dat = mgrs.util.authdata(bmk);
+                jt.call("POST", app.util.dr("/api/updbmrk"), dat,
+                        function (bkmks) {
+                            bmk = bkmks[0];
+                            jt.out("edbformactmsgdiv", po.okmsg);
+                            po.btids.forEach(function (btid) {
+                                mgrs.util.activateButton(btid); });
+                            setTimeout(mgrs.bks.initialize, 500); },
+                        function (code, errtxt) {
+                            mgrs.util.activateButton("edbsaveb");
+                            jt.out("edbformactmsgdiv", po.failpre + " " + code +
+                                   ": " + errtxt); }); }, 100); }
     return {
+        share: function () {
+            if(!bmk.dsId) {
+                jt.out("edbformtopmsgdiv", "Save bookmark before sharing"); }
+            else {
+                jt.out("edbformtopmsgdiv", "Share not implemented yet."); }
+            setTimeout(function () {
+                jt.out("edbformtopmsgdiv", ""); }, 3800); },
         cancel: function () {
             jt.out("profelemdetdiv", ""); },
         rmbkmk: function () {
             jt.out("edbformactmsgdiv", "Delete bookmark?");
-            jt.out("edbformactionsdiv", jt.tac2html(
+            jt.out("edbformbuttonsdiv", jt.tac2html(
                 [["button", {type:"button", id:"edbdelcancelb",
                              onclick:mdfs("edb.editBookmark")}, "Cancel"],
                  ["button", {type:"button", id:"edbdelconfb",
                              onclick:mdfs("edb.rmbkconf")}, "Delete"]])); },
         rmbkconf: function () {
-            //post the delete, reinit the bookmarks display to kill all cached
-            jt.log("rmbkconf not implemented yet"); },
+            bmk.cs = "Deleted";
+            updateAndEnd({waitmsg:"Deleting...", okmsg:"Deleted.",
+                          failpre:"Delete failed",
+                          btids:["edbsaveb", "edbdelcancelb"]}); },
         save: function () {
-            //post the update, reinit bookmarks display to show fresh edit
-            jt.log("save not implemented yet"); },
+            readFormFieldValues();
+            const errs = verifyFields();
+            if(errs.length) {
+                return jt.out("edbformactmsgdiv", jt.tac2html(errs.map((e) =>
+                    ["div", {cla:"edbformfielderrline"}, e.e]))); }
+            updateAndEnd({waitmsg:"Saving...", okmsg:"Saved.",
+                          failpre:"Save failed",
+                          btids:["edbdeleteb", "edbsaveb"]}); },
         editBookmark: function (bookmark) {
             bmk = bookmark;
             jt.out("profelemdetdiv", jt.tac2html(
                 ["div", {id:"edbform"},
                  [["div", {id:"edbformtopdiv"},
-                   [["div", {id:"edbformtitlediv"}, "Bookmark"],
+                   [["div", {id:"edbformtitlediv"}, "Edit Bookmark"],
                     ["div", {id:"edbformsharediv"},
                      ["a", {href:"#share", onclick:mdfs("edb.share")},
-                      ["img", {cla:"plbimg", src:"img/share.png"}]]],
+                      ["img", {cla:"featureico", id:"shareicoimg",
+                               src:app.util.dr("img/share.png")}]]],
+                    ["div", {id:"edbformtopmsgdiv"}],
                     ["div", {id:"edbformxdiv"},
                      ["a", {href:"#close", onclick:mdfs("edb.cancel")}, "X"]]]],
                   formline(formAttrVal("url", "string")),
@@ -115,7 +177,10 @@ app.prof = (function () {
                      [["button", {type:"button", id:"edbdeleteb",
                                   onclick:mdfs("edb.rmbkmk")}, "Delete"],
                       ["button", {type:"button", id:"edbsaveb",
-                                  onclick:mdfs("edb.save")}, "Save"]]]]]]])); }
+                                  onclick:mdfs("edb.save")}, "Save"]]]]]]]));
+            if(!bmk.dsId) {
+                mgrs.util.deactivateButton("edbdeleteb");
+                jt.byId("shareicoimg").style.opacity = 0.5; } }
     };  //end mgrs.edb returned functions
     }());
 
@@ -123,11 +188,15 @@ app.prof = (function () {
     //The bookmarks manager handles the interface for your bookmarks.
     mgrs.bks = (function () {
         const dst = {  //runtime display state
-            hfs:{
+            hfs:{  //header field definitions
                 sortord:{t:"toggle", vi:0, vs:["recent", "oldest"],
-                         bmkfld:"modified"},
-                cs:{t:"select", vi:0, vs:["collstat", ...mgrs.util.v4f("cs")]},
-                bmt:{t:"select", vi:0, vs:["type", ...mgrs.util.v4f("bmt")]},
+                         bmkfld:"modified", vdf:(v) => jt.tac2html(
+                             ["span", {cla:"bmfmodspan"},
+                              v.slice(0,16).replace("T", " ")])},
+                cs:{t:"select", vi:0, vs:["collstat", ...mgrs.util.v4f("cs")],
+                    tdc:"bmfldcentertd"},
+                bmt:{t:"select", vi:0, vs:["type", ...mgrs.util.v4f("bmt")],
+                     tdc:"bmfldcentertd"},
                 ar:{t:"search", val:"", lab:"artist"},
                 ab:{t:"search", val:"", lab:"album"}},
             fbks:{}}; //fetched bookmarks by fetch key
@@ -141,17 +210,12 @@ app.prof = (function () {
             return val; }
         function fetchKey () {
             return Object.keys(dst.hfs).map((k) => hfval(k)).join(""); }
-        function bkrowBackgroundColor (cs) {
-            switch(cs) {
-                case "Collected": return "#f6ee9f";   //yellow
-                case "Considering": return "#9ff6c1"; //green;
-                case "Notable": return "#9feaf6";     //blue;
-                default: return "inherit"; } }
-        function ftdhtml (fnm) {
-            return jt.tac2html(
-                ["td", {id:fnm + "htd", cla:"bmhtd",
-                        onclick:mdfs("bks.headerFieldClick", fnm)},
-                 hfval(fnm)]); }
+        function bkrowStyle (bmk) {
+            switch(bmk.cs) {
+                case "Collected": return "background-color:#f6ee9f";  //yellow
+                case "Considering": return "background-color:#9ff6c1"; //green;
+                case "Notable": return "background-color:#9feaf6";     //blue;
+                default: return ""; } }
         function makeTabularDisplay (ctrs) {  //redraw matched header/content
             jt.out("profcontdispdiv", jt.tac2html(
                 [["div", {cla:"profsectiontitlediv"},
@@ -168,12 +232,21 @@ app.prof = (function () {
                          hfval(fnm)])],
                    ...ctrs]]])); }  //content table rows
         function displayBookmarks () {  //redraw header row to ensure data match
-            makeTabularDisplay(dst.fbks[fetchKey()].map((bmk, idx) =>
+            Object.keys(dst.hfs).forEach(function (fk) {
+                const fd = dst.hfs[fk];
+                fd.bmkfld = fd.bmkfld || fk;
+                fd.tdc = fd.tdc || "bmfldtd";
+                fd.vdf = fd.vdf || function(v) { return jt.tac2html(
+                    ["span", {cla:"bmf" + fk + "span"}, v]); }; });
+            const bookmarks = dst.fbks[fetchKey()]
+                  .filter((b) => b.cs !== "Deleted");  //in case cached
+            makeTabularDisplay(bookmarks.map((bmk, idx) =>
                 ["tr", {id:"bktr" + bmk.dsId, cla:"clickabletr",
                         onclick:mdfs("bks.showDetails", idx),
-                        background:bkrowBackgroundColor(bmk.cs)},
-                 Object.keys(dst.hfs).map((hfk) => jt.tac2html(
-                     ["td", {cla:"bmfldtd"}, dst.hfs[hfk].bmkfld || hfk]))])); }
+                        style:bkrowStyle(bmk)},
+                  jt.tac2html(Object.keys(dst.hfs).map((fk) =>
+                     ["td", {cla:dst.hfs[fk].tdc},
+                      dst.hfs[fk].vdf(bmk[dst.hfs[fk].bmkfld])]))])); }
         function dispErr (txt) {
             makeTabularDisplay(
                 [["tr", ["td", {colspan:Object.keys(dst.hfs).length,
@@ -258,7 +331,9 @@ app.prof = (function () {
                 bmk = dst.fbks[fetchKey()][bmidx]; }
             mgrs.edb.editBookmark(bmk); },
         initialize: function () {
-            jt.out("profnamespan", app.login.getAuth().digname);
+            const digname = app.login.getAuth().digname;
+            jt.out("profnamespan", jt.tac2html(
+                ["a", {href:app.util.dr("/listener/" + digname)}, digname]));
             jt.out("profelemdetdiv", "");
             jt.out("profcontdispdiv", "");
             dst.fbks = {};
@@ -279,7 +354,7 @@ app.prof = (function () {
             blen:5,
             blentoga:"more..."};
         function modTimeStr (sb) {  //song or bookmark
-            return sb.modified.slice(0, 19).replace("T", " "); }
+            return sb.modified.slice(0, 19).replace("T", " "); }  //placeholder
         function t20star (song) {
             const playcsv = "played,iosqueue,digaudpl";
             if(song.pd && !playcsv.csvcontains(song.pd)) { return "p"; }
@@ -289,6 +364,12 @@ app.prof = (function () {
         function linkUnless (cond, hreft, oct, txt) {
             if(cond) { return txt; }
             return jt.tac2html(["a", {href:hreft, onclick:oct}, txt]); }
+        function rowsOrPlaceholder(typestr, rows) {
+            if(!rows.length) {
+                return jt.tac2html(
+                    ["tr", ["td", {cla:"profmodtd"},
+                            "No " + typestr + " found"]]); }
+            return rows; }
         function displaySongs () {
             if(!rundata.songs) {
                 return jt.out("songsdiv", 
@@ -307,19 +388,17 @@ app.prof = (function () {
                                                        "slentoga"),
                             cla:"profdescth"},
                       dst.slentoga]]]],
-                  ...dst.songs.slice(0, dst.slen).map((s, i) =>
-                      ["tr",
-                       [["td", {cla:"profmodtd"}, modTimeStr(s)],
-                        ["td", {cla:"psdt20td"}, t20star(s)],
-                        ["td", {cla:"psdidenttd"},
-                         ["a", {href:"#" + s.dsId,
-                                onclick:mdfs("home.itemdet", "songs", i)},
-                          app.deck.dispatch("util", "songIdentHTML", s)]]]])
-                 ]])); }
+                  ...rowsOrPlaceholder("Songs",
+                      dst.songs.slice(0, dst.slen).map((s, i) =>
+                          ["tr",
+                           [["td", {cla:"profmodtd"}, modTimeStr(s)],
+                            ["td", {cla:"psdt20td"}, t20star(s)],
+                            ["td", {cla:"psdidenttd"},
+                             ["a", {href:"#" + s.dsId,
+                                    onclick:mdfs("home.itemdet", "songs", i)},
+                              app.deck.dispatch("util", "songIdentHTML",
+                                                s)]]]]))]])); }
         function displayBookmarks () {
-            if(!rundata.bkmks) {
-                return jt.out("bkmksdiv",
-                              "No bookmarks for " + rundata.acct.digname); }
             jt.out("bkmksdiv", jt.tac2html(
                 ["table", {id:"profbkmkstable"},
                  [["tr", {style:"text-align:left"},
@@ -334,45 +413,67 @@ app.prof = (function () {
                                                        "blentoga"),
                             cla:"profdescth"},
                       dst.blentoga]]]],
-                  ...dst.bkmks.slice(0, dst.blen).map((b) =>
-                      ["tr",
-                       [["td", {cla:"profmodtd"}, modTimeStr(b)],
-                        ["td", {cla:"pbdcstd"}, b.cs],
-                        ["td", {cla:"pbdidenttd"},
-                         mgrs.util.bookmarkIdentHTML(b)]]])]]));
+                  ...rowsOrPlaceholder("Bookmarks",
+                      dst.bkmks.slice(0, dst.blen).map((b, i) =>
+                          ["tr",
+                           [["td", {cla:"profmodtd"}, modTimeStr(b)],
+                            ["td", {cla:"bmfldcentertd"},
+                             ["span", {cla:"bmfcsspan"}, b.cs]],
+                            ["td", {cla:"pbdidenttd"},
+                             ["a", {href:"#" + b.dsId,
+                                    onclick:mdfs("home.itemdet", "bkmks", i)},
+                             mgrs.util.bookmarkIdentHTML(b)]]]]))]]));
             app.pdat.addApresDataNotificationTask("displayBookmarkPageAccess",
                                                   displayBookmarkPageAccess); }
         function displayBookmarkPageAccess () {
-            const acc = app.login.getAuth();
-            if(!acc) {
-                jt.out("profbkmkaccessdiv", jt.tac2html(
-                    ["a", {href:"#signin",
-                           onclick:mdfs("home.displayAndHookSignIn")},
-                     "Sign In"])); }
-            else {  //signed in, digname required for all accounts
-                const label = (acc.dsId === rundata.acct.dsId?
-                               "All Bookmarks" : "My Bookmarks");
-                jt.out("profbkmkaccessdiv", jt.tac2html(
-                    ["a", {href:"#managebookmarks",
-                           onclick:mdfs("bks.initialize")},
-                     label])); } }
-        function emptyPlaceholder (afld) {
-            const mod = "0000-00-00T--:--:--Z";
-            const nbsp8 = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-            const spaces = nbsp8 + nbsp8 + nbsp8;
-            const phs = {
-                bkmks:{modified:mod, cs:"-", ar:spaces, ab:""},
-                songs:{modified:mod, dsId:0, kws:"", el:49, al:49,
-                       ti:spaces, ar:" ", ab:""}};
-            const placeholder = phs[afld];
-            dst[afld] = [placeholder]; }
-        function closeDets () {
-            jt.out("profelemdetdiv", ""); }
+            jt.out("profbkmkaccessdiv", jt.tac2html(
+                ["a", {href:"#update",
+                       onclick:mdfs("home.checkAccAndManage")},
+                 "Update"])); }
         function wt20day () {
             return (
                 (rundata.acct.settings &&
                  rundata.acct.settings.sumact &&
                  rundata.acct.settings.sumact.sendon) || "Default"); }
+        function searchURLForSong (song) {
+            var txt = song.ti + " " + song.ar;
+            if(song.ab && song.ab !== "Singles") {
+                txt += " " + song.ab; }
+            return "https://duckduckgo.com/?q=" + jt.enc(txt); }
+        function songdethtml (s) {
+            const eavs = app.player.dispatch("cmt", "elal2txtvals", s);
+            return jt.tac2html(
+                [["a", {href:"#search",
+                        onclick:"window.open('" + searchURLForSong(s) +
+                                "');return false"},
+                  [["div", {id:"pititlediv"}, s.ti],
+                   ["div", {id:"piartistdiv"}, s.ar],
+                   ["div", {id:"pialbumdiv"}, s.ab]]],
+                 ["div", {id:"picommentdiv"},
+                  app.player.dispatch("cmt", "cleanCommentText", s.nt)],
+                 ["div", {id:"piimprdiv"},
+                  [Object.keys(eavs).map((k) =>
+                      ["div", {cla:"profitemattrvaldiv"},
+                       [["span", {cla:"piattrspan"}, eavs[k].pn + ":"],
+                        ["span", {cla:"pivalspan"}, eavs[k].val]]])]],
+                 ["div", {id:"pikwdsdiv"}, s.kws.csvarray().join(", ")]]); }
+        function bkmkdethtml (b) {
+            return jt.tac2html(
+                [["div", {id:"piurldiv"},
+                  ["a", {href:b.url,
+                         onclick:"window.open('" + b.url + "');return false"},
+                   b.url]],
+                 ["div", {id:"piimprdiv"},
+                  [["div", {cla:"profitemattrvaldiv"},
+                    [["span", {cla:"piattrspan"}, "type:"],
+                     ["span", {cla:"pivalspan"}, b.bmt]]],
+                   ["div", {cla:"profitemattrvaldiv"},
+                    [["span", {cla:"piattrspan"}, "stat:"],
+                     ["span", {cla:"pivalspan"}, b.cs]]]]],
+                 ["div", {id:"piartistdiv"}, b.ar],
+                 ["div", {id:"pititlediv"}, b.ab],
+                 ["div", {id:"picommentdiv"}, b.nt],
+                 ["div", {id:"pikwdsdiv"}, b.haf]]); }
     return {
         toglen: function (lenfld, togafld) {
             if(dst[lenfld] === 5) {
@@ -398,43 +499,68 @@ app.prof = (function () {
         byUpdated: function () {
             dst.bord = "modified";
             dst.bkmks = rundata.bkmks;
-            emptyPlaceholder("bkmks");
             displayBookmarks(); },
         byCollected: function () {
             dst.bord = "collected";
             dst.bkmks = rundata.bkmks.filter((b) => b.cs === "Collected");
-            emptyPlaceholder("bkmks");
             displayBookmarks(); },
+        closedet: function () {
+            jt.out("profelemdetdiv", ""); },
         itemdet: function (fld, idx) {
-            if(fld === "songs") {
-                const desc = app.player.dispatch("cmt", "clipboardTextForSong",
-                                                 dst.songs[idx])
-                      .replace(/\n/g, "<br/>\n");
-                return jt.out("profelemdetdiv", jt.tac2html(
-                    ["div", {id:"profelemdetcontdiv"},
-                     [["div", {id:"profelemdethdrdiv"},
-                       ["a", {href:"#copyTiArAbToClipboard",
-                              onclick:mdfs("home.copyTiArAbToClipboard", idx)},
-                        "Copy title - artist - album"]],
-                      ["div", {id:"profelemdetbodydiv"}, desc]]])); } },
-        copyTiArAbToClipboard: function (idx) {
-            const song = dst.songs[idx];
-            const txt = song.ti + " - " + song.ar + " - " + song.ab;
-            app.svc.copyToClipboard(txt, closeDets, closeDets); },
-        displayAndHookSignIn: function () {
-            const siid = "hubaccountcontentdiv";
-            jt.byId(siid).style.display = "block";
-            app.login.dispatch("hsi", "signIn", siid, function () {
-                jt.byId(siid).style.display = "none";
-                displayBookmarkPageAccess(); });
-            const emailin = jt.byId("emailin");
-            if(emailin) {
-                emailin.focus(); } },
+            jt.out("profelemdetdiv", jt.tac2html(
+                ["div", {id:"profelemdetcontdiv"},
+                 [["div", {id:"profelemitemdetdiv"},
+                   (fld === "songs"? songdethtml(dst.songs[idx])
+                                   : bkmkdethtml(dst.bkmks[idx]))],
+                  ["div", {id:"profelemitemsharediv"},
+                   ["a", {href:"#share",
+                          onclick:mdfs("home.itemshare", fld, idx)},
+                    ["img", {cla:"featureico", id:"shareicoimg",
+                             src:app.util.dr("img/share.png")}]]],
+                  ["div", {id:"profelemdetxdiv"},
+                   ["a", {href:"#close", onclick:mdfs("home.closedet")},
+                    "X"]]]])); },
+        itemshare: function (fld, idx) {
+            var txt = "";
+            const de = dst[fld][idx];
+            const sdivid = "profelemitemsharediv";
+            switch(fld) {
+            case "songs":
+                txt = app.player.dispatch("cmt", "clipboardTextForSong", de);
+                break;
+            case "bkmks":
+                txt = [de.url,
+                       "type: " + de.bmt + ", stat: " + de.cs,
+                       de.ar,
+                       de.ab,
+                       de.nt].join("\n");
+                break; }
+            app.svc.copyToClipboard(txt,
+                function () {
+                    jt.out(sdivid, "Details copied to clipboard."); },
+                function () {
+                    jt.out(sdivid, "Clipboard copy failed."); }); },
+        checkAccAndManage: function () {
+            const acc = app.login.getAuth();
+            if(!acc) {
+                const siid = "hubaccountcontentdiv";
+                jt.byId(siid).style.display = "block";
+                app.login.dispatch("hsi", "signIn", siid, function () {
+                    jt.byId(siid).style.display = "none";
+                    displayBookmarkPageAccess(); });
+                const emailin = jt.byId("emailin");
+                if(emailin) {
+                    emailin.focus(); } }
+            else { //have account
+                mgrs.bks.initialize(); } },
         initialize: function () {
             if(!rundata) {
                 return jt.out("reptbodydiv",
                               "Data currently unavailable, try again later"); }
             app.top.dispatch("hcu", "deserializeAccount", rundata.acct);
+            if(rundata.bkmks && rundata.bkmks.length) {
+                rundata.bkmks = rundata.bkmks.filter((b) =>
+                    b.cs !== "Deleted"); }  //in case cached
             jt.out("reportinnercontentdiv", jt.tac2html(
                 [["div", {id:"proftitlelinediv"},
                   ["span", {id:"profnamespan"}, rundata.acct.digname]],
@@ -447,9 +573,10 @@ app.prof = (function () {
                      ["div", {id:"profmuwkdiv"},
                       [["span", {id:"profmuwklabel"},
                         "collection listening summary"],  //weekday or "Default"
-                       ["span", {id:"profmuwkday"}, wt20day()],
+                       ["span", {id:"profmuwkday"}, wt20day()]]],
+                     ["div", {cla:"profsectiontitlediv"},
+                      ["Bookmarks",
                        ["div", {id:"profbkmkaccessdiv"}]]],
-                     ["div", {cla:"profsectiontitlediv"}, "Bookmarks"],
                      ["div", {id:"bkmksdiv"}]]],
                    ["div", {id:"profelemdetdiv"}]]]]));
             mgrs.home.byRecent();   //display songs
