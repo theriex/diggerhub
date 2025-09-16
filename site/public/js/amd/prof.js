@@ -553,6 +553,8 @@ app.prof = (function () {
                     emailin.focus(); } }
             else { //have account
                 mgrs.bks.initialize(); } },
+        wt20init: function (songs) {  //called from login.rpt.initialize
+            dst.songs = songs; },
         initialize: function () {
             if(!rundata) {
                 return jt.out("reptbodydiv",

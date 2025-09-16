@@ -15,7 +15,7 @@ from PIL import Image, ImageDraw, ImageFont
 import json
 import datetime
 
-CACHE_BUST_PARAM = "v=250905"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=250915"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -235,10 +235,11 @@ def replace_and_respond(stinf):
 def song_html(song):
     if not isinstance(song, dict):
         song = util.load_json_or_default(song, {})
-    html = "<span class=\"dstispan\" style=\"font-weight:bold;\">"
-    html += song["ti"] + "</span> - "
-    html += "<span class=\"dsarspan\">" + song["ar"] + "</span> - "
-    html += "<span class=\"dsabspan\">" + song.get("ab", "") + "</span>"
+    html = ("<span id=\"dsidspan" + str(song["dsId"]) + "\">" +
+            "<span class=\"dstispan\">" + song["ti"] + "</span> - " +
+            "<span class=\"dsarspan\">" + song["ar"] + "</span> - " +
+            "<span class=\"dsabspan\">" + song.get("ab", "") + "</span>" +
+            "</span>")
     return html
 
 
@@ -252,7 +253,6 @@ def month_and_day_from_dbtimestamp(timestamp):
 
 def listener_report_page_html(digname, tline, content):
     html = "<div id=\"reptoplinediv\">" + digname + "</div>\n"
-    html += "<div id=\"reptabsdiv\"></div>"
     html += "<div id=\"reptitlelinediv\">" + tline + "</div>\n"
     html += "<div id=\"reptbodydiv\">" + content + "</div>\n"
     return html
@@ -262,12 +262,12 @@ def weekly_top20_content_html(sasum):
     digname = sasum["digname"]
     mdstart = month_and_day_from_dbtimestamp(sasum["start"])
     mdend = month_and_day_from_dbtimestamp(sasum["end"])
-    tline = ("<span id=\"hrtlspan\" data-dnm=\"" + sasum["digname"] +
-             "\">Top 20 songs from my collection</span>" +
+    tline = ("From <span id=\"hrtlspan\" data-dnm=\"" + sasum["digname"] +
+             "\">my collection</span>" +
              " <span id=\"hrtpspan\" class=\"datevalspan\"" +
              " data-plink=\"plink/wt20/" + sasum["digname"] + "/" +
              sasum["end"][0:10] + "\">" + mdstart + "-" + mdend + "</span>")
-    html = "<ol>\n"
+    html = "<ol class=\"wt20list\">\n"
     for song in util.load_json_or_default(sasum["songs"], []):
         html += "<li>" + song_html(song) + "\n"
     html += "</ol>\n\n"
@@ -280,7 +280,8 @@ def weekly_top20_content_html(sasum):
                  ":</span>" + song_html(sasum[lab["fld"]]) + "<br/>")
     html += ("<div id=\"repsongtotaldiv\">" + str(sasum["ttlsongs"]) +
              " songs synchronized to <a href=\"https://diggerhub.com\">" +
-             "DiggerHub</a></div>\n")
+             "DiggerHub</a></div>\n"
+             "<div id=\"profelemdetdiv\"></div>\n")
     return listener_report_page_html(digname, tline, html)
 
 
@@ -295,6 +296,7 @@ def weekly_top20_page(stinf, sasum):
     stinf["replace"]["$RELROOT"] = stinf["replace"]["$RDR"]
     diop = stinf["path"].replace("plink", "dio") + "/wt20img.png"
     stinf["replace"]["$SITEPIC"] = "/" + diop
+    stinf["replace"]["rundata = \"\""] = "rundata = " + json.dumps(sasum)
     return replace_and_respond(stinf)
 
 

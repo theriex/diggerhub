@@ -1,4 +1,4 @@
-/*global app, jt */
+/*global app, jt, rundata */
 /*jslint browser, white, unordered, long */
 
 app.login = (function () {
@@ -832,49 +832,28 @@ app.login = (function () {
     }());
 
 
-    //The report manager handles wt20 and bookmarks display.  Permalink
-    //reports are web artifacts and do not have a nav bar displayed, only a
-    //single link to the listener page.  The listener page shows the nav
-    //bar, and any shareable reports have a link to the associated permalink
-    //report for sharing.
+    //The report manager handles the wt20 display.  Permalink reports are
+    //static web artifacts with song info and a link to the listener page.
     mgrs.rpt = (function () {
-        const tabs = {wt20:{name:"WT20"},
-                      bmrk:{name:"Bookmarks"},
-                      acct:{name:"Sign In"}};
-        var navactive = false;  //disable nav until tab impl finished
-        function tabHTML (key) {
-            const tab = tabs[key];
-            if(tab.selected) {
-                return jt.tac2html(
-                    ["span", {cla:"rptnavtabselspan"},
-                     tab.name]); }
-            return jt.tac2html(
-                ["a", {cla:"reptablink",
-                       onclick:mdfs("rpt.displayTab", key)},
-                 tab.name]); }
-        function redisplayNavTabs () {
-            if(!navactive) { return ""; }
-            jt.out("reptabsdiv", jt.tac2html(
-                ["div", {id:"reptabscontentdiv"},
-                 Object.keys(tabs).map((key, idx) =>
-                     [["span", {cla:"rptnavtabsepspan"},
-                       (idx? "&nbsp;&nbsp;|&nbsp;&nbsp;" : "")],
-                      ["div", {cla:"rptnavtabdiv"},
-                       tabHTML(key)]])])); }
-        function displayBookmarkContent (/*key*/) {
-            return "bookmark content goes here"; }
-        function isListenerPage () {
-            return window.location.href.search(/listener/) >= 0; }
-        function activatePermalink () {
-            const span = jt.byId("hrtpspan");
-            span.innerHTML = jt.tac2html(
-                ["a", {href:app.util.dr(span.dataset.plink)},
-                 span.innerHTML]); }
+        const sdat = {};
+        function profhomeitemdet (...args) {
+            return jt.fs("app.prof.dispatch('home','itemdet','songs'" +
+                         app.util.paramstr(args) + ")"); }
         function activateListenerLink () {
             const span = jt.byId("hrtlspan");
             span.innerHTML = jt.tac2html(
                 ["a", {href:app.util.dr("listener/" + span.dataset.dnm)},
                  span.innerHTML]); }
+        function activateSongLinks () {
+            if(!rundata) { return jt.log("rpt: rundata not available"); }
+            sdat.songs = JSON.parse(rundata.songs);
+            sdat.songs.forEach(function (s, i) {
+                const span = jt.byId("dsidspan" + s.dsId);
+                if(span) {
+                    span.innerHTML = jt.tac2html(
+                        ["a", {href:"#show",
+                               onclick:profhomeitemdet(i)},
+                         span.innerHTML]); } }); }
         function adjustReportDisplay () {
             const ricd = jt.byId("reportinnercontentdiv");
             if(ricd && ricd.offsetWidth > 600) {
@@ -884,25 +863,10 @@ app.login = (function () {
                 ricd.style.margin = "0px auto"; } }
     return {
         initialize: function () {
-            if(isListenerPage()) {
-                activatePermalink();
-                tabs.wt20.selected = true;
-                tabs.wt20.html = jt.byId("reptbodydiv").innerHTML;
-                tabs.bmrk.html = displayBookmarkContent;
-                tabs.acct.html = "Not implemented yet";
-                redisplayNavTabs(); }
-            else {
-                activateListenerLink(); }
-            adjustReportDisplay(); },
-        displayTab: function (key) {
-            var html = tabs[key].html;
-            Object.values(tabs).forEach(function (tab) {
-                tab.selected = false; });
-            tabs[key].selected = true;
-            redisplayNavTabs();
-            if(typeof html === "function") {
-                html = html(key); }
-            jt.out("reptbodydiv", html); }
+            activateListenerLink();
+            activateSongLinks();
+            app.prof.dispatch("home", "wt20init", sdat.songs);
+            adjustReportDisplay(); }
     };  //end mgrs.rpt returned functions
     }());
 
