@@ -430,11 +430,19 @@ app.prof = (function () {
                 ["a", {href:"#update",
                        onclick:mdfs("home.checkAccAndManage")},
                  "Update"])); }
+        function wt20label () {
+            var lab = "collection listening summary";
+            const st = jt.saferef(rundata, "acct.?settings.?sumact.?lastsend");
+            if(st) {
+                const std = jt.isoString2Time(st);
+                if(Date.now() - std.getTime() <= 7 * 24 * 60 * 60 * 1000) {
+                    const url = app.util.dr("/plink/wt20/theriex/" +
+                                            st.slice(0, 10));
+                    lab = jt.tac2html(["a", {href:url}, lab]); } }
+            return lab; }
         function wt20day () {
-            return (
-                (rundata.acct.settings &&
-                 rundata.acct.settings.sumact &&
-                 rundata.acct.settings.sumact.sendon) || "Default"); }
+            const so = jt.saferef(rundata, "acct.?settings.?sumact.?sendon");
+            return so || "Default"; }
         function searchURLForSong (song) {
             var txt = song.ti + " " + song.ar;
             if(song.ab && song.ab !== "Singles") {
@@ -573,8 +581,7 @@ app.prof = (function () {
                     [["div", {cla:"profsectiontitlediv"}, "Songs"],
                      ["div", {id:"songsdiv"}],
                      ["div", {id:"profmuwkdiv"},
-                      [["span", {id:"profmuwklabel"},
-                        "collection listening summary"],  //weekday or "Default"
+                      [["span", {id:"profmuwklabel"}, wt20label()],
                        ["span", {id:"profmuwkday"}, wt20day()]]],
                      ["div", {cla:"profsectiontitlediv"},
                       ["Bookmarks",
