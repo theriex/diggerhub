@@ -198,7 +198,7 @@ app.prof = (function () {
                 bmt:{t:"select", vi:0, vs:["type", ...mgrs.util.v4f("bmt")],
                      tdc:"bmfldcentertd"},
                 ar:{t:"search", val:"", lab:"artist"},
-                ab:{t:"search", val:"", lab:"album"}},
+                ab:{t:"search", val:"", lab:"title"}},
             fbks:{}}; //fetched bookmarks by fetch key
         function hfval (hfld) {
             var val = "unknown";
