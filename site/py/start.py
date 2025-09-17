@@ -144,21 +144,19 @@ FLOWCONTENTHTML = """
 </div>
 
 <div id="quickdispdiv" class="textcontentctrdiv">
-The most personalized owned music playback you can get.
+The most personalized playback you can get.
 </div>
 
 <div id="playfeaturesdiv" class="boxedcontentdiv">
 <table>
-<tr><td><img class="featureico" src="img/deck.png"/></td><td>Continuous select autoplay based entirely on your own feelings and listening history.</td></tr>
-<tr><td><img class="featureico" src="img/album.png"/></td><td>Switch between album listening and continuous select anytime.</td></tr>
-<tr><td><img class="featureico" src="img/search.png"/></td><td>Fast find across artists, albums, titles, genres and notes.</td></tr>
+<tr><td><img class="featureico" src="img/deck.png"/></td><td>Continuous select autoplay from your own feelings and listening history.</td></tr>
+<tr><td><img class="featureico" src="img/album.png"/></td><td>Switch to or from album listening anytime.</td></tr>
+<tr><td><img class="featureico" src="img/search.png"/></td><td>Fast find music by artist, album, title, genre and personal notes.</td></tr>
 </table>
 </div>
 
 <div id="downloadsdiv" class="boxedcontentdiv">
-  <div class="platoptdescdiv">Get Digger for
-    <a href="#you" onclick="app.login.dldet(event);return false">you</a> on
-  </div>
+  <div class="platoptdescdiv">Get Digger for</div>
   <div class="downloadsline">
     <div><a href="downloads/digger-linux" onclick="app.login.dldet(event);return false">Linux</a></div>
     <div><a href="downloads/Digger.dmg" onclick="app.login.dldet(event);return false">Mac</a></div>
