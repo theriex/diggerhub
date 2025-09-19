@@ -121,13 +121,25 @@ app.prof = (function () {
                             jt.out("edbformactmsgdiv", po.failpre + " " + code +
                                    ": " + errtxt); }); }, 100); }
     return {
+        bmkshtxt: function (b) {
+            return [b.url,
+                    "type: " + b.bmt + ",  stat: " + b.cs,
+                    b.ar,
+                    b.ab,
+                    b.nt].join("\n"); },
         share: function () {
+            const sdivid = "edbformtopmsgdiv";
             if(!bmk.dsId) {
                 jt.out("edbformtopmsgdiv", "Save bookmark before sharing"); }
             else {
-                jt.out("edbformtopmsgdiv", "Share not implemented yet."); }
+                app.svc.copyToClipboard(
+                    mgrs.edb.bmkshtxt(bmk),
+                    function () {
+                        jt.out(sdivid, "Bookmark copied to clipboard."); },
+                    function () {
+                        jt.out(sdivid, "Bookmark text copy failed."); }); }
             setTimeout(function () {
-                jt.out("edbformtopmsgdiv", ""); }, 3800); },
+                jt.out(sdivid, ""); }, 3800); },
         cancel: function () {
             jt.out("profelemdetdiv", ""); },
         rmbkmk: function () {
@@ -537,11 +549,7 @@ app.prof = (function () {
                 txt = app.player.dispatch("cmt", "clipboardTextForSong", de);
                 break;
             case "bkmks":
-                txt = [de.url,
-                       "type: " + de.bmt + ", stat: " + de.cs,
-                       de.ar,
-                       de.ab,
-                       de.nt].join("\n");
+                txt = mgrs.edb.bmkshtxt(de);
                 break; }
             app.svc.copyToClipboard(txt,
                 function () {
