@@ -1387,20 +1387,29 @@ def updbmrk():
         digacc, _ = util.authenticate()
         artist = dbacc.reqarg("ar", "string", required=True)
         album = dbacc.reqarg("ab", "string", required=True)
+        bmkid = dbacc.reqarg("dsId", "dbid")  # specified if update
+        if bmkid:
+            dbm = dbacc.cfbk("Bookmark", "dsId", bmkid, required=True)
+            if dbm["aid"] != digacc["dsId"]:
+                raise ValueError("Bookmark aid account mismatch")
         bmrk = {"dsType": "Bookmark", "aid": digacc["dsId"],
-                "dsId": dbacc.reqarg("dsId", "dbid"),  # specified if update
-                "modified":dbacc.reqarg("modified", "string"),
+                "dsId": bmkid,  # authorized update or create new
+                "aid": digacc["dsId"],
+                "modified": dbacc.reqarg("modified", "string"),
                 "bmt": dbacc.reqarg("bmt", "string", required=True),
-                "ar": artist, "ab": album,
+                "ar": artist,
+                "ab": album,
                 "smar": standardized_colloquial_match(artist),
                 "smab": standardized_colloquial_match(album),
+                # uti: updated from site read process only, not modified
                 "nt": dbacc.reqarg("nt", "text"),
                 "url": dbacc.reqarg("url", "url", required=True),
-                "upi": dbacc.reqarg("upi", "image"),
-                "ai": dbacc.reqarg("ai", "json"),
-                "ti": dbacc.reqarg("ti", "json"),
+                # upi: updated from site read process only, not modified
+                "haf": dbacc.reqarg("haf", "string"),
+                # abi: updated from metadata source
+                # trk: updated from metadata source
                 "si": dbacc.reqarg("si", "json"),
-                "sd": dbacc.reqarg("sd", "json"),
+                # det: updated from metadata source
                 "cs": dbacc.reqarg("cs", "string", required=True)}
         bmrk = dbacc.write_entity(bmrk, vck=bmrk["modified"])
     except ValueError as e:
