@@ -91,7 +91,11 @@ app.prof = (function () {
             bmk.haf = jt.byId("edbinhaf").value; }
         function verifyFields () {
             var errs = [];
-            bmk.aid = app.login.getAuth().dsId;
+            const digacc = app.login.getAuth();
+            if(!digacc) {
+                errs.push({a:"aid", e:"Sign In to Save"}); }
+            else {
+                bmk.aid = digacc.dsId; }
             if(!bmk.url) {
                 errs.push({a:"url", e:"URL required"}); }
             if(!mgrs.util.v4f("bmt").includes(bmk.bmt)) {
@@ -264,12 +268,19 @@ app.prof = (function () {
                 [["tr", ["td", {colspan:Object.keys(dst.hfs).length,
                                 id:"bmkerrtd"},
                          txt]]]); }
+        function prepareDisplay (digname) {
+            if(digname) {
+                jt.out("profnamespan", jt.tac2html(
+                    ["a", {href:app.util.dr("/listener/" + digname)},
+                     digname])); }
+            dispErr(""); }
         function fetchAndDisplayBookmarks () {
+            const acct = app.login.getAuth();
+            prepareDisplay(acct.digname);
             if(dst.fbks[fetchKey()]) {
                 if(!dst.fbks[fetchKey()].length) {
                     return dispErr("No bookmarks found"); }
                 return displayBookmarks(); }
-            const acct = app.login.getAuth();
             const data = {an:acct.email, at:acct.token};
             Object.keys(dst.hfs).forEach(function (fnm) {
                 const fldat = dst.hfs[fnm];
@@ -343,13 +354,15 @@ app.prof = (function () {
                 bmk = dst.fbks[fetchKey()][bmidx]; }
             mgrs.edb.editBookmark(bmk); },
         initialize: function () {
-            const digname = app.login.getAuth().digname;
-            jt.out("profnamespan", jt.tac2html(
-                ["a", {href:app.util.dr("/listener/" + digname)}, digname]));
+            jt.out("profnamespan", "Bookmarks");
+            mgrs.gen.setRequireAccountFunctions(
+                fetchAndDisplayBookmarks,
+                fetchAndDisplayBookmarks);
             jt.out("profelemdetdiv", "");
             jt.out("profcontdispdiv", "");
             dst.fbks = {};
-            fetchAndDisplayBookmarks(); }
+            prepareDisplay();
+            mgrs.gen.requireAcc(); }
     };  //end mgrs.bks returned functions
     }());
 
@@ -438,9 +451,10 @@ app.prof = (function () {
             app.pdat.addApresDataNotificationTask("displayBookmarkPageAccess",
                                                   displayBookmarkPageAccess); }
         function displayBookmarkPageAccess () {
+            mgrs.gen.setRequireAccountFunctions(mgrs.bks.initialize,
+                                                displayBookmarkPageAccess);
             jt.out("profbkmkaccessdiv", jt.tac2html(
-                ["a", {href:"#update",
-                       onclick:mdfs("home.checkAccAndManage")},
+                ["a", {href:"#update", onclick:mdfs("gen.requireAcc")},
                  "Update"])); }
         function wt20label () {
             var lab = "collection listening summary";
@@ -556,46 +570,24 @@ app.prof = (function () {
                     jt.out(sdivid, "Details copied to clipboard."); },
                 function () {
                     jt.out(sdivid, "Clipboard copy failed."); }); },
-        checkAccAndManage: function () {
-            const acc = app.login.getAuth();
-            if(!acc) {
-                const siid = "hubaccountcontentdiv";
-                jt.byId(siid).style.display = "block";
-                app.login.dispatch("hsi", "signIn", siid, function () {
-                    jt.byId(siid).style.display = "none";
-                    displayBookmarkPageAccess(); });
-                const emailin = jt.byId("emailin");
-                if(emailin) {
-                    emailin.focus(); } }
-            else { //have account
-                mgrs.bks.initialize(); } },
         wt20init: function (songs) {  //called from login.rpt.initialize
             dst.songs = songs; },
         initialize: function () {
-            if(!rundata) {
-                return jt.out("reptbodydiv",
-                              "Data currently unavailable, try again later"); }
             app.top.dispatch("hcu", "deserializeAccount", rundata.acct);
             if(rundata.bkmks && rundata.bkmks.length) {
                 rundata.bkmks = rundata.bkmks.filter((b) =>
                     b.cs !== "Deleted"); }  //in case cached
-            jt.out("reportinnercontentdiv", jt.tac2html(
-                [["div", {id:"proftitlelinediv"},
-                  ["span", {id:"profnamespan"}, rundata.acct.digname]],
-                 ["div", {id:"hubaccountcontentdiv", cla:"boxedcontentdiv",
-                          style:"display:none"}],
-                 ["div", {id:"profcontentdiv"},
-                  [["div", {id:"profcontdispdiv"},
-                    [["div", {cla:"profsectiontitlediv"}, "Songs"],
-                     ["div", {id:"songsdiv"}],
-                     ["div", {id:"profmuwkdiv"},
-                      [["span", {id:"profmuwklabel"}, wt20label()],
-                       ["span", {id:"profmuwkday"}, wt20day()]]],
-                     ["div", {cla:"profsectiontitlediv"},
-                      ["Bookmarks",
-                       ["div", {id:"profbkmkaccessdiv"}]]],
-                     ["div", {id:"bkmksdiv"}]]],
-                   ["div", {id:"profelemdetdiv"}]]]]));
+            jt.out("profnamespan", rundata.acct.digname);
+            jt.out("profcontdispdiv", jt.tac2html(
+                [["div", {cla:"profsectiontitlediv"}, "Songs"],
+                 ["div", {id:"songsdiv"}],
+                 ["div", {id:"profmuwkdiv"},
+                  [["span", {id:"profmuwklabel"}, wt20label()],
+                   ["span", {id:"profmuwkday"}, wt20day()]]],
+                 ["div", {cla:"profsectiontitlediv"},
+                  ["Bookmarks",
+                   ["div", {id:"profbkmkaccessdiv"}]]],
+                 ["div", {id:"bkmksdiv"}]]));
             mgrs.home.byRecent();   //display songs
             mgrs.home.byUpdated();  //display bookmarks
             app.login.dispatch("hua", "initDisplay"); }
@@ -605,10 +597,47 @@ app.prof = (function () {
 
     //The general manager handles top level page setup and actions
     mgrs.gen = (function () {
+        const rafs = {  //require account functions
+            haf: function () {
+                jt.log("prof.rafs have account function default message"); },
+            psf: function () {
+                jt.log("prof.rafs post signin function default message"); }};
     return {
+        setRequireAccountFunctions: function(haf, psf) {
+            rafs.haf = haf;
+            rafs.psf = psf; },
+        requireAcc: function () {
+            const acc = app.login.getAuth();
+            if(!acc) {
+                const siid = "hubaccountcontentdiv";
+                jt.byId(siid).style.display = "block";
+                app.login.dispatch("hsi", "signIn", siid, function (siacc) {
+                    app.login.dispatch("ap", "save", siacc);
+                    jt.byId(siid).style.display = "none";
+                    rafs.psf(); });
+                const emailin = jt.byId("emailin");
+                if(emailin) {
+                    emailin.focus(); } }
+            else { //have account
+                rafs.haf(); } },
         initialize: function () {
+            if(!rundata) {
+                return jt.out("reptbodydiv",
+                              "Data currently unavailable, try again later"); }
+            jt.out("reportinnercontentdiv", jt.tac2html(
+                [["div", {id:"proftitlelinediv"},
+                  ["span", {id:"profnamespan"}]],
+                 ["div", {id:"hubaccountcontentdiv", cla:"boxedcontentdiv",
+                          style:"display:none"}],
+                 ["div", {id:"profcontentdiv"},
+                  [["div", {id:"profcontdispdiv"}],
+                   ["div", {id:"profelemdetdiv"}]]]]));
+            app.top.dispatch("aaa", "initialize");
+            app.top.dispatch("afg", "runOutsideApp", "hubaccountcontentdiv");
             if(app.startPath.startsWith("/listener")) {
-                mgrs.home.initialize(); } }
+                mgrs.home.initialize(); }
+            else if(app.startPath.startsWith("/bookmarks")) {
+                mgrs.bks.initialize(); } }
     };  //end mgrs.gen returned functions
     }());
 

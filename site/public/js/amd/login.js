@@ -889,7 +889,8 @@ app.login = (function () {
         initialize: function () {
             activateOverlayDisplayForNavBarElements();
             app.svc.init("web");
-            if(app.startPath.startsWith("/listener")) {
+            if(app.startPath.startsWith("/listener") ||
+               app.startPath.startsWith("/bookmarks")) {
                 return app.prof.init(); }
             if(app.startPath.startsWith("/plink")) {
                 return mgrs.rpt.initialize(); }

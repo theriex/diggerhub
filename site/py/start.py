@@ -375,6 +375,15 @@ def most_recent_bookmarks(digacc):
     return bkmks
 
 
+def personal_page_response(stinf, rdo):
+    stinf["replace"]["$CONTENTHTML"] = REPORTFRAMEHTML
+    stinf["replace"]["$REPORTHTML"] = PERSONALPAGEHTML
+    stinf["replace"]["$RELROOT"] = stinf["replace"]["$RDR"]
+    stinf["replace"]["$LATESTTOP20"] = ""
+    stinf["replace"]["rundata = \"\""] = "rundata = " + json.dumps(rdo)
+    return replace_and_respond(stinf)
+
+
 def listener_page(stinf):
     pes = stinf["rawpath"].split("/")
     if len(pes) < 2:
@@ -385,12 +394,20 @@ def listener_page(stinf):
     rdo = {"acct": digacc,
            "songs": most_recent_songs(digacc),
            "bkmks": most_recent_bookmarks(digacc)}
-    stinf["replace"]["$CONTENTHTML"] = REPORTFRAMEHTML
-    stinf["replace"]["$REPORTHTML"] = PERSONALPAGEHTML
-    stinf["replace"]["$RELROOT"] = stinf["replace"]["$RDR"]
-    stinf["replace"]["$LATESTTOP20"] = ""
-    stinf["replace"]["rundata = \"\""] = "rundata = " + json.dumps(rdo)
-    return replace_and_respond(stinf)
+    return personal_page_response(stinf, rdo)
+
+
+def bookmarks_page(stinf):
+    logging.info("bookmarks_page " + stinf["rawpath"])
+    digacc = ""
+    pes = stinf["rawpath"].split("/")
+    if len(pes) == 2:
+        digname = pes[1]
+        digacc = acct_by_digname(digname)
+    rdo = {"acct": digacc,
+           "songs": [],
+           "bkmks": most_recent_bookmarks(digacc)}
+    return personal_page_response(stinf, rdo)
 
 
 def delete_me_instruct(stinf):
@@ -436,4 +453,6 @@ def startpage(path, refer):
         return delete_me_instruct(stinf)
     if stinf["path"].startswith("listener"):
         return listener_page(stinf)
+    if stinf["path"].startswith("bookmarks"):
+        return bookmarks_page(stinf)
     return fail404()
