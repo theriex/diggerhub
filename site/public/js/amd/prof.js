@@ -473,7 +473,7 @@ app.prof = (function () {
             var txt = song.ti + " " + song.ar;
             if(song.ab && song.ab !== "Singles") {
                 txt += " " + song.ab; }
-            return "https://duckduckgo.com/?q=" + jt.enc(txt); }
+            return "https://duckduckgo.com/?q=" + jt.escq(jt.enc(txt)); }
         function songdethtml (s) {
             const eavs = app.player.dispatch("cmt", "elal2txtvals", s);
             return jt.tac2html(
