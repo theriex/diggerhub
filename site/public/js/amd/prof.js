@@ -382,8 +382,10 @@ app.prof = (function () {
             return sb.modified.slice(0, 19).replace("T", " "); }  //placeholder
         function t20star (song) {
             const playcsv = "played,iosqueue,digaudpl";
-            if(song.pd && !playcsv.csvcontains(song.pd)) { return "p"; }
-            if(!song.kws.csvcontains("Social")) { return "s"; }
+            if(song.pd && !playcsv.csvcontains(song.pd)) { 
+                return "&#x21B7;"; }  //skip arrow indicator
+            if(!song.kws.csvcontains("Social")) {
+                return "-"; }  //no rating to share socially
             if(song.rv < 5) { return "g"; }
             return "&#x2605;"; }
         function linkUnless (cond, hreft, oct, txt) {
