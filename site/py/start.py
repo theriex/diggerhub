@@ -15,7 +15,7 @@ from PIL import Image, ImageDraw, ImageFont
 import json
 import datetime
 
-CACHE_BUST_PARAM = "v=251002"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=251007"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -250,7 +250,7 @@ def month_and_day_from_dbtimestamp(timestamp):
 
 
 def listener_report_page_html(digname, tline, content):
-    html = "<div id=\"reptoplinediv\">" + digname + "</div>\n"
+    html = "<div id=\"reptoplinediv\" data-dnm=\"" + digname + "\">" + digname + "</div>\n"
     html += "<div id=\"reptitlelinediv\">" + tline + "</div>\n"
     html += "<div id=\"reptbodydiv\">" + content + "</div>\n"
     return html
@@ -260,8 +260,7 @@ def weekly_top20_content_html(sasum):
     digname = sasum["digname"]
     mdstart = month_and_day_from_dbtimestamp(sasum["start"])
     mdend = month_and_day_from_dbtimestamp(sasum["end"])
-    tline = ("From <span id=\"hrtlspan\" data-dnm=\"" + sasum["digname"] +
-             "\">my collection</span>" +
+    tline = ("From my collection" +
              " <span id=\"hrtpspan\" class=\"datevalspan\"" +
              " data-plink=\"plink/wt20/" + sasum["digname"] + "/" +
              sasum["end"][0:10] + "\">" + mdstart + "-" + mdend + "</span>")

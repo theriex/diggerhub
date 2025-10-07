@@ -471,16 +471,11 @@ app.prof = (function () {
         function wt20day () {
             const so = jt.saferef(rundata, "acct.?settings.?sumact.?sendon");
             return so || "Default"; }
-        function searchURLForSong (song) {
-            var txt = song.ti + " " + song.ar;
-            if(song.ab && song.ab !== "Singles") {
-                txt += " " + song.ab; }
-            return "https://duckduckgo.com/?q=" + jt.escq(jt.enc(txt)); }
         function songdethtml (s) {
             const eavs = app.player.dispatch("cmt", "elal2txtvals", s);
             return jt.tac2html(
                 [["a", {href:"#search",
-                        onclick:"window.open('" + searchURLForSong(s) +
+                        onclick:"window.open('" + mgrs.home.songSearchURL(s) +
                                 "');return false"},
                   [["div", {id:"pititlediv"}, s.ti],
                    ["div", {id:"piartistdiv"}, s.ar],
@@ -511,6 +506,11 @@ app.prof = (function () {
                  ["div", {id:"picommentdiv"}, b.nt],
                  ["div", {id:"pikwdsdiv"}, b.haf]]); }
     return {
+        songSearchURL: function (song) {
+            var txt = song.ti + " " + song.ar;
+            if(song.ab && song.ab !== "Singles") {
+                txt += " " + song.ab; }
+            return "https://duckduckgo.com/?q=" + jt.escq(jt.enc(txt)); },
         toglen: function (lenfld, togafld) {
             if(dst[lenfld] === 5) {
                 dst[lenfld] = 20;

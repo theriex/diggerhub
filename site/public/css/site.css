@@ -210,6 +210,12 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
 .dstispan { font-weight:bold; }
 #reptbodydiv { position:relative; }
 #reptitemdetdiv { position:absolute; top:0px; left:0px; }
+.isdespan { padding-left:.5em; font-size:small; color:#666; }
+.isdelaspan { vertical-align:middle; white-space:nowrap; }
+.isdelaspan img { max-height:20px; opacity:0.3; }
+.isdekwspan { padding:0px 5px; font-style:italic; }
+.isdntspan { font-size:medium; color:#999; }
+
 
 /* -------------------- */
 /* listener profile */

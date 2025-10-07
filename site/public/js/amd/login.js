@@ -836,24 +836,36 @@ app.login = (function () {
     //static web artifacts with song info and a link to the listener page.
     mgrs.rpt = (function () {
         const sdat = {};
-        function profhomeitemdet (...args) {
-            return jt.fs("app.prof.dispatch('home','itemdet','songs'" +
-                         app.util.paramstr(args) + ")"); }
+        function searchSongOC (song) {
+            return "window.open('" +
+                app.prof.dispatch("home", "songSearchURL", song) +
+                "');return false"; }
         function activateListenerLink () {
-            const span = jt.byId("hrtlspan");
-            span.innerHTML = jt.tac2html(
-                ["a", {href:app.util.dr("listener/" + span.dataset.dnm)},
-                 span.innerHTML]); }
+            const tdiv = jt.byId("reptoplinediv");
+            tdiv.innerHTML = jt.tac2html(
+                ["a", {href:app.util.dr("listener/" + tdiv.dataset.dnm)},
+                 tdiv.innerHTML]); }
+        function songDescriptionHTML (song) {
+            const doc = new DOMParser().parseFromString(song.nt, 'text/html');
+            const nt = doc.body.textContent || "";
+            return jt.tac2html(
+                ["span", {cla:"isdespan"},
+                 [["span", {cla:"isdelaspan"},
+                   [["img", {src:app.util.dr("img/compstar.png")}], song.al]],
+                  ["span", {cla:"isdelaspan"},
+                   [["img", {src:app.util.dr("img/lightning.png")}], song.el]],
+                  ["span", {cla:"isdekwspan"}, song.kws],
+                  ["span", {cla:"isdntspan"}, nt]]]); }
         function activateSongLinks () {
             if(!rundata) { return jt.log("rpt: rundata not available"); }
             sdat.songs = JSON.parse(rundata.songs);
-            sdat.songs.forEach(function (s, i) {
+            sdat.songs.forEach(function (s) {
                 const span = jt.byId("dsidspan" + s.dsId);
                 if(span) {
                     span.innerHTML = jt.tac2html(
-                        ["a", {href:"#show",
-                               onclick:profhomeitemdet(i)},
-                         span.innerHTML]); } }); }
+                        [["a", {href:"#search", onclick:searchSongOC(s)},
+                          span.innerHTML],
+                         " " + songDescriptionHTML(s)]); } }); }
         function adjustReportDisplay () {
             const ricd = jt.byId("reportinnercontentdiv");
             if(ricd && ricd.offsetWidth > 600) {
