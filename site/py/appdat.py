@@ -1381,7 +1381,14 @@ def bmrkfetch ():
     return util.respJSON(bkms)
 
 
-# Create or update the given bookmark.
+# Create or update the given bookmark.  If you submit a new bookmark with
+# the same URL as an existing bookmark, or if it's the same ti/ar as an
+# existing bookmark, it's not the hubs responsibility to figure that out for
+# you.  Search by artist and you can find any dupes.  If the hub is
+# unresponsive, several updates for a bookmark could queue up in the UI
+# resulting in dupes.  Just delete the extras if that ever happens, not
+# worth the overhead of trying to guess a possible dupe every time you want
+# to create a new bookmark.
 def updbmrk():
     try:
         digacc, _ = util.authenticate()
