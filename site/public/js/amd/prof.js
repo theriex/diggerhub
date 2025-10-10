@@ -45,7 +45,11 @@ app.prof = (function () {
             const button = jt.byId(bid);
             if(button) {
                 button.disabled = false;
-                button.style.opacity = 1.0; }}
+                button.style.opacity = 1.0; }},
+        focus: function (inid) {
+            const elem = jt.byId(inid);
+            if(elem) {
+                elem.focus(); } }
     };  //end mgrs.util returned functions
     }());
 
@@ -325,19 +329,21 @@ app.prof = (function () {
                 iref = jt.byId(fnm + "srchin");
                 if(!iref) {
                     jt.out(fnm + "htd", jt.tac2html(
-                        ["input", {type:"text",
+                        ["input", {type:"text", placeholder:"filter " + fnm,
                                    id:fnm + "srchin", size:16}]));
                     fldat.wiv = "";  //working input value
                     fldat.wvsc = 0;  //working value stability count
-                    fldat.tmo = setTimeout(mgrs.bks.headerFieldClick,
-                                           800); }
+                    mgrs.util.focus(fnm + "srchin");
+                    fldat.tmo = setTimeout(function () {
+                        mgrs.util.focus(fnm + "srchin");
+                        mgrs.bks.headerFieldClick(fnm); }, 800); }
                 else {  //have field value filter input
                     iref = jt.byId(fnm + "srchin").value;
                     if(iref !== fldat.wiv) {  //input value has changed
                         fldat.wiv = iref;
                         fldat.wvsc = 0;
-                        fldat.tmo = setTimeout(mgrs.bks.headerFieldClick,
-                                               800); }
+                        fldat.tmo = setTimeout(function () {
+                            mgrs.bks.headerFieldClick(fnm); }, 800); }
                     else {  //input value unchanged
                         if(fldat.wvsc >= 3) {
                             fldat.val = fldat.wiv;
@@ -345,8 +351,8 @@ app.prof = (function () {
                             fetchAndDisplayBookmarks(); }
                         else {  //still waiting
                             fldat.wvsc += 1;
-                            fldat.tmo = setTimeout(mgrs.bks.headerFieldClick,
-                                                   800); } } }
+                            fldat.tmo = setTimeout(function () {
+                                mgrs.bks.headerFieldClick(fnm); }, 800); } } }
                 break; } },
         showDetails: function (bmidx) {
             var bmk = {};
