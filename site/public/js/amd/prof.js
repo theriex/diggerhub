@@ -325,11 +325,11 @@ app.prof = (function () {
                 else {  //have selection
                     fldat.vi = iref.selectedIndex;
                     return fetchAndDisplayBookmarks(); }
-            case "search":
+            case "search":  //laggy UI, but have to hit the db each time
                 iref = jt.byId(fnm + "srchin");
                 if(!iref) {
                     jt.out(fnm + "htd", jt.tac2html(
-                        ["input", {type:"text", placeholder:"filter " + fnm,
+                        ["input", {type:"text", placeholder:"re-query " + fnm,
                                    id:fnm + "srchin", size:16}]));
                     fldat.wiv = "";  //working input value
                     fldat.wvsc = 0;  //working value stability count
