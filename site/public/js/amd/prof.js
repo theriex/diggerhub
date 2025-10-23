@@ -200,7 +200,9 @@ app.prof = (function () {
                                   onclick:mdfs("edb.save")}, "Save"]]]]]]]));
             if(!bmk.dsId) {
                 mgrs.util.deactivateButton("edbdeleteb");
-                jt.byId("shareicoimg").style.opacity = 0.5; } }
+                jt.byId("shareicoimg").style.opacity = 0.5; }
+            setTimeout(function () {
+                mgrs.util.focus("edbinurl"); }, 50); }
     };  //end mgrs.edb returned functions
     }());
 
@@ -212,7 +214,7 @@ app.prof = (function () {
                 sortord:{t:"toggle", vi:0, vs:["recent", "oldest"],
                          bmkfld:"modified", vdf:(v) => jt.tac2html(
                              ["span", {cla:"bmfmodspan"},
-                              v.slice(0,16).replace("T", " ")])},
+                              v.slice(0,16).replace("T", "&nbsp;")])},
                 cs:{t:"select", vi:0, vs:["collstat", ...mgrs.util.v4f("cs")],
                     tdc:"bmfldcentertd"},
                 bmt:{t:"select", vi:0, vs:["type", ...mgrs.util.v4f("bmt")],
