@@ -649,16 +649,11 @@ app.login = (function () {
             jt.byId(dispdiv).style.display = "none"; },
         detail: function (event) {
             if(event && event.target && event.target.href) {
-                if(event.target.href.includes("you")) {
-                    displayOverlay("you", event.target); }
-                else if(event.target.href.includes("apple")) {
-                    displayOverlay("iosp", event.target,
-                                   iosPromoEmailLink()); }
-                else if(event.target.href.includes("play.google")) {
-                    displayOverlay("droidp", event.target,
-                                   droidPromoEmailLink()); }
-                else { //webapp
-                    displayOverlay("webapp", event.target); } }
+                const nopop = ["you", "apple", "play.google"];
+                if(nopop.every((np) => !event.target.href.includes(np))) {
+                    displayOverlay("webapp", event.target); }
+                else {
+                    window.open(event.target.href); } }
             return false; }
     };  //end mgrs.dld returned functions
     }());
