@@ -466,16 +466,34 @@ app.prof = (function () {
             jt.out("profbkmkaccessdiv", jt.tac2html(
                 ["a", {href:"#update", onclick:mdfs("gen.requireAcc")},
                  "Update"])); }
+        function guessLastReportDate () {
+            var dnum = 1; var diffdays = 0; var gd = new Date();
+            const dns = ["Sunday", "Monday", "Tuesday", "Wednesday",
+                         "Thursday", "Friday", "Saturday"];
+            const dn = jt.saferef(rundata, "acct.?settings.?sumact.?sendon");
+            if(dn) {
+                dnum = dns.indexOf(dn);
+                if(dnum < 0) { dnum = 1; } }
+            diffdays = gd.getDay() - dnum;
+            if(diffdays < 0) {
+                diffdays = (7 + diffdays) * -1; }
+            gd.setDate(gd.getDate() - diffdays);
+            return gd.toISOString(); }
         function wt20label () {
-            var lab = "collection listening summary";
-            const st = jt.saferef(rundata, "acct.?settings.?sumact.?lastsend");
-            if(st) {
-                const std = jt.isoString2Time(st);
-                if(Date.now() - std.getTime() <= 7 * 24 * 60 * 60 * 1000) {
-                    const url = app.util.dr("/plink/wt20/theriex/" +
-                                            st.slice(0, 10));
-                    lab = jt.tac2html(["a", {href:url}, lab]); } }
-            return lab; }
+            const det = {
+                lab:"collection listening summary",
+                digname:jt.saferef(rundata, "acct.?digname"),
+                tiso:jt.saferef(rundata, "acct.?settings.?sumact.?lastsend"),
+                cla:"normal"};
+            if(det.digname) {
+                if(!det.iso || jt.elapsedSince(det.iso, "days") > 7) {
+                    det.cla = "graytext";
+                    det.iso = guessLastReportDate(); }
+                const url = app.util.dr("/plink/wt20/" + det.digname + "/" +
+                                        det.iso.slice(0, 10));
+                det.lab = jt.tac2html(
+                    ["a", {href:url}, ["span", {cla:det.cla}, det.lab]]); }
+            return det.lab; }
         function wt20day () {
             const so = jt.saferef(rundata, "acct.?settings.?sumact.?sendon");
             return so || "Default"; }

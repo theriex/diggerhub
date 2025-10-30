@@ -215,6 +215,7 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
 .isdelaspan img { max-height:20px; opacity:0.3; }
 .isdekwspan { padding:0px 5px; font-style:italic; }
 .isdntspan { font-size:medium; color:#999; }
+.graytext { color:#666; }
 
 
 /* -------------------- */
