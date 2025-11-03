@@ -167,6 +167,8 @@ def update_user_settings_sumact_lastsend(user, timestamp, retry=0):
     user["settings"] = json.dumps(settings)
     try:
         dbacc.write_entity(user, vck=user["modified"])
+        logging.info(str(user["dsId"]) + " settings lastsend updated: " +
+                         user["settings"])
     except ValueError as ve:
         retrycount = retry + 1
         logging.info("update_user_settings_sumact_lastsend " + str(ve) +
@@ -198,6 +200,7 @@ def send_activity_summary(user, songsum):
     body += "Let your friends know what they're missing.\n\n"
     if runinfo["mode"] == "all":
         util.send_mail(user["email"], subj, body, domain="diggerhub.com")
+        logging.info("wt20 mail sent to " + user["email"])
         update_user_settings_sumact_lastsend(user, dbacc.nowISO())
     else:
         logging.info("Summary for " + str(user["dsId"]) + "\n" + body)
