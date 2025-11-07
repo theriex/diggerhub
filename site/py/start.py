@@ -15,7 +15,7 @@ from PIL import Image, ImageDraw, ImageFont
 import json
 import datetime
 
-CACHE_BUST_PARAM = "v=251030"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=251107"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -206,8 +206,7 @@ optional rating collaboration. </div>
 
 <div class="textcontentdiv convocontentdiv"> Digger reaches across genres,
 styles, time periods and geography, preferring what you've least recently
-heard.  Digger apps are open source, respecting the music you've chosen to
-be part of your life.  Rediscover your music library. 
+heard.  Rediscover your music library.
 <a href="#showdownloadlinks"
   onclick="app.login.scrollToTopOfContent();return false">
 Dig into your music</a>. </div>
