@@ -1364,7 +1364,7 @@ def bmrkfetch ():
         ab = dbacc.reqarg("ab", "string")
         if ab:
             ab = standardized_colloquial_match(ab)
-            where += " AND smab = LIKE \"%" + ab + "%\""
+            where += " AND smab LIKE \"%" + ab + "%\""
         cs = dbacc.reqarg("cs", "string")
         if cs and cs != "Deleted":
             where += " AND cs = \"" + cs + "\""
@@ -1399,7 +1399,7 @@ def updbmrk():
             dbm = dbacc.cfbk("Bookmark", "dsId", bmkid, required=True)
             if dbm["aid"] != digacc["dsId"]:
                 raise ValueError("Bookmark aid account mismatch")
-        bmrk = {"dsType": "Bookmark", "aid": digacc["dsId"],
+        bmrk = {"dsType": "Bookmark",
                 "dsId": bmkid,  # authorized update or create new
                 "aid": digacc["dsId"],
                 "modified": dbacc.reqarg("modified", "string"),
