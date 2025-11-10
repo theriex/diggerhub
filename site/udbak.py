@@ -107,6 +107,14 @@ def write_backup_info_to_settings(user, settings):
     bakset["url"] = "bd" + num3 + let3
 
 
+def settings_for_user(user):
+    dfltset = {}
+    settings = util.load_json_or_default(user["settings"], dfltset)
+    if not settings.get("backup"):
+        settings["backup"] = {"writ": "1970-01-01T00:00:00Z"}
+    return settings
+
+
 def write_backup(user, settings):
     # write_song_data_file(user, "json")
     # zip_song_data_file(user, "json")
@@ -121,7 +129,9 @@ def write_backup(user, settings):
         where = "WHERE dsId = " + str(user["dsId"]) + " LIMIT 1"
         updus = dbacc.query_entity("DigAcc", where)
         updu = updus[0]
-        updu["settings"] = user["settings"]
+        settings = settings_for_user(updu)
+        write_backup_info_to_settings(user, settings)
+        user["settings"] = json.dumps(settings)
         dbacc.write_entity(updu, updu["modified"])
         user = updu
     logging.info("write_backup DigAcc" + str(user["dsId"]) + ": " +
@@ -142,11 +152,7 @@ def find_users_and_write_backup_files():
     for user in users:
         logging.info("Processing DigAcc" + str(user["dsId"]) + " " +
                      user["firstname"])
-        dfltset = {}
-        settings = util.load_json_or_default(user["settings"], dfltset)
-        if not settings.get("backup"):
-            settings["backup"] = {"writ": "1970-01-01T00:00:00Z"}
-        write_backup(user, settings)
+        write_backup(user, settings_for_user(user))
 
 
 # run it
