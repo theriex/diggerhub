@@ -125,17 +125,17 @@ def write_backup(user, settings):
     try:
         dbacc.write_entity(user, user["modified"])
     except ValueError:  # version check may fail due to competing cron job
-        # refetch DigAcc and redo write_entity with the updated modified
+        logging.info("write_backup refetch DigAcc and retry write with latest")
         where = "WHERE dsId = " + str(user["dsId"]) + " LIMIT 1"
         updus = dbacc.query_entity("DigAcc", where)
         updu = updus[0]
         settings = settings_for_user(updu)
         write_backup_info_to_settings(user, settings)
-        user["settings"] = json.dumps(settings)
+        updu["settings"] = json.dumps(settings)
         dbacc.write_entity(updu, updu["modified"])
         user = updu
     logging.info("write_backup DigAcc" + str(user["dsId"]) + ": " +
-                 json.dumps(settings["backup"]))
+                 json.dumps(settings))
 
 
 def find_users_and_write_backup_files():
