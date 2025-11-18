@@ -532,9 +532,9 @@ app.prof = (function () {
                  ["div", {id:"picommentdiv"}, b.nt],
                  ["div", {id:"pikwdsdiv"}, b.haf]]); }
     return {
-        songSearchURL: function (song) {
+        songSearchURL: function (song, justsong) {
             var txt = song.ti + " " + song.ar;
-            if(song.ab && song.ab !== "Singles") {
+            if(!justsong && song.ab && song.ab !== "Singles") {
                 txt += " " + song.ab; }
             return "https://duckduckgo.com/?q=" + jt.escq(jt.enc(txt)); },
         toglen: function (lenfld, togafld) {

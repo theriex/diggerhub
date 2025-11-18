@@ -833,7 +833,7 @@ app.login = (function () {
         const sdat = {};
         function searchSongOC (song) {
             return "window.open('" +
-                app.prof.dispatch("home", "songSearchURL", song) +
+                app.prof.dispatch("home", "songSearchURL", song, true) +
                 "');return false"; }
         function activateListenerLink () {
             const tdiv = jt.byId("reptoplinediv");
