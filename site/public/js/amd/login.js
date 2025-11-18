@@ -850,7 +850,8 @@ app.login = (function () {
                   ["span", {cla:"isdelaspan"},
                    [["img", {src:app.util.dr("img/lightning.png")}], song.el]],
                   ["span", {cla:"isdekwspan"}, song.kws],
-                  ["span", {cla:"isdntspan"}, nt]]]); }
+                  ["span", {cla:"isdntspan"},
+                   app.player.dispatch("cmt", "cleanCommentText", nt)]]]); }
         function activateSongLinks () {
             if(!rundata) { return jt.log("rpt: rundata not available"); }
             sdat.songs = JSON.parse(rundata.songs);
