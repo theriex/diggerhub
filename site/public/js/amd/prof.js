@@ -475,8 +475,7 @@ app.prof = (function () {
                 dnum = dns.indexOf(dn);
                 if(dnum < 0) { dnum = 1; } }
             diffdays = gd.getDay() - dnum;
-            if(diffdays < 0) {
-                diffdays = (7 + diffdays) * -1; }
+            if(diffdays < 0) { diffdays = 7 + diffdays; }
             gd.setDate(gd.getDate() - diffdays);
             return gd.toISOString(); }
         function wt20label () {
@@ -486,11 +485,11 @@ app.prof = (function () {
                 tiso:jt.saferef(rundata, "acct.?settings.?sumact.?lastsend"),
                 cla:"normal"};
             if(det.digname) {
-                if(!det.iso || jt.elapsedSince(det.iso, "days") > 7) {
+                if(!det.tiso || jt.elapsedSince(det.tiso, "days") > 7) {
                     det.cla = "graytext";
-                    det.iso = guessLastReportDate(); }
+                    det.tiso = guessLastReportDate(); }
                 const url = app.util.dr("/plink/wt20/" + det.digname + "/" +
-                                        det.iso.slice(0, 10));
+                                        det.tiso.slice(0, 10));
                 det.lab = jt.tac2html(
                     ["a", {href:url}, ["span", {cla:det.cla}, det.lab]]); }
             return det.lab; }
