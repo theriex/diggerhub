@@ -27,7 +27,8 @@ app.prof = (function () {
                  ["span", {cla:"dsabspan"}, b.ab]]); },
         v4f: function (fld) {
             switch(fld) {
-            case "cs": return ["Listened","Notable","Considering","Collected"];
+            case "cs": return ["Listened","Notable","Considering","Collected",
+                               "Archived"];
             case "bmt": return ["Album","Performance","Song","Other"]; } },
         authdata: function (obj) {
             const acct = app.login.getAuth();

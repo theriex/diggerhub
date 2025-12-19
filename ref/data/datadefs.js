@@ -155,6 +155,7 @@ module.exports = (function () {
      //        "Notable" - Worth hearing, not considering owning.
      //        "Considering" - Might add this to my collection.
      //        "Collected" - Own this, might have associated song ratings.
+     //        "Archived" - No longer in listening rotation.
      //        "Deleted" - Mark for deletion processing.
         cache:{minutes:0},
      logflds:["aid", "ab", "ar"]},
