@@ -65,10 +65,13 @@ app.prof = (function () {
                 ab:"Title of album, performance, or song",
                 nt:"First impression? 2nd, 3rd?",
                 haf:"Heard about this from (name or site)"};
+            const ochs = {
+                ar:mdfs("edb.artistChange", "ar") };
             switch(itype) {
             case "string": return jt.tac2html(
                 ["input", {type:"text", id:"edbin" + fld, size:30,
                            placeholder:iphs[fld],
+                           onchange:(ochs[fld] || null),
                            value:(bmk[fld] || "")}]);
             case "select": return jt.tac2html(
                 ["select", {id:fld + "valsel"},
@@ -149,6 +152,9 @@ app.prof = (function () {
                         jt.out(sdivid, "Bookmark text copy failed."); }); }
             setTimeout(function () {
                 jt.out(sdivid, ""); }, 3800); },
+        artistChange: function (fld) {
+            const input = jt.byId("edbin" + fld);
+            mgrs.bks.setHeaderFieldValue(fld, input.value); },
         cancel: function () {
             jt.out("profelemdetdiv", ""); },
         rmbkmk: function () {
@@ -307,6 +313,9 @@ app.prof = (function () {
                     function (code, errtxt) {
                         dispErr("Fetch error " + code + ": " + errtxt); }); }
     return {
+        setHeaderFieldValue: function (fld, val) {
+            dst.hfs[fld].val = val;
+            fetchAndDisplayBookmarks(); },
         headerFieldClick: function (fnm) {
             var iref;
             const fldat = dst.hfs[fnm];
