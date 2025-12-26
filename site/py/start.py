@@ -139,15 +139,15 @@ FLOWCONTENTHTML = """
 
 <div id="toptextdiv" class="textcontentdiv">
 <div>
-The <em>Hub</em> for <em>Digger</em> Collection Listening
+<i>The</i> Hub <i>for</i> Digger <i>Collection Listening</i>
 </div>
 </div>
 
 <div id="quickdispdiv" class="textcontentdiv">
 
-Digger lets you continuously select and play all music in your collection
-matching your retrieval filters, least recently played first, using your own
-descriptions for comprehensive collection access.
+Digger will continuously select and play all music in your collection
+matching your retrieval filters, least recently played first, working from
+your own impressions.
 
 </div>
 
@@ -168,16 +168,13 @@ descriptions for comprehensive collection access.
 
 <div id="joinusdispdiv" class="textcontentdiv">
 
-Digger listeners use DiggerHub to collaborate via their collections, share
-weekly top song recommendations, sync data across devices, bookmark new
-music for consideration and whatever other fun stuff we can come up with.
-Be part of this. Join us.
+Listeners use DiggerHub for backup and sync across devices, sharing top songs for the week, bookmarking new music for consideration, collaborating through collections, and whatever other useful fun we come up with. Join us.
 
 </div>
 
 <div id="playfeaturesdiv" class="boxedcontentdiv">
 <table>
-<tr><td><img class="featureico" src="img/deck.png"/></td><td>Continuous select autoplay from your own music descriptions.</td></tr>
+<tr><td><img class="featureico" src="img/deck.png"/></td><td>Continuous select autoplay from your own music impressions.</td></tr>
 <tr><td><img class="featureico" src="img/album.png"/></td><td>Switch to (or from) album listening anytime.</td></tr>
 <tr><td><img class="featureico" src="img/search.png"/></td><td>Fast find music by artist, album, title, genre and personal note.</td></tr>
 </table>
@@ -209,17 +206,11 @@ Be part of this. Join us.
 </div>
 -->
 
-<div id="hubacctdiv">
-<div>Connect to <em>DiggerHub</em> for backup, sync, and
-optional rating collaboration. </div>
-<div id="hubaccountcontentdiv" class="boxedcontentdiv"></div>
-</div>
-
 <div class="textsectionspacerdiv"></div>
 
 <div class="textcontentdiv convocontentdiv"> Digger reaches across genres,
 styles, time periods and geography, preferring what you've least recently
-heard.  Maximize your music library.
+heard. 
 <a href="#showdownloadlinks"
   onclick="app.login.scrollToTopOfContent();return false">
 Dig into your music</a>. </div>
