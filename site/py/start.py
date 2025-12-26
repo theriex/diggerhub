@@ -15,7 +15,7 @@ from PIL import Image, ImageDraw, ImageFont
 import json
 import datetime
 
-CACHE_BUST_PARAM = "v=251220"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=251226"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -137,26 +137,22 @@ the app, so they are deleted with the app if you uninstall it. </p>
 
 FLOWCONTENTHTML = """
 
-<div id="toptextdiv" class="textcontentdiv boxedcontentdiv">
+<div id="toptextdiv" class="textcontentdiv">
 <div>
-<em>Digger</em> Collection Listening
+The <em>Hub</em> for <em>Digger</em> Collection Listening
 </div>
 </div>
 
-<div id="quickdispdiv" class="textcontentctrdiv">
-The most personalized playback you can get.
-</div>
+<div id="quickdispdiv" class="textcontentdiv">
 
-<div id="playfeaturesdiv" class="boxedcontentdiv">
-<table>
-<tr><td><img class="featureico" src="img/deck.png"/></td><td>Continuous select autoplay from your own feelings and listening history.</td></tr>
-<tr><td><img class="featureico" src="img/album.png"/></td><td>Switch to or from album listening anytime.</td></tr>
-<tr><td><img class="featureico" src="img/search.png"/></td><td>Fast find music by artist, album, title, genre and personal notes.</td></tr>
-</table>
+Digger lets you continuously select and play all music in your collection
+matching your retrieval filters, least recently played first, using your own
+descriptions for comprehensive collection access.
+
 </div>
 
 <div id="downloadsdiv" class="boxedcontentdiv">
-  <div class="platoptdescdiv">Get Digger for</div>
+  <div class="platoptdescdiv">Digger is free on</div>
   <div class="downloadsline">
     <div><a href="downloads/digger-linux" onclick="app.login.dldet(event);return false">Linux</a></div>
     <div><a href="downloads/Digger.dmg" onclick="app.login.dldet(event);return false">Mac</a></div>
@@ -170,6 +166,23 @@ The most personalized playback you can get.
   <div class="platoptdescdiv"></div>
 </div>
 
+<div id="joinusdispdiv" class="textcontentdiv">
+
+Digger listeners use DiggerHub to collaborate via their collections, share
+weekly top song recommendations, sync data across devices, bookmark new
+music for consideration and whatever other fun stuff we can come up with.
+Be part of this. Join us.
+
+</div>
+
+<div id="playfeaturesdiv" class="boxedcontentdiv">
+<table>
+<tr><td><img class="featureico" src="img/deck.png"/></td><td>Continuous select autoplay from your own music descriptions.</td></tr>
+<tr><td><img class="featureico" src="img/album.png"/></td><td>Switch to (or from) album listening anytime.</td></tr>
+<tr><td><img class="featureico" src="img/search.png"/></td><td>Fast find music by artist, album, title, genre and personal note.</td></tr>
+</table>
+</div>
+
 <div id="gettingstartedtitlediv" class="textcontentctrdiv">
 - Getting started -
 </div>
@@ -180,7 +193,7 @@ The most personalized playback you can get.
 </div>
 
 <div class="annoscrdiv">
-<div>Adjust knobs, keys, stars, and comments to reflect what you feel as you're listening. </div>
+<div>Adjust knobs, keywords, stars and comment to reflect what you feel as you're listening. </div>
 <div class="scrnshotdiv"><img src="docs/screenshots/02AlbPlayRating.png"/></div>
 </div>
 
@@ -206,7 +219,7 @@ optional rating collaboration. </div>
 
 <div class="textcontentdiv convocontentdiv"> Digger reaches across genres,
 styles, time periods and geography, preferring what you've least recently
-heard.  Rediscover your music library.
+heard.  Maximize your music library.
 <a href="#showdownloadlinks"
   onclick="app.login.scrollToTopOfContent();return false">
 Dig into your music</a>. </div>

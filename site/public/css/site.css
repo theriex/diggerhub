@@ -32,7 +32,7 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
   display:flex; flex-direction:column; justify-content:space-around; }
 .textcontentdiv, .textcontentctrdiv { margin:0px 10px 10px 10px; padding:10px;
   font-size:large; color:#663922; text-shadow: 0.5px 0.5px 1px #37190a;
-  word-spacing:0.4ch; }
+  word-spacing:0.1ch; }
 .textcontentctrdiv { text-align:center; }
 .textcontentdiv p { margin:0px 0px 18px 0px; }
 .boxedcontentdiv { background-image:url("../img/white60percent.png");
@@ -224,7 +224,7 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
 #proftitlelinediv { height:64px; font-size:48px; font-weight:bold;
   padding:10px 0px 0px 70px; margin-top:-10px; }
 #profcontentdiv { position:relative; }
-#profelemdetdiv { position:absolute; left:8px; top:8px; 
+#profelemdetdiv { position:absolute; left:10px; top:8px; 
   background:#ffc2a4; background:linear-gradient(#ffc2a4, #ff9c6b); }
 #profelemdetcontdiv { position:relative; padding:20px; border:2px solid black;
   border-radius:12px; }
@@ -259,7 +259,7 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
 
 .bmhtd { background:white; color:#666; cursor:pointer; font-style:italic;
   padding:2px 8px; border-radius:8px; }
-#edbform { padding:10px; border:3px solid yellow; }
+#edbform { padding:8px; border:3px solid yellow; }
 #edbformtopdiv { position:relative; }
 #edbformtitlediv { display:inline-block; }
 #edbformsharediv { display:inline-block; margin:5px 0px 5px 24px; }

@@ -911,7 +911,7 @@ app.login = (function () {
             default: jt.log("Standard site homepage display"); }
             //setTimeout(mgrs.mrq.runMarquee, 12000);
             //mgrs.sld.runSlideshow();
-            setTimeout(mgrs.dld.displayInterstitial, 1200);
+            //setTimeout(mgrs.dld.displayInterstitial, 1200);
             mgrs.hua.initDisplay(); },
         scrollToTopOfContent: function () {
             const div = jt.byId("sitecontentdiv");
