@@ -854,6 +854,8 @@ app.login = (function () {
                    app.player.dispatch("cmt", "cleanCommentText", nt)]]]); }
         function activateSongLinks () {
             if(!rundata) { return jt.log("rpt: rundata not available"); }
+            if(!rundata.songs || !rundata.songs.length) {
+                return jt.log("rpt: no songs available"); }
             sdat.songs = JSON.parse(rundata.songs);
             sdat.songs.forEach(function (s) {
                 const span = jt.byId("dsidspan" + s.dsId);

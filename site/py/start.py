@@ -15,7 +15,7 @@ from PIL import Image, ImageDraw, ImageFont
 import json
 import datetime
 
-CACHE_BUST_PARAM = "v=251226"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=251228"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -259,25 +259,49 @@ def listener_report_page_html(digname, tline, content):
     return html
 
 
+def get_wt20_nav_link(direction, sasum):
+    img = "/img/backskip.png"
+    td7 = datetime.timedelta(days=7)
+    pdt = dbacc.dt2ISO(dbacc.ISO2dt(sasum["end"]) - td7)
+    if direction == "next":
+        ep7 = dbacc.ISO2dt(sasum["end"]) + td7
+        if ep7 > datetime.datetime.utcnow():
+            return ""
+        img = "/img/skip.png"
+        pdt = dbacc.dt2ISO(ep7)
+    pdt = pdt[0:10]
+    img = "<img src=\"" + img + "\" class=\"pageskipico\"/>"
+    return "<a href=\"" + pdt + "\">" + img + "</a>"
+
+
 def weekly_top20_content_html(sasum):
     digname = sasum["digname"]
     mdstart = month_and_day_from_dbtimestamp(sasum["start"])
     mdend = month_and_day_from_dbtimestamp(sasum["end"])
-    tline = ("From my collection" +
+    tline = ("Collected recommendations" +
              " <span id=\"hrtpspan\" class=\"datevalspan\"" +
              " data-plink=\"plink/wt20/" + sasum["digname"] + "/" +
-             sasum["end"][0:10] + "\">" + mdstart + "-" + mdend + "</span>")
+             sasum["end"][0:10] + "\">" +
+             mdstart + "-" + mdend +
+             "<span>" + get_wt20_nav_link("prev", sasum) + "</span>" +
+             "<span>" + get_wt20_nav_link("next", sasum) + "</span>" +
+             "</span>")
     html = "<ol class=\"wt20list\">\n"
-    for song in util.load_json_or_default(sasum["songs"], []):
+    songs = util.load_json_or_default(sasum["songs"], [])
+    for song in songs:
         html += "<li>" + song_html(song) + "\n"
+    if not songs:
+        html += ("<p>All new music this week.<br/>" +
+                 "Will recommend as collected.</p>")
     html += "</ol>\n\n"
     labs = [{"name":"Easiest", "fld":"easiest"},
             {"name":"Hardest", "fld":"hardest"},
             {"name":"Most Chill", "fld":"chillest"},
             {"name":"Most Amped", "fld":"ampest"}]
     for lab in labs:
-        html += ("<span class=\"repsummarylabelspan\">" + lab["name"] +
-                 ":</span>" + song_html(sasum[lab["fld"]]) + "<br/>")
+        if sasum[lab["fld"]]:
+            html += ("<span class=\"repsummarylabelspan\">" + lab["name"] +
+                     ":</span>" + song_html(sasum[lab["fld"]]) + "<br/>")
     html += ("<div id=\"repsongtotaldiv\">" + str(sasum["ttlsongs"]) +
              " songs synchronized to <a href=\"https://diggerhub.com\">" +
              "DiggerHub</a></div>\n"
@@ -306,6 +330,8 @@ def weekly_top20_image(sasum):
     mtxt = ""
     for idx, song in enumerate(songs):
         mtxt += str(idx + 1) + ". " + song["ti"] + " - " + song["ar"] + "\n"
+    if not songs:
+        mtxt += "All new music this week."
     mtxt += "..."
     img = Image.open(mconf.rpbgimg)
     draw = ImageDraw.Draw(img)
@@ -329,7 +355,12 @@ def weekly_top20(stinf, rtype="page"):
              " ORDER BY modified DESC LIMIT 1")
     sasums = dbacc.query_entity("SASum", where)
     if len(sasums) <= 0:
-        return fail404()
+        endts = endts + "T00:00:00Z"
+        stdt = dbacc.ISO2dt(endts) - datetime.timedelta(days=7)
+        startts = dbacc.dt2ISO(stdt)
+        sasums = [{"aid":0, "digname":digname, "sumtype":"wt20", "songs":[],
+                   "easiest":"", "hardest":"", "chillest":"", "ampest":"",
+                   "start":startts, "end":endts, "ttlsongs":0}]
     sasum = sasums[0]
     if rtype == "image":
         return weekly_top20_image(sasum)
