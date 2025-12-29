@@ -93,7 +93,8 @@ def check_log_files():
     if ctx["args"] is not None:
         ctx["info"] += "args: " + str(ctx["args"]) + "\n"
     check_log_file(mconf.logsdir + "plg_application.log", "%Y-%m-%d %H:",
-                   ["ERROR", "WARNING",
+                   [r"^(?!INFO).*ERROR",
+                    "WARNING",
                     r"File \".*\.py\", line \d+", "ValueError",
                     r"hubsync\s\d+.*seconds"],
                    [], ctx)
