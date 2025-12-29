@@ -487,6 +487,7 @@ app.prof = (function () {
             diffdays = gd.getDay() - dnum;
             if(diffdays < 0) { diffdays = 7 + diffdays; }
             gd.setDate(gd.getDate() - diffdays);
+            gd = new Date(gd.getTime() - gd.getTimezoneOffset() * 60000);
             return gd.toISOString(); }
         function wt20label () {
             const det = {
