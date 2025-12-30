@@ -1,4 +1,4 @@
-/*global app, jt, rundata */
+/*global app, jt, rundata, DOMParser */
 /*jslint browser, white, unordered, long */
 
 app.login = (function () {
@@ -194,6 +194,11 @@ app.login = (function () {
             else {
                 acctFromCookie(); } }
     return {
+        noteUpdatedAccount: function (ua, utok) {
+            app.top.dispatch("hcu", "deserializeAccount", ua);
+            app.top.dispatch("aaa", "setCurrentAccount", ua, utok);
+            authobj = app.top.dispatch("aaa", "getAccount");
+            mgrs.ap.save(); },
         signIn: function (formDispId, callbackfunc) {
             var acct = app.top.dispatch("aaa", "getAccount");
             if(acct && acct.dsId !== "101") {
@@ -841,7 +846,7 @@ app.login = (function () {
                 ["a", {href:app.util.dr("listener/" + tdiv.dataset.dnm)},
                  tdiv.innerHTML]); }
         function songDescriptionHTML (song) {
-            const doc = new DOMParser().parseFromString(song.nt, 'text/html');
+            const doc = new DOMParser().parseFromString(song.nt, "text/html");
             const nt = doc.body.textContent || "";
             return jt.tac2html(
                 ["span", {cla:"isdespan"},

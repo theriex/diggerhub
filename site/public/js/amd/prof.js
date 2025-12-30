@@ -55,6 +55,58 @@ app.prof = (function () {
     }());
 
 
+    //The friend manager handles adding/removing music friends
+    mgrs.frnd = (function () {
+        var divid = "notinitialized";
+        var fa = null;
+        function isFriend (siacc) {
+            return (siacc && siacc.musfs && siacc.musfs.length &&
+                    siacc.musfs.find((mf) => mf.dsId === fa.dsId)); }
+        function friendLinkForAccount () {
+            const acc = app.login.getAuth();
+            if(!acc) {  //not signed in
+                mgrs.gen.setRequireAccountFunctions(friendLinkForAccount,
+                                                    friendLinkForAccount);
+                jt.out(divid, jt.tac2html(
+                    ["a", {href:"#addfriend",
+                           onclick:mdfs("gen.requireAcc")},
+                     "Add As Music Friend"])); }
+            else if(fa.dsId === acc.dsId) {  //self
+                jt.out(divid, ""); }
+            else if(!isFriend(acc)) {
+                jt.out(divid, jt.tac2html(
+                    ["a", {href:"#addfriend",
+                           onclick:mdfs("frnd.modFriend", "add")},
+                     "Add As Music Friend"])); }
+            else {  //isFriend
+                jt.out(divid, jt.tac2html(
+                    ["a", {href:"#removefriend",
+                           onclick:mdfs("frnd.modFriend", "rem")},
+                     "Unfriend " + fa.digname])); } }
+    return {
+        modFriend: function (modaction) {
+            const actxt = {add:"Adding", rem:"Removing"};
+            jt.out(divid, actxt[modaction] + " " + fa.digname + "...");
+            setTimeout(function () {
+                const actv = {add:"add", rem:"remove"};
+                const dat = mgrs.util.authdata({action:actv[modaction],
+                                                digname:fa.digname});
+                jt.call("POST", app.util.dr("/api/fangrpact"), dat,
+                        function (results) {
+                            const ua = results[0]; //updated account
+                            app.login.dispatch("hsi", "noteUpdatedAccount", ua);
+                            friendLinkForAccount(); },
+                        function (code, errtxt) {
+                            jt.out(divid, "api/fangrpact failed " + code +
+                                   ": " + errtxt); }); }, 400); },
+        initFriendManagement: function (workingdivid, friendAccount) {
+            divid = workingdivid;
+            fa = friendAccount;
+            friendLinkForAccount(); }
+    };  //end mgrs.util returned functions
+    }());
+
+
     //The edit bookmark manager handles adding or updating a bookmark
     mgrs.edb = (function () {
         var bmk = null;
@@ -541,6 +593,8 @@ app.prof = (function () {
                  ["div", {id:"pititlediv"}, b.ab],
                  ["div", {id:"picommentdiv"}, b.nt],
                  ["div", {id:"pikwdsdiv"}, b.haf]]); }
+        function friendManagement () {
+            mgrs.frnd.initFriendManagement("addfrienddiv", rundata.acct); }
     return {
         songSearchURL: function (song, justsong) {
             var txt = song.ti + " " + song.ar;
@@ -628,7 +682,9 @@ app.prof = (function () {
                  ["div", {id:"bkmksdiv"}]]));
             mgrs.home.byRecent();   //display songs
             mgrs.home.byUpdated();  //display bookmarks
-            app.login.dispatch("hua", "initDisplay"); }
+            app.login.dispatch("hua", "initDisplay");
+            app.pdat.addApresDataNotificationTask("profHomeFriendManagement",
+                                                  friendManagement); }
     };  //end mgrs.home returned functions
     }());
 
@@ -667,6 +723,7 @@ app.prof = (function () {
                   ["span", {id:"profnamespan"}]],
                  ["div", {id:"hubaccountcontentdiv", cla:"boxedcontentdiv",
                           style:"display:none"}],
+                 ["div", {id:"addfrienddiv"}],
                  ["div", {id:"profcontentdiv"},
                   [["div", {id:"profcontdispdiv"}],
                    ["div", {id:"profelemdetdiv"}]]]]));
