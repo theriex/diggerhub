@@ -65,11 +65,9 @@ app.prof = (function () {
         function friendLinkForAccount () {
             const acc = app.login.getAuth();
             if(!acc) {  //not signed in
-                mgrs.gen.setRequireAccountFunctions(friendLinkForAccount,
-                                                    friendLinkForAccount);
                 jt.out(divid, jt.tac2html(
                     ["a", {href:"#addfriend",
-                           onclick:mdfs("gen.requireAcc")},
+                           onclick:mdfs("frnd.requireAccAndRedraw")},
                      "Add As Music Friend"])); }
             else if(fa.dsId === acc.dsId) {  //self
                 jt.out(divid, ""); }
@@ -84,6 +82,10 @@ app.prof = (function () {
                            onclick:mdfs("frnd.modFriend", "rem")},
                      "Unfriend " + fa.digname])); } }
     return {
+        requireAccAndRedraw: function () {
+            mgrs.gen.setRequireAccountFunctions(friendLinkForAccount,
+                                                friendLinkForAccount);
+            mgrs.gen.requireAcc(); },
         modFriend: function (modaction) {
             const actxt = {add:"Adding", rem:"Removing"};
             jt.out(divid, actxt[modaction] + " " + fa.digname + "...");
@@ -523,10 +525,8 @@ app.prof = (function () {
             app.pdat.addApresDataNotificationTask("displayBookmarkPageAccess",
                                                   displayBookmarkPageAccess); }
         function displayBookmarkPageAccess () {
-            mgrs.gen.setRequireAccountFunctions(mgrs.bks.initialize,
-                                                displayBookmarkPageAccess);
             jt.out("profbkmkaccessdiv", jt.tac2html(
-                ["a", {href:"#update", onclick:mdfs("gen.requireAcc")},
+                ["a", {href:"#update", onclick:mdfs("home.requireAcc4Bkmks")},
                  "Update"])); }
         function guessLastReportDate () {
             var dnum = 1; var diffdays = 0; var gd = new Date();
@@ -662,6 +662,10 @@ app.prof = (function () {
                     jt.out(sdivid, "Details copied to clipboard."); },
                 function () {
                     jt.out(sdivid, "Clipboard copy failed."); }); },
+        requireAcc4Bkmks: function () {
+            mgrs.gen.setRequireAccountFunctions(mgrs.bks.initialize,
+                                                mgrs.bks.initialize);
+            mgrs.gen.requireAcc(); },
         wt20init: function (songs) {  //called from login.rpt.initialize
             dst.songs = songs; },
         initialize: function () {

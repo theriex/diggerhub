@@ -15,7 +15,7 @@ from PIL import Image, ImageDraw, ImageFont
 import json
 import datetime
 
-CACHE_BUST_PARAM = "v=251230"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=251231"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -294,6 +294,7 @@ def weekly_top20_content_html(sasum):
         html += ("<p>All new music this week.<br/>" +
                  "Will recommend as collected.</p>")
     html += "</ol>\n\n"
+    html += "<div class=\"aelrangediv\">\n"
     labs = [{"name":"Easiest", "fld":"easiest"},
             {"name":"Hardest", "fld":"hardest"},
             {"name":"Most Chill", "fld":"chillest"},
@@ -302,6 +303,7 @@ def weekly_top20_content_html(sasum):
         if sasum[lab["fld"]]:
             html += ("<span class=\"repsummarylabelspan\">" + lab["name"] +
                      ":</span>" + song_html(sasum[lab["fld"]]) + "<br/>")
+    html += "</div><div id=\"curatebuttondiv\"></div>\n"
     html += ("<div id=\"repsongtotaldiv\">" + str(sasum["ttlsongs"]) +
              " songs synchronized to <a href=\"https://diggerhub.com\">" +
              "DiggerHub</a></div>\n"
