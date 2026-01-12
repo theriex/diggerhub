@@ -236,10 +236,11 @@ def replace_and_respond(stinf):
 def song_html(song):
     if not isinstance(song, dict):
         song = util.load_json_or_default(song, {})
-    html = ("<span id=\"dsidspan" + str(song["dsId"]) + "\">" +
-            "<span class=\"dstispan\">" + song["ti"] + "</span> - " +
-            "<span class=\"dsarspan\">" + song["ar"] + "</span> - " +
-            "<span class=\"dsabspan\">" + song.get("ab", "") + "</span>" +
+    html = ("<span id=\"wtidspan" + str(song["dsId"]) + "\">" +
+            "<span class=\"wtarspan\">" + song["ar"] + "</span>" +
+            "<span class=\"wtartisepspan\"> - </span>" +
+            "<span class=\"wttispan\">" + song["ti"] + "</span>" +
+            # album not included, too verbose and not used for search
             "</span>")
     return html
 
@@ -254,7 +255,11 @@ def month_and_day_from_dbtimestamp(timestamp):
 
 def listener_report_page_html(digname, tline, content):
     html = "<div id=\"reptoplinediv\" data-dnm=\"" + digname + "\">" + digname + "</div>\n"
-    html += "<div id=\"reptitlelinediv\">" + tline + "</div>\n"
+    html += ("<div id=\"repheadingdiv\">\n" +
+             "  <div id=\"hubaccountcontentdiv\"></div>\n" +
+             "  <div id=\"reptopactiondiv\"></div>\n" +
+             "  <div id=\"reptitlelinediv\">" + tline + "</div>\n"
+             "</div>")
     html += "<div id=\"reptbodydiv\">" + content + "</div>\n"
     return html
 
@@ -286,15 +291,15 @@ def weekly_top20_content_html(sasum):
              "<span>" + get_wt20_nav_link("prev", sasum) + "</span>" +
              "<span>" + get_wt20_nav_link("next", sasum) + "</span>" +
              "</span>")
-    html = "<ol class=\"wt20list\">\n"
+    html = "<ul class=\"wt20list\">\n"
     songs = util.load_json_or_default(sasum["songs"], [])
     for song in songs:
         html += "<li>" + song_html(song) + "\n"
     if not songs:
         html += ("<p>All new music this week.<br/>" +
                  "Will recommend as collected.</p>")
-    html += "</ol>\n\n"
-    html += "<div class=\"aelrangediv\">\n"
+    html += "</ul>\n\n"
+    html += "<div id=\"aelrangediv\">\n"
     labs = [{"name":"Easiest", "fld":"easiest"},
             {"name":"Hardest", "fld":"hardest"},
             {"name":"Most Chill", "fld":"chillest"},
@@ -302,7 +307,7 @@ def weekly_top20_content_html(sasum):
     for lab in labs:
         if sasum[lab["fld"]]:
             html += ("<span class=\"repsummarylabelspan\">" + lab["name"] +
-                     ":</span>" + song_html(sasum[lab["fld"]]) + "<br/>")
+                     ":</span>" + song_html(sasum[lab["fld"]]) + "<br/>\n")
     html += "</div><div id=\"curatebuttondiv\"></div>\n"
     html += ("<div id=\"repsongtotaldiv\">" + str(sasum["ttlsongs"]) +
              " songs synchronized to <a href=\"https://diggerhub.com\">" +

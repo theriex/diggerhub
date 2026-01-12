@@ -119,6 +119,7 @@ CREATE TABLE SASum (  -- Song activity summary, e.g. weekly top20
   hardest LONGTEXT,
   chillest LONGTEXT,
   ampest LONGTEXT,
+  curate LONGTEXT,
   start VARCHAR(256),
   end VARCHAR(256),
   ttlsongs INT,

@@ -925,6 +925,18 @@ def songfetch():
     return util.respJSON(songs)
 
 
+def getsongs():
+    try:
+        digacc, _ = util.authenticate()
+        songids = json.loads(dbacc.reqarg("songids", "json", required=True))
+        songids = [n for n in songids if n > 2020]  # verify numerics
+        where = "WHERE dsId IN (" + json.dumps(songids)[1:-1] + ")"
+        songs = dbacc.query_entity("Song", where)
+    except ValueError as e:
+        return util.serve_value_error(e)
+    return util.respJSON(songs)
+
+
 def savesongs():
     try:
         digacc, _ = util.authenticate()
@@ -1211,6 +1223,24 @@ def betastat():
     except ValueError as e:
         return util.serve_value_error(e)
     return util.respJSON(res, audience="private")
+
+
+def updqr8():
+    try:
+        digacc, _ = util.authenticate()
+        endts = dbacc.reqarg("endts", "string", required=True)
+        curate = dbacc.reqarg("curate", "json", required=True)
+        where = ("WHERE aid = " + str(digacc["dsId"]) + 
+                 " AND end = \"" + endts + "\"")
+        sasums = dbacc.query_entity("SASum", where)
+        if not sasums:
+            raise ValueError("No SASum " + str(digacc["dsId"]) + " " + endts)
+        sasum = sasums[0]
+        sasum["curate"] = curate
+        sasum = dbacc.write_entity(sasum, sasum["modified"])
+    except ValueError as e:
+        return util.serve_value_error(e)
+    return util.respJSON(sasum, audience="private")
 
 
 # Read the given items in the given dataformat (albums or tracks), and

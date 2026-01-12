@@ -72,6 +72,7 @@ app.refmgr = (function () {
             reconstituteFieldJSONObject("hardest", obj);
             reconstituteFieldJSONObject("chillest", obj);
             reconstituteFieldJSONObject("ampest", obj);
+            reconstituteFieldJSONObject("curate", obj);
             break;
         case "XConvo":
             break;
@@ -113,6 +114,7 @@ app.refmgr = (function () {
             obj.hardest = JSON.stringify(obj.hardest);
             obj.chillest = JSON.stringify(obj.chillest);
             obj.ampest = JSON.stringify(obj.ampest);
+            obj.curate = JSON.stringify(obj.curate);
             break;
         case "XConvo":
             break;

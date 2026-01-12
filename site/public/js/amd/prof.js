@@ -58,7 +58,8 @@ app.prof = (function () {
     //The friend manager handles adding/removing music friends
     mgrs.frnd = (function () {
         var divid = "notinitialized";
-        var fa = null;
+        var fa = null;  //friend account
+        var psicbf = null;  //optional post sign-in callback function
         function isFriend (siacc) {
             return (siacc && siacc.musfs && siacc.musfs.length &&
                     siacc.musfs.find((mf) => mf.dsId === fa.dsId)); }
@@ -81,10 +82,14 @@ app.prof = (function () {
                     ["a", {href:"#removefriend",
                            onclick:mdfs("frnd.modFriend", "rem")},
                      "Unfriend " + fa.digname])); } }
+        function accountSignInCallback () {
+            friendLinkForAccount();
+            if(psicbf) {
+                psicbf(); } }
     return {
         requireAccAndRedraw: function () {
-            mgrs.gen.setRequireAccountFunctions(friendLinkForAccount,
-                                                friendLinkForAccount);
+            mgrs.gen.setRequireAccountFunctions(accountSignInCallback,
+                                                accountSignInCallback);
             mgrs.gen.requireAcc(); },
         modFriend: function (modaction) {
             const actxt = {add:"Adding", rem:"Removing"};
@@ -101,11 +106,12 @@ app.prof = (function () {
                         function (code, errtxt) {
                             jt.out(divid, "api/fangrpact failed " + code +
                                    ": " + errtxt); }); }, 400); },
-        initFriendManagement: function (workingdivid, friendAccount) {
+        initFriendManagement: function (workingdivid, friendAccount, psif) {
             divid = workingdivid;
             fa = friendAccount;
+            psicbf = psif;
             friendLinkForAccount(); }
-    };  //end mgrs.util returned functions
+    };  //end mgrs.frnd returned functions
     }());
 
 
@@ -432,6 +438,7 @@ app.prof = (function () {
                 fetchAndDisplayBookmarks);
             jt.out("profelemdetdiv", "");
             jt.out("profcontdispdiv", "");
+            jt.out("addfrienddiv", "");
             dst.fbks = {};
             prepareDisplay();
             mgrs.gen.requireAcc(); }
@@ -563,7 +570,8 @@ app.prof = (function () {
             const eavs = app.player.dispatch("cmt", "elal2txtvals", s);
             return jt.tac2html(
                 [["a", {href:"#search",
-                        onclick:"window.open('" + mgrs.home.songSearchURL(s) +
+                        onclick:"window.open('" +
+                                mgrs.home.songSearchURL(s.ti, s.ar) +
                                 "');return false"},
                   [["div", {id:"pititlediv"}, s.ti],
                    ["div", {id:"piartistdiv"}, s.ar],
@@ -596,10 +604,8 @@ app.prof = (function () {
         function friendManagement () {
             mgrs.frnd.initFriendManagement("addfrienddiv", rundata.acct); }
     return {
-        songSearchURL: function (song, justsong) {
-            var txt = song.ti + " " + song.ar;
-            if(!justsong && song.ab && song.ab !== "Singles") {
-                txt += " " + song.ab; }
+        songSearchURL: function (t1, t2) {  //primary search term, secondary
+            var txt = t1 + " " + t2;  //e.g. title artist
             return "https://duckduckgo.com/?q=" + jt.escq(jt.enc(txt)); },
         toglen: function (lenfld, togafld) {
             if(dst[lenfld] === 5) {

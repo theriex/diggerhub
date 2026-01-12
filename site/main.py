@@ -77,6 +77,10 @@ def hubsync():  # params: auth, acct + zero or more songs
 def songfetch():  # params: auth, fvs
     return util.secure(appdat.songfetch)
 
+@app.route('/api/getsongs', methods=['GET', 'POST'])
+def getsongs():  #params: auth, songids
+    return util.secure(appdat.getsongs)
+
 @app.route('/api/savesongs', methods=['GET', 'POST'])
 def savesongs():  # params: auth, songs
     return util.secure(appdat.savesongs)
@@ -109,8 +113,12 @@ def suggdown():  # params: auth, suggtype
 def betastat():  # params: auth if post
     return appdat.betastat()
 
+@app.route('/api/updqr8', methods=['GET', 'POST'])
+def updqr8():  # params: auth endts curate
+    return appdat.updqr8()
 
-####### Spotify song data and collaboration actions:
+
+####### Spotify song data and collaboration actions (inactive):
 
 @app.route('/api/impsptracks', methods=['GET', 'POST'])
 def impsptracks():  # params: auth, items

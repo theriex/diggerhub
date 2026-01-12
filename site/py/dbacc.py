@@ -161,6 +161,7 @@ entdefs = {
         "hardest": {"pt": "string", "un": False, "dv": ""},
         "chillest": {"pt": "string", "un": False, "dv": ""},
         "ampest": {"pt": "string", "un": False, "dv": ""},
+        "curate": {"pt": "string", "un": False, "dv": ""},
         "start": {"pt": "string", "un": False, "dv": ""},
         "end": {"pt": "string", "un": False, "dv": ""},
         "ttlsongs": {"pt": "int", "un": False, "dv": 0}
@@ -870,6 +871,8 @@ def app2db_SASum(inst, fill=True):
         cnv["chillest"] = app2db_fieldval("SASum", "chillest", inst)
     if fill or "ampest" in inst:
         cnv["ampest"] = app2db_fieldval("SASum", "ampest", inst)
+    if fill or "curate" in inst:
+        cnv["curate"] = app2db_fieldval("SASum", "curate", inst)
     if fill or "start" in inst:
         cnv["start"] = app2db_fieldval("SASum", "start", inst)
     if fill or "end" in inst:
@@ -896,6 +899,7 @@ def db2app_SASum(inst):
     cnv["hardest"] = db2app_fieldval("SASum", "hardest", inst)
     cnv["chillest"] = db2app_fieldval("SASum", "chillest", inst)
     cnv["ampest"] = db2app_fieldval("SASum", "ampest", inst)
+    cnv["curate"] = db2app_fieldval("SASum", "curate", inst)
     cnv["start"] = db2app_fieldval("SASum", "start", inst)
     cnv["end"] = db2app_fieldval("SASum", "end", inst)
     cnv["ttlsongs"] = db2app_fieldval("SASum", "ttlsongs", inst)
@@ -1353,8 +1357,8 @@ def update_existing_DigMsg(context, fields):
 def insert_new_SASum(cnx, cursor, fields):
     fields = app2db_SASum(fields)
     stmt = (
-        "INSERT INTO SASum (created, modified, aid, digname, sumtype, songs, easiest, hardest, chillest, ampest, start, end, ttlsongs) "
-        "VALUES (%(created)s, %(modified)s, %(aid)s, %(digname)s, %(sumtype)s, %(songs)s, %(easiest)s, %(hardest)s, %(chillest)s, %(ampest)s, %(start)s, %(end)s, %(ttlsongs)s)")
+        "INSERT INTO SASum (created, modified, aid, digname, sumtype, songs, easiest, hardest, chillest, ampest, curate, start, end, ttlsongs) "
+        "VALUES (%(created)s, %(modified)s, %(aid)s, %(digname)s, %(sumtype)s, %(songs)s, %(easiest)s, %(hardest)s, %(chillest)s, %(ampest)s, %(curate)s, %(start)s, %(end)s, %(ttlsongs)s)")
     data = {
         'created': fields.get("created"),
         'modified': fields.get("modified"),
@@ -1366,6 +1370,7 @@ def insert_new_SASum(cnx, cursor, fields):
         'hardest': fields.get("hardest", entdefs["SASum"]["hardest"]["dv"]),
         'chillest': fields.get("chillest", entdefs["SASum"]["chillest"]["dv"]),
         'ampest': fields.get("ampest", entdefs["SASum"]["ampest"]["dv"]),
+        'curate': fields.get("curate", entdefs["SASum"]["curate"]["dv"]),
         'start': fields.get("start", entdefs["SASum"]["start"]["dv"]),
         'end': fields.get("end", entdefs["SASum"]["end"]["dv"]),
         'ttlsongs': fields.get("ttlsongs", entdefs["SASum"]["ttlsongs"]["dv"])}
@@ -1720,12 +1725,12 @@ def query_DigMsg(cnx, cursor, where):
 
 def query_SASum(cnx, cursor, where):
     query = "SELECT dsId, created, modified, "
-    query += "aid, digname, sumtype, songs, easiest, hardest, chillest, ampest, start, end, ttlsongs"
+    query += "aid, digname, sumtype, songs, easiest, hardest, chillest, ampest, curate, start, end, ttlsongs"
     query += " FROM SASum " + where
     cursor.execute(query)
     res = []
-    for (dsId, created, modified, aid, digname, sumtype, songs, easiest, hardest, chillest, ampest, start, end, ttlsongs) in cursor:
-        inst = {"dsType": "SASum", "dsId": dsId, "created": created, "modified": modified, "aid": aid, "digname": digname, "sumtype": sumtype, "songs": songs, "easiest": easiest, "hardest": hardest, "chillest": chillest, "ampest": ampest, "start": start, "end": end, "ttlsongs": ttlsongs}
+    for (dsId, created, modified, aid, digname, sumtype, songs, easiest, hardest, chillest, ampest, curate, start, end, ttlsongs) in cursor:
+        inst = {"dsType": "SASum", "dsId": dsId, "created": created, "modified": modified, "aid": aid, "digname": digname, "sumtype": sumtype, "songs": songs, "easiest": easiest, "hardest": hardest, "chillest": chillest, "ampest": ampest, "curate": curate, "start": start, "end": end, "ttlsongs": ttlsongs}
         inst = db2app_SASum(inst)
         res.append(inst)
     dblogmsg("QRY", "SASum", res)

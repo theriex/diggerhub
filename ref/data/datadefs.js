@@ -188,16 +188,36 @@ module.exports = (function () {
         {f:"aid", d:"req dbid", c:"the account this summary is for"},
         {f:"digname", d:"string", c:"handle for lookup"},
         {f:"sumtype", d:"req string", descr:"Summary type label"},
-        {f:"songs", d:"jsarr", descr:"Songs in this summary"},
+        {f:"songs", d:"jsarr", descr:"Songs in this summary (*1)"},
         {f:"easiest", d:"json", descr:"Easiest song in time period"},
         {f:"hardest", d:"json", descr:"Hardest song in time period"},
         {f:"chillest", d:"json", descr:"Chillest song in time period"},
         {f:"ampest", d:"json", descr:"Ampest song in time period"},
+        {f:"curate", d:"json", descr:"Curated selections from top 20 (*2)"},
         {f:"start", d:"isodate", descr:"Start timestamp for summary"},
         {f:"end", d:"isodate", descr:"End timestamp for summary"},
         {f:"ttlsongs", d:"int", descr:"Count of songs considered for summary"}],
-     cache:{minutes:30},  //relatively small records, read-only data
+     //*1 songs: Immutable copies of songs at the time the summary was written.
+     //*2 curate: User modifiable overlay information about songs.
+     //    inits: ISO when curation was first started.
+     //    rovrs: Recommendations song overlay array, songs array decorator
+     //      recommended: ISO when checkbox selected, or "" if not selected
+     //      text: How&why from song.nt
+     cache:{minutes:30},  //relatively small records, mostly read-only
      logflds:["aid", "sumtype", "start", "end", "ttlsongs"]},
+
+    {entity:"SAResp", descr:"Song activity response", fields:[
+        {f:"aid", d:"req dbid", c:"the responding account"},
+        {f:"sasid", d:"req dbid", c:"SASum this response is for"},
+        {f:"acts", d:"jsarr", descr:"song collection responses (*1)"},
+        {f:"rebchk", d:"isodate", descr:"when response last rebuilt"}],
+     //*1 acts: response interactions from collection or bookmarks
+     //    recid: recommended song id (dsId of song from recommender)
+     //    rspid: responder corresponding song id or ""
+     //    bmkid: responder corresponding bookmark id or ""
+     //    updts: ISO when last changed
+     cache:{minutes:30},  //single user update
+     logflds:["aid", "sasid"]},
 
     {entity:"XConvo", descr:"Extended conversation e.g. hubsync", fields:[
         {f:"xctype", d:"req string", c:"extended conversation type"},

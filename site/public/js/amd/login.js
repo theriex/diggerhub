@@ -832,20 +832,25 @@ app.login = (function () {
     }());
 
 
-    //The report manager handles the wt20 display.  Permalink reports are
-    //static web artifacts with song info and a link to the listener page.
+    //The report manager handles interactive enhancement of the permalink
+    //wt20 display. Each permalink wt20 instance is a static web artifact
+    //rendered server side for sharing and reference purposes. The curated
+    //wt20 displays as shareable artifact, interactive curation, or
+    //interactive reaction.
     mgrs.rpt = (function () {
         const sdat = {};
-        function searchSongOC (song) {
+        const dst = {mode:"share", stat:"", tmo:null, gst:0};
+        const rst = {resp:null, tmo:null};
+        function searchLinkOC (t1, t2) {
             return "window.open('" +
-                app.prof.dispatch("home", "songSearchURL", song, true) +
+                app.prof.dispatch("home", "songSearchURL", t1, t2) +
                 "');return false"; }
-        function activateListenerLink () {
-            const tdiv = jt.byId("reptoplinediv");
-            tdiv.innerHTML = jt.tac2html(
-                ["a", {href:app.util.dr("listener/" + tdiv.dataset.dnm)},
-                 tdiv.innerHTML]); }
-        function songDescriptionHTML (song) {
+        // function activateListenerLink () {  //no need to wander off elsewhere
+        //     const tdiv = jt.byId("reptoplinediv");
+        //     tdiv.innerHTML = jt.tac2html(
+        //         ["a", {href:app.util.dr("listener/" + tdiv.dataset.dnm)},
+        //          tdiv.innerHTML]); }
+        function songDescriptionHTML (song) {  //clean any embedded html
             const doc = new DOMParser().parseFromString(song.nt, "text/html");
             const nt = doc.body.textContent || "";
             return jt.tac2html(
@@ -855,20 +860,34 @@ app.login = (function () {
                   ["span", {cla:"isdelaspan"},
                    [["img", {src:app.util.dr("img/lightning.png")}], song.el]],
                   ["span", {cla:"isdekwspan"}, song.kws],
-                  ["span", {cla:"isdntspan"},
-                   app.player.dispatch("cmt", "cleanCommentText", nt)]]]); }
-        function activateSongLinks () {
+                  ["span", {cla:"wtabspan"},
+                   ["a", {href:"#searchalbum",
+                          onclick:searchLinkOC(song.ab, song.ar)},
+                    song.ab || "Singles"]],
+                  ["span", {cla:"isdntspan"},  //safe comment text
+                   app.player.dispatch("cmt", "cleanCommentText", nt)],
+                  ["div", {cla:"srespdiv", id:"srespdiv" + song.dsId}]]]); }
+        function songLinkAndDescripHTML (s) {
+            return jt.tac2html([["a", {href:"#search",
+                                       onclick:searchLinkOC(s.ti, s.ar)},
+                                 [["span", {cla:"wtarspan"}, s.ar],
+                                  ["span", {cla:"wtartisepspan"}, " - "],
+                                  ["span", {cla:"wttispan"}, s.ti]]],
+                                " " + songDescriptionHTML(s)]); }
+        function activateSongLinks () {  //initialize standard report display
             if(!rundata) { return jt.log("rpt: rundata not available"); }
             if(!rundata.songs || !rundata.songs.length) {
                 return jt.log("rpt: no songs available"); }
             sdat.songs = JSON.parse(rundata.songs);
+            if(isCurated()) {
+                sdat.songs.forEach(function (s, i) {  //use curated text
+                    var text = rundata.curate.rovrs[i].text;
+                    if(text) {  //have specified value
+                        s.nt = text; } }); }
             sdat.songs.forEach(function (s) {
-                const span = jt.byId("dsidspan" + s.dsId);
+                const span = jt.byId("wtidspan" + s.dsId);
                 if(span) {
-                    span.innerHTML = jt.tac2html(
-                        [["a", {href:"#search", onclick:searchSongOC(s)},
-                          span.innerHTML],
-                         " " + songDescriptionHTML(s)]); } }); }
+                    span.innerHTML = songLinkAndDescripHTML(s); } }); }
         function adjustReportDisplay () {
             const ricd = jt.byId("reportinnercontentdiv");
             if(ricd && ricd.offsetWidth > 600) {
@@ -876,12 +895,219 @@ app.login = (function () {
                 ricd.style.minWidth = "600px";
                 ricd.style.maxWidth = "600px";
                 ricd.style.margin = "0px auto"; } }
+        function redrawCurationControls () {
+            var recs = rundata.curate.rovrs;
+            if(!recs || recs.length !== sdat.songs.length) {
+                recs = sdat.songs.map((s) => ({recommended:"",
+                                               text:s.nt}));
+                rundata.curate.rovrs = recs; }
+            jt.out("reptbodydiv", jt.tac2html(
+                ["div", {id:"songrecsdiv"}, recs.map((r, i) => jt.tac2html(
+                    ["div", {id:"recdiv" + i, cla:"songrecdiv"},
+                     [["div", {id:"recbulletdiv" + i, cla:"recbulletdiv"},
+                       ["input", {type:"checkbox", id:"rcb" + i,
+                                  checked:jt.toru(r.recommended),
+                                  onclick:mdfs("rpt.curationChange",
+                                               "event", i)}]],
+                      ["div", {id:"recinfodiv" + i, cla:"recinfodiv"},
+                       [["div", {id:"rsongidentdiv" + i, cla:"rsongidentdiv"},
+                         [["span", {cla:"recarspan"}, sdat.songs[i].ar],
+                          " - ",
+                          ["span", {cla:"rectispan"}, sdat.songs[i].ti]]],
+                        ["div", {id:"rcmtinstdiv" + i, cla:"rcmtinstdiv"}],
+                        ["div", {id:"rcmtdiv" + i, cla:"rcmtdiv",
+                                 contentEditable:"plaintext-only",
+                                 onfocus:mdfs("rpt.showCmtInstr", i, true),
+                                 onblur:mdfs("rpt.showCmtInstr", i, false),
+                                 oninput:mdfs("rpt.curationChange",
+                                              "event", i)},
+                         r.text]]]]]))])); }
+        function noaccResponseAction (s) {
+            jt.out("srespdiv" + s.dsId, jt.tac2html(
+                ["button", {type:"button",
+                            onclick:mdfs("rpt.requireAccToRespond")},
+                 "Add to Queue"])); }
+        function respIsStale () {
+            const stalems = 1 * 60 * 60 * 1000;
+            const rebchk = jt.isoString2Time(rst.resp.rebchk ||
+                                             "1970-01-01T00:00:00Z");
+            return (Date.now() - rebchk.getTime() > stalems); }
+        function fetchResponse () {
+            clearTimeout(rst.tmo);  //reset time if already waiting
+            rst.tmo = setTimeout(function () {
+                rst.tmo = null;
+                const pobj = {aid:authobj.dsId, sasid:rundata.dsId};
+                const dat = app.prof.dispatch("util", "authdata", pobj);
+                implement /api/fetchresp...
+                jt.call("POST", app.util.dr("/api/fetchresp"), dat,
+                        function (resps) {
+                            rst.resp = deserializeResponse(resps[0]);
+                            redrawResponseControls(); },
+                        function (code, errtxt) {
+                            jt.log("fetchResponse failed " + code +
+                                   ": " + errtxt); }); }, 100); }
+        function redrawResponseControls () {
+            const rs = sdat.songs.filter((ignore, i) =>
+                rundata.curate.rovrs[i].recommended);
+            if(!rs.length) { return jt.log("No recommended songs"); }
+            jt.out("reptbodydiv", jt.tac2html(
+                ["ul", {cla:"wt20list"}, rs.map((s) =>
+                    ["li",
+                     ["span", {id:"wtidspan" + s.dsId},
+                      songLinkAndDescripHTML(s)]])]));
+            jt.out("aelrangediv", "");
+            jt.out("repsongtotaldiv", "");
+            rs.forEach(function (s) {
+                if(!authobj) {  //not signed in
+                    noaccResponseAction(s); }
+                else if(authobj.dsId === rundata.aid) { //recommending listener
+                    jt.out("srespdiv" + s.dsId, ""); }
+                else if(!rst.resp) {  //response not fetched yet
+                    fetchResponse();
+                    jt.out("srespdiv" + s.dsId, "getting your responses..."); }
+                else {  //responding visitor
+                    const rsp = rst.resp.acts.find((a) => a.recid === s.dsId);
+                    if(!rsp) {
+                        [Add to Queue]; }
+                    else if(rsp.rspid) {  //in collection
+                        "Collected",
+
+                        want an opportunity to update your own comment...
+
+                    rst.resp
+                    draw control...
+
+                    if(respIsStale()) {
+                        rebuildResponses(); } } }); }
+        function isCurated () {
+            if(!rundata.curate) { return false; }
+            if(typeof rundata.curate === "string") {
+                rundata.curate = JSON.parse(rundata.curate); }
+            const rovrs = rundata.curate.rovrs;  //recs overlay songs
+            return (rovrs && rovrs.find((r) => r.recommended)); }
+        function rptRedrawInteractive () {
+            if(!rundata) { return jt.log("No data available"); }
+            const acc = app.login.getAuth();
+            //display "Add as friend" link in top area if not self
+            app.prof.dispatch("frnd", "initFriendManagement",
+                              "reptopactiondiv", {dsId:rundata.aid,
+                                                  digname:rundata.digname},
+                              rptRedrawInteractive);
+            if(acc && acc.digname === rundata.digname) {  //listener
+                if(dst.mode === "curating") {
+                    jt.out("reptopactiondiv", jt.tac2html(
+                        ["button", {type:"button",
+                                    onclick:mdfs("rpt.endCuration")},
+                         "Done"]));
+                    redrawCurationControls(); }
+                else {  //not curating yet, provide a button to start
+                    jt.out("reptopactiondiv", jt.tac2html(
+                        ["button", {type:"button",
+                                    onclick:mdfs("rpt.startCuration")},
+                         "Curate"]));
+                    redrawResponseControls(); } }  //show visitor view
+            else {  //visitor
+                if(isCurated()) {  //if not curated then wt20 display stays
+                    redrawResponseControls(); } } }
+        function deserialize (sasum) {
+            const jfs = ["songs", "easiest", "hardest", "chillest", "ampest",
+                         "curate"];
+            jfs.forEach(function (jf) {
+                if(sasum[jf] && typeof sasum[jf] === "string") {
+                    sasum[jf] = JSON.parse(sasum[jf]); } });
+            return sasum; }
+        function saveCuration () {  //background write, no UI interference
+            clearTimeout(dst.tmo);  //reset time if already waiting
+            dst.tmo = setTimeout(function () {
+                dst.tmo = null;
+                const pobj = {curate:JSON.stringify(rundata.curate),
+                              endts:rundata.end};
+                const dat = app.prof.dispatch("util", "authdata", pobj);
+                jt.call("POST", app.util.dr("/api/updqr8"), dat,
+                        function (sasums) {
+                            const sasum = deserialize(sasums[0]);
+                            //rundata.curate is already updated from editing
+                            rundata.modified = sasum.modified; },
+                        function (code, errtxt) {
+                            clearTimeout(dst.tmo);  //avoid retrying
+                            jt.log("saveCuration failed " + code + 
+                                   ": " + errtxt); }); }, 2400); }
+        function refetchSongs (postfetchcbf) {
+            if(Date.now() - dst.gst < 2 * 60 * 1000) {
+                return; }  //already got songs recently
+            dst.gst = Date.now();  //no tight loop repeat calls regardless
+            //using POST to try and avoid getting improperly cached results
+            const pobj = {songids:JSON.stringify(sdat.map((s) => s.dsId))};
+            const dat = app.prof.dispatch("util", "authdata", pobj);
+            jt.call("POST", app.util.dr("/api/getsongs"), dat,
+                    function (songs) {
+                        sdat.songs = sdat.songs.map((d) =>
+                            songs.find((s) => s.dsId === d.dsId));
+                        if(postfetchcbf) {
+                            postfetchcbf(); } },
+                    function (code, errtxt) {
+                        jt.log("refetchSongs failed " + code +
+                               ": " + errtxt); }); }
+        function updateSongTextIfChanged (idx) {
+            var text = rundata.curate.rovrs[idx].text;
+            if(text && sdat.songs[idx].nt !== text) {
+                sdat.songs[idx].nt = text;
+                const pobj = {songs:JSON.stringify([sdat.songs[idx]])};
+                const dat = app.prof.dispatch("util", "authdata", pobj);
+                jt.call("POST", app.util.dr("/api/savesongs"), dat,
+                        function (songs) {
+                            const s = songs[0];
+                            jt.log("updated song[" + idx + "] " + s.ti);
+                            sdat.songs[idx] = s; },
+                        function (code, errtxt) {
+                            jt.log("updateSongTextIfChanged failed " + code +
+                                   ": " + errtxt);
+                            refetchSongs(function () {
+                                updateSongTextIfChanged(idx); }); }); } }
     return {
+        requireAccToRespond: function () {
+            app.prof.dispatch("gen", "setRequireAccountFunctions",
+                              redrawResponseControls, redrawResponseControls);
+            app.prof.dispatch("gen", "requireAcc"); },
+        startCuration: function () {
+            if(!rundata.curate) {
+                rundata.curate = {inits:new Date().toISOString()}; }
+            dst.mode = "curating";
+            redrawCurationControls();
+            saveCuration(); },
+        endCuration: function () {
+            dst.mode = "share";  //curation updates already saved
+            rptRedrawInteractive(); },
+        curationChange: function (ignore/*event*/, idx) {
+            const checked = jt.byId("rcb" + idx).checked;
+            if(checked && !rundata.curate.rovrs[idx].recommended) {
+                jt.byId("rcmtdiv" + idx).focus(); }
+            const rcmd = (checked? new Date().toISOString() : "");
+            const text = jt.byId("rcmtdiv" + idx).innerHTML;
+            rundata.curate.rovrs[idx].recommended = rcmd;
+            rundata.curate.rovrs[idx].text = text;
+            saveCuration(); },
+        showCmtInstr: function (i, disp) {
+            var instr = ("How would you describe this song?" +
+                         " Why is it meaningful to you?");
+            if(!disp) {  //blur
+                instr = "";
+                updateSongTextIfChanged(i); }
+            jt.out("rcmtinstdiv" + i, instr); },
+        placeholdercheck: function (event) {
+            if(event.type === "blur" && !event.target.innerText) {
+                event.target.innerText = event.target.dataset.placetext; }
+            else if(event.type === "focus" &&
+                    event.target.innerText === event.target.dataset.placetext) {
+                event.target.innerHTML = ""; } },
         initialize: function () {
-            activateListenerLink();
+            jt.byId("hubaccountcontentdiv").style.display = "none";
             activateSongLinks();
             app.prof.dispatch("home", "wt20init", sdat.songs);
-            adjustReportDisplay(); }
+            adjustReportDisplay();
+            mgrs.hua.initDisplay();
+            app.pdat.addApresDataNotificationTask("rptRedrawInteractive",
+                                                  rptRedrawInteractive); }
     };  //end mgrs.rpt returned functions
     }());
 
