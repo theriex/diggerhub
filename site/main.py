@@ -73,10 +73,6 @@ def deleteme():  # params: auth, tzoff
 def hubsync():  # params: auth, acct + zero or more songs
     return util.secure(appdat.hubsync)
 
-@app.route('/api/songfetch')
-def songfetch():  # params: auth, fvs
-    return util.secure(appdat.songfetch)
-
 @app.route('/api/getsongs', methods=['GET', 'POST'])
 def getsongs():  #params: auth, songids
     return util.secure(appdat.getsongs)
@@ -84,6 +80,14 @@ def getsongs():  #params: auth, songids
 @app.route('/api/savesongs', methods=['GET', 'POST'])
 def savesongs():  # params: auth, songs
     return util.secure(appdat.savesongs)
+
+@app.route('/api/collmatch', methods=['GET', 'POST'])
+def collmatch():  # params: auth, artis
+    return util.secure(appdat.collmatch)
+
+@app.route('/api/songfetch')  #deprecated
+def songfetch():  # params: auth, fvs
+    return util.secure(appdat.songfetch)
 
 @app.route('/api/fangrpact', methods=['GET', 'POST'])
 def fangrpact():  # params: auth, action, digname
@@ -116,6 +120,14 @@ def betastat():  # params: auth if post
 @app.route('/api/updqr8', methods=['GET', 'POST'])
 def updqr8():  # params: auth endts curate
     return appdat.updqr8()
+
+@app.route('/api/fetchresp', methods=['GET', 'POST'])
+def fetchresp():  # params: auth, sasid
+    return appdat.fetchresp()
+
+@app.route('/api/saveresp', methods=['GET', 'POST'])
+def saveresp():  # params: auth, SAResp
+    return appdat.saveresp()
 
 
 ####### Spotify song data and collaboration actions (inactive):

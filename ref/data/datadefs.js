@@ -125,13 +125,13 @@ module.exports = (function () {
      logflds:["aid", "ti", "ar"]},
 
     {entity:"Bookmark", descr:"A link to web music", fields:[
-        {f:"aid", d:"req dbid", c:"the account this album info is from"},
+        {f:"aid", d:"req dbid", c:"the account whose bookmark this is"},
         {f:"bmt", d:"string", c:"bookmark type (*1)"},
         {f:"ar", d:"string", c:"artist name"},
         {f:"ab", d:"req string", c:"name of album (*2)"},
         {f:"smar", d:"string", c:"standardized match artist"},
         {f:"smab", d:"string", c:"standardized match album"},
-        {f:"uti", d:"string", c:"url title, autofilled from site"},
+        {f:"uti", d:"string", c:"url title, possibly autofilled from site"},
         {f:"nt", d:"text", c:"note text (whatever the user writes)"},
         {f:"url", d:"string", c:"public web source to listen (*3)"},
         {f:"upi", d:"image", c:"url link preview image"},
@@ -151,6 +151,7 @@ module.exports = (function () {
      //        is an alternate key.
      //*4  si: song info on display request, may be old/missing.
      //*5  cs: most recent change day stamp kept in sd field
+     //        "Pending" - Intending to listen to this later.
      //        "Listened" - Listened to it, see my comments if I bothered.
      //        "Notable" - Worth hearing, not considering owning.
      //        "Considering" - Might add this to my collection.
@@ -211,9 +212,9 @@ module.exports = (function () {
         {f:"sasid", d:"req dbid", c:"SASum this response is for"},
         {f:"acts", d:"jsarr", descr:"song collection responses (*1)"},
         {f:"rebchk", d:"isodate", descr:"when response last rebuilt"}],
-     //*1 acts: response interactions from collection or bookmarks
+     //*1 acts: response interactions from collection and bookmarks
      //    recid: recommended song id (dsId of song from recommender)
-     //    rspid: responder corresponding song id or ""
+     //    sngid: responder corresponding song id or ""
      //    bmkid: responder corresponding bookmark id or ""
      //    updts: ISO when last changed
      cache:{minutes:30},  //single user update

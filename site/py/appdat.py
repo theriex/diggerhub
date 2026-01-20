@@ -915,20 +915,11 @@ def hubsync(path="hubsync"):  # non-default path is "api/xx..."
     return util.respJSON(syncdata)
 
 
-def songfetch():
-    try:
-        digacc, _ = util.authenticate()
-        fvs = json.loads(dbacc.reqarg("fvs", "json", required=True))
-        songs = fetch_matching_songs(digacc, fvs, 400)
-    except ValueError as e:
-        return util.serve_value_error(e)
-    return util.respJSON(songs)
-
-
 def getsongs():
     try:
         digacc, _ = util.authenticate()
         songids = json.loads(dbacc.reqarg("songids", "json", required=True))
+        logging.info(str(digacc["dsId"]) + " getsongs " + str(songids))
         songids = [n for n in songids if n > 2020]  # verify numerics
         where = "WHERE dsId IN (" + json.dumps(songids)[1:-1] + ")"
         songs = dbacc.query_entity("Song", where)
@@ -961,6 +952,34 @@ def savesongs():
     except ValueError as e:
         return util.serve_value_error(e)
     return util.respJSON(upds)
+
+
+def collmatch():
+    try:
+        digacc, _ = util.authenticate()
+        artis = json.loads(dbacc.reqarg("artis", "json", required=True))
+        where = "WHERE aid = " + str(digacc["dsId"]) + " AND ("
+        for idx, arti in enumerate(artis):
+            if idx > 0:
+                where += " OR "
+            where += ("(smar = \"" + standardized_colloquial_match(arti["ar"]) +
+                      "\" AND smti = \"" +
+                      standardized_colloquial_match(arti["ti"]) + "\")")
+        where += ")"
+        songs = dbacc.query_entity("Song", where)
+    except ValueError as e:
+        return util.serve_value_error(e)
+    return util.respJSON(songs)
+
+
+def songfetch():
+    try:
+        digacc, _ = util.authenticate()
+        fvs = json.loads(dbacc.reqarg("fvs", "json", required=True))
+        songs = fetch_matching_songs(digacc, fvs, 400)
+    except ValueError as e:
+        return util.serve_value_error(e)
+    return util.respJSON(songs)
 
 
 def fangrpact():
@@ -1230,7 +1249,7 @@ def updqr8():
         digacc, _ = util.authenticate()
         endts = dbacc.reqarg("endts", "string", required=True)
         curate = dbacc.reqarg("curate", "json", required=True)
-        where = ("WHERE aid = " + str(digacc["dsId"]) + 
+        where = ("WHERE aid = " + str(digacc["dsId"]) +
                  " AND end = \"" + endts + "\"")
         sasums = dbacc.query_entity("SASum", where)
         if not sasums:
@@ -1240,7 +1259,43 @@ def updqr8():
         sasum = dbacc.write_entity(sasum, sasum["modified"])
     except ValueError as e:
         return util.serve_value_error(e)
-    return util.respJSON(sasum, audience="private")
+    return util.respJSON(sasum)
+
+
+def fetchresp():
+    try:
+        digacc, _ = util.authenticate()
+        sasid = dbacc.reqarg("sasid", "dbid", required=True)
+        where = ("WHERE aid = " + str(digacc["dsId"]) +
+                 " AND sasid = " + str(sasid))
+        saresps = dbacc.query_entity("SAResp", where)
+        if not saresps:  # return new instance for use
+            saresps = [{"dsType":"SAResp", "modified":"",
+                        "aid":digacc["dsId"], "sasid":sasid,
+                        "acts":"", "rebchk":""}]
+        saresp = saresps[0]
+    except ValueError as e:
+        return util.serve_value_error(e)
+    return util.respJSON(saresp)
+
+
+def saveresp():
+    try:
+        digacc, _ = util.authenticate()
+        sasid = dbacc.reqarg("sasid", "dbid", required=True)
+        saresp = {"dsType":"SAResp", "modified":"", "aid":digacc["dsId"],
+                  "sasid":sasid}
+        where = ("WHERE aid = " + str(digacc["dsId"]) +
+                 " AND sasid = " + str(sasid))
+        saresps = dbacc.query_entity("SAResp", where)
+        if saresps:
+            saresp = saresps[0]
+        saresp["acts"] = dbacc.reqarg("acts", "json")
+        saresp["rebchk"] = dbacc.reqarg("rebchk", "string")
+        saresp = dbacc.write_entity(saresp, saresp["modified"])
+    except ValueError as e:
+        return util.serve_value_error(e)
+    return util.respJSON(saresp)
 
 
 # Read the given items in the given dataformat (albums or tracks), and
@@ -1400,6 +1455,19 @@ def bmrkfetch ():
             where += " AND cs = \"" + cs + "\""
         else:
             where += " AND cs != \"Deleted\""
+        sbarab = dbacc.reqarg("sbs", "jsarr")
+        if sbarab:  # search bookmarks by artist and album
+            aams = json.loads(sbarab)
+            if len(aams) > 20:
+                raise ValueError("Too many artist/album match pairs")
+            where += " AND ("
+            for idx, aam in enumerate(aams):
+                if idx > 0:
+                    where += " OR "
+                where += ("(smar LIKE \"%" +
+                          standardized_colloquial_match(aam["ar"]) + "%\"" +
+                          " AND smab LIKE \"%" +
+                          standardized_colloquial_match(aam["ab"]) + "%\")")
         orderby = "DESC"  # most recently modified first
         sortord = dbacc.reqarg("sortord", "string")
         if sortord == "oldest":

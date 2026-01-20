@@ -122,9 +122,9 @@ def song_ident_text(song):
 
 def trim_song_fields_for_reporting(song):
     song["path"] = ""
-    song["smti"] = ""
-    song["smar"] = ""
-    song["smab"] = ""
+    # song["smti"] = ""      Need the simplified match fields for collection
+    # song["smar"] = ""      and bookmark response comparison
+    # song["smab"] = ""
     return song
 
 

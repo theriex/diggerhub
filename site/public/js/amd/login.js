@@ -832,15 +832,280 @@ app.login = (function () {
     }());
 
 
+    //The response manager handles visitor interactions with a curated wt20.
+    mgrs.rsp = (function () {
+        const rst = {recs:[], chgs:[], resp:{d:null, tmo:null},
+                     songs:{d:null, tmo:null}, bmks:{d:null, tmo:null}};
+        function serializeResponse (r) {
+            r.acts = r.acts || [];
+            r.acts = JSON.stringify(r.acts); }
+        function deserializeResponse (r) {
+            if(r.acts && typeof r.acts === "string") {
+                r.acts = JSON.parse(r.acts); }
+            if(!r.acts) { r.acts = []; } }
+        function resetRespIfStale () {  //tab has been open a long time..
+            const stalems = 4 * 60 * 60 * 1000;
+            if(rst.resp && rst.resp.d) {
+                const rebchk = jt.isoString2Time(rst.resp.d.rebchk ||
+                                                 "1970-01-01T00:00:00Z");
+                if(Date.now() - rebchk.getTime() < stalems) {
+                    return; }  //not stale
+                rst.resp.d.acts = [];  }  //reset response actions
+            jt.log("resetRespIfStale resetting rst mapping fields");
+            const mfs = ["songs", "bmks"];
+            mfs.forEach(function (key) {
+                if(rst[key].d || rst[key].tmo) {
+                    clearTimeout(rst[key].tmo);
+                    rst[key].d = null; } }); }
+        function fetchResponse () {
+            clearTimeout(rst.resp.tmo);  //reset time if already waiting
+            rst.resp.tmo = setTimeout(function () {
+                rst.resp.tmo = null;
+                const pobj = {aid:authobj.dsId, sasid:rundata.dsId};
+                const dat = app.prof.dispatch("util", "authdata", pobj);
+                jt.call("POST", app.util.dr("/api/fetchresp"), dat,
+                        function (resps) {
+                            clearTimeout(rst.resp.tmo);
+                            rst.resp.d = resps[0];
+                            deserializeResponse(rst.resp.d);
+                            rst.resp.d.rebchk = new Date().toISOString();
+                            redrawResponseControls(); },
+                        function (code, errtxt) {
+                            jt.log("fetchResponse failed " + code +
+                                   ": " + errtxt); }); }, 100); }
+        function noaccResponseAction () {
+            return jt.tac2html(
+                ["button", {type:"button",
+                            onclick:mdfs("rsp.requireAccToRespond")},
+                 "Add to Queue"]); }
+        function noResponseAction (s) {
+            return jt.tac2html(
+                ["button", {type:"button", id:"add2qb" + s.dsId,
+                            onclick:mdfs("rsp.addToQueue", s.dsId)},
+                 "Add to Queue"]); }
+        function ravm (a, b, tf) {  //response attribute value match
+            tf = tf || "ti";  //bookmark.ab is ti if bmt:Song
+            return ((a.smar === b.smar && a.smti === b["sm" + tf]) ||
+                    (a.ar === b.ar && a.ti === b[tf])); }
+        function addRMCTN (v, rs, cs) {  //add resp map change tracking notice
+            const mes = [v, rs.dsId, cs.dsId, rs.smti];
+            rst.chgs.push(mes.join(" ")); }
+        function verifyResponseRebuildTime (timestamp) {
+            const rebchk = rst.resp.d.rebchk;
+            if(!rebchk || rebchk < timestamp) {
+                rst.resp.d.rebchk = timestamp; } }
+        function saveUpdatedResponse () {
+            clearTimeout(rst.resp.svto);
+            rst.resp.svto = setTimeout(function () {
+                rst.resp.svto = null;
+                serializeResponse(rst.resp.d);
+                const dat = app.prof.dispatch("util", "authdata", rst.resp.d);
+                jt.call("POST", app.util.dr("/api/saveresp"), dat,
+                        function (resps) {
+                            rst.resp.svto = null;
+                            rst.resp.d = resps[0];
+                            deserializeResponse(rst.resp.d);
+                            redrawResponseControls(); },
+                        function (code, errtxt) {
+                            jt.log("saveResponse failed " + code +
+                                   ": " + errtxt); }); }, 1000); }
+        function remapSongResponses () {
+            rst.chgs = [];
+            rst.recs.forEach(function (rs) {  //recommended songs from SASum
+                const cs = rst.songs.d.find((cs) => ravm(rs, cs));
+                if(cs) {  //have corresponding song in collection
+                    const as = rst.resp.d.acts.find((as) =>
+                        as.recid === rs.dsId && as.sngid === cs.dsId);
+                    if(!as) {  //no existing song response action mapping
+                        rst.resp.d.acts.push({recid:rs.dsId, sngid:cs.dsId,
+                                              bmkid:"", updts:cs.modified});
+                        addRMCTN("Added", rs, cs); }
+                    else {  //have existing song mapping
+                        if(as.updts < cs.modified) {
+                            as.updts = cs.modified;
+                            verifyResponseRebuildTime(as.updts);
+                            addRMCTN("Updated", rs, cs); } } } });
+            if(rst.chgs.length) {
+                saveUpdatedResponse(); } }
+        function rebuildResponseSongs () {
+            clearTimeout(rst.songs.tmo);  //reset time if already scheduled
+            rst.songs.tmo = setTimeout(function () {
+                const pobj = {artis:JSON.stringify(
+                    rst.recs.map((s) => ({ar:s.ar, ti:s.ti})))};
+                const dat = app.prof.dispatch("util", "authdata", pobj);
+                jt.call("POST", app.util.dr("/api/collmatch"), dat,
+                        function (songs) {
+                            clearTimeout(rst.songs.tmo);  //don't refetch
+                            rst.songs.d = songs;
+                            remapSongResponses(); },
+                        function (code, errtxt) {
+                            jt.log("rebuildResponseSongs collmatch failed " +
+                                   code + ": " + errtxt); }); }, 100); }
+        function responseSongDisplay (sid) {
+            const rsg = (rst.songs.d && rst.songs.d.find &&
+                         rst.songs.d.find((s) => s.dsId === sid));
+            if(!rsg) {
+                rebuildResponseSongs();  //songs not loaded or song changed
+                return "Collected. Fetching..."; }
+            return jt.tac2html(
+                [["div", {cla:"respinstrdiv", id:"respinstrdiv" + sid}],
+                 ["div", {cla:"resplinkdiv", id:"resplinkdiv" + sid},
+                  [["a", {href:"#editsong",
+                          onclick:mdfs("rsp.togSongRespInstr", sid)},
+                    [["span", {cla:"respdetcontextspan"}, "Collected"],
+                     mgrs.rpt.alelkspan(rsg)]],
+                   ["div", {cla:"respactcmtdiv"},
+                    mgrs.rpt.songcmtspan(rsg)]]]]); }
+        function remapBookmarkResponses () {
+            rst.chgs = [];
+            rst.recs.forEach(function (rs) {  //recommended songs from SASum
+                const bk = rst.bmks.d.find((bk) => ravm(rs, bk, "ab"));
+                if(bk) {  //have corresponding Song bookmark
+                    const ab = rst.resp.d.acts.find((ab) =>
+                        ab.recid === rs.dsId && ab.sngid === bk.dsId);
+                    if(!ab) {  //no existing bookmark response action mapping
+                        rst.resp.d.acts.push({recid:rs.dsId, bmkid:bk.dsId,
+                                              sngid:"", updts:bk.modified});
+                        addRMCTN("Added", rs, bk); }
+                    else {  //have existing bookmark mapping
+                        if(ab.updts < bk.modified) {
+                            ab.updts = bk.modified;
+                            verifyResponseRebuildTime(ab.updts);
+                            addRMCTN("Updated", rs, bk); } } } });
+            if(rst.chgs.length) {
+                saveUpdatedResponse(); } }
+        function rebuildResponseBookmarks () {
+            clearTimeout(rst.bmks.tmo);  //reset time if already scheduled
+            rst.bmks.tmo = setTimeout(function () {
+                const data = {an:authobj.email, at:authobj.token,
+                              sbarab:JSON.stringify(
+                                  rst.recs.map((s) => ({ar:s.ar, ti:s.ti})))};
+                const url = app.util.cb(app.util.dr("/api/bmrkfetch"), data);
+                jt.call("GET", url, null,
+                        function (bmks) {
+                            clearTimeout(rst.bmks.tmo);  //don't refetch
+                            rst.bmks.d = bmks;
+                            remapBookmarkResponses(); },
+                        function (code, errtxt) {
+                            jt.log("rebuildResponseBookmarks bmrkfetch fail " +
+                                   code + ": " + errtxt); }); }, 100); }
+        function responseBookmarkDisplay (bmkid) {
+            const bmk = (rst.bmks.d && rst.bmks.d.find &&
+                         rst.bmks.d.find((b) => b.dsId === bmkid));
+            if(!bmk) {
+                rebuildResponseBookmarks();  //bmks not loaded or bmk deleted
+                return "Bookmarked. Fetching..."; }
+            return jt.tac2html(
+                [["div", {cla:"respdetdiv", id:"respdetdiv" + bmkid}],
+                 ["div", {cla:"resplinkdiv", id:"resplinkdiv" + bmkid},
+                  [["a", {href:"#editbookmark",
+                          onclick:mdfs("rsp.editBookmark", bmkid)},
+                    [["span", {cla:"respdetcontextspan"}, "Bookmarked"],
+                     ["span", {cla:"respbmkbmtspan"}, bmk.bmt],
+                     ["span", {cla:"respbmkcsspan"}, bmk.cs]]],
+                   ["div", {cla:"respactcmtdiv"},
+                    ["span", {cla:"isdntspan"}, bmk.nt]]]]]); }
+        function loadSongsAndBookmarksIfNeeded () {
+            if(!rst.bmks.d) {  //bookmarks not checked yet
+                rebuildResponseBookmarks(); }
+            if(!rst.songs.d) {
+                rebuildResponseSongs(); } }
+        function redrawResponseControls () {
+            resetRespIfStale();
+            rst.recs.forEach(function (s) {
+                var html = "unknown rec resp";
+                if(!authobj) {  //not signed in
+                    html = noaccResponseAction(s); }
+                else if(authobj.dsId === rundata.aid) { //recommending listener
+                    html = ""; }
+                else if(!rst.resp.d) {  //response not fetched yet
+                    fetchResponse();  //calls back to here after fetching
+                    html = "getting your responses..."; }
+                else {  //responding visitor
+                    loadSongsAndBookmarksIfNeeded();
+                    const frp = (rst.resp.d && rst.resp.d.acts &&
+                                 rst.resp.d.acts.find &&
+                                 rst.resp.d.acts.find((a) =>
+                                     a.recid === s.dsId));
+                    if(!frp) {
+                        html = noResponseAction(s); }
+                    else if(frp.sngid) {  //in collection
+                        html = responseSongDisplay(frp.sngid); }
+                    else if(frp.bmkid) {
+                        html = responseBookmarkDisplay(frp.bmkid); } }
+                jt.out("srespdiv" + s.dsId, html); }); }
+        function postSignInRebuild () {
+            mgrs.rpt.endCuration(); }  //do a full redisplay of everything.
+    return {
+        addToQueue: function (sid) {
+            if(!rst.bmks.d || !rst.bmks.d.find) {  //unexpected, but don't dupe
+                return jt.log("ignoring addToQueue with no rst.bmks.d yet"); }
+            app.prof.dispatch("util", "deactivateButton", "add2qb" + sid);
+            setTimeout(function () {  //reflect the display updates first
+                const s = rst.recs.find((s) => s.dsId === sid);
+                const haes = [rundata.digname, sid, rundata.end.slice(0, 10)];
+                const bmk = {aid:authobj.dsId, bmt:"Song", ar:s.ar, ab:s.ti,
+                             url:app.prof.dispatch("home", "songSearchURL",
+                                                   s.ti, s.ab),
+                             haf:haes.join(" "), cs:"Pending"};
+                const dat = app.prof.dispatch("util", "authdata", bmk);
+                jt.call("POST", app.util.dr("/api/updbmrk"), dat,
+                        function (/*bkmks*/) {
+                            rebuildResponseBookmarks(); },
+                        function (code, errtxt) {
+                            app.prof.dispatch("util", "activateButton",
+                                              "add2qb" + s.dsId);
+                            jt.out("profelemdetdiv", "addToQueue updbmrk " +
+                                   code + ": " + errtxt); }); }, 100); },
+        editBookmark: function (bmkid) {
+            jt.byId("resplinkdiv" + bmkid).style.display = "none";
+            const bmk = rst.bmks.d.find((b) => b.dsId === bmkid);
+            app.prof.dispatch("edb", "editBookmark", bmk, {
+                archg:function () { return; },
+                donecancel:function () {
+                    jt.byId("resplinkdiv" + bmkid).style.display = "block"; },
+                donesave:function () {
+                    jt.out("respdetdiv" + bmkid, "");
+                    jt.byId("resplinkdiv" + bmkid).style.display = "block";
+                    jt.out("resplinkdiv" + bmkid, "Rebuilding...");
+                    rst.bmks.d = null;
+                    rebuildResponseBookmarks(); }},
+                              "respdetdiv" + bmkid); },
+        togSongRespInstr: function (sid) {
+            const idivid = "respinstrdiv" + sid;
+            const div = jt.byId(idivid);
+            if(!div || !div.innerHTML) {
+                jt.out(idivid, "Fetch in Digger search panel to update."); }
+            else {
+                jt.out(idivid, ""); } },
+        requireAccToRespond: function () {
+            app.prof.dispatch("gen", "setRequireAccountFunctions",
+                              postSignInRebuild, postSignInRebuild);
+            app.prof.dispatch("gen", "requireAcc"); },
+        redraw: function (sdat) {
+            rst.recs = sdat.songs.filter((ignore, i) =>
+                rundata.curate.rovrs[i].recommended);
+            rst.chgs = [];
+            if(!rst.recs.length) { return jt.log("No recommended songs"); }
+            jt.out("reptbodydiv", jt.tac2html(
+                ["ul", {cla:"wt20list"}, rst.recs.map((s) =>
+                    ["li",
+                     ["span", {id:"wtidspan" + s.dsId},
+                      mgrs.rpt.songDispHTML(s)]])]));
+            jt.out("aelrangediv", "");
+            jt.out("repsongtotaldiv", "");
+            redrawResponseControls(); }
+    };  //end mgrs.rsp returned functions
+    }());
+
+
     //The report manager handles interactive enhancement of the permalink
     //wt20 display. Each permalink wt20 instance is a static web artifact
-    //rendered server side for sharing and reference purposes. The curated
-    //wt20 displays as shareable artifact, interactive curation, or
-    //interactive reaction.
+    //rendered server side for sharing and reference purposes, whether
+    //curated or not.
     mgrs.rpt = (function () {
         const sdat = {};
         const dst = {mode:"share", stat:"", tmo:null, gst:0};
-        const rst = {resp:null, tmo:null};
         function searchLinkOC (t1, t2) {
             return "window.open('" +
                 app.prof.dispatch("home", "songSearchURL", t1, t2) +
@@ -851,21 +1116,14 @@ app.login = (function () {
         //         ["a", {href:app.util.dr("listener/" + tdiv.dataset.dnm)},
         //          tdiv.innerHTML]); }
         function songDescriptionHTML (song) {  //clean any embedded html
-            const doc = new DOMParser().parseFromString(song.nt, "text/html");
-            const nt = doc.body.textContent || "";
             return jt.tac2html(
                 ["span", {cla:"isdespan"},
-                 [["span", {cla:"isdelaspan"},
-                   [["img", {src:app.util.dr("img/compstar.png")}], song.al]],
-                  ["span", {cla:"isdelaspan"},
-                   [["img", {src:app.util.dr("img/lightning.png")}], song.el]],
-                  ["span", {cla:"isdekwspan"}, song.kws],
+                 [mgrs.rpt.alelkspan(song),
                   ["span", {cla:"wtabspan"},
                    ["a", {href:"#searchalbum",
                           onclick:searchLinkOC(song.ab, song.ar)},
                     song.ab || "Singles"]],
-                  ["span", {cla:"isdntspan"},  //safe comment text
-                   app.player.dispatch("cmt", "cleanCommentText", nt)],
+                  mgrs.rpt.songcmtspan(song),
                   ["div", {cla:"srespdiv", id:"srespdiv" + song.dsId}]]]); }
         function songLinkAndDescripHTML (s) {
             return jt.tac2html([["a", {href:"#search",
@@ -922,63 +1180,6 @@ app.login = (function () {
                                  oninput:mdfs("rpt.curationChange",
                                               "event", i)},
                          r.text]]]]]))])); }
-        function noaccResponseAction (s) {
-            jt.out("srespdiv" + s.dsId, jt.tac2html(
-                ["button", {type:"button",
-                            onclick:mdfs("rpt.requireAccToRespond")},
-                 "Add to Queue"])); }
-        function respIsStale () {
-            const stalems = 1 * 60 * 60 * 1000;
-            const rebchk = jt.isoString2Time(rst.resp.rebchk ||
-                                             "1970-01-01T00:00:00Z");
-            return (Date.now() - rebchk.getTime() > stalems); }
-        function fetchResponse () {
-            clearTimeout(rst.tmo);  //reset time if already waiting
-            rst.tmo = setTimeout(function () {
-                rst.tmo = null;
-                const pobj = {aid:authobj.dsId, sasid:rundata.dsId};
-                const dat = app.prof.dispatch("util", "authdata", pobj);
-                implement /api/fetchresp...
-                jt.call("POST", app.util.dr("/api/fetchresp"), dat,
-                        function (resps) {
-                            rst.resp = deserializeResponse(resps[0]);
-                            redrawResponseControls(); },
-                        function (code, errtxt) {
-                            jt.log("fetchResponse failed " + code +
-                                   ": " + errtxt); }); }, 100); }
-        function redrawResponseControls () {
-            const rs = sdat.songs.filter((ignore, i) =>
-                rundata.curate.rovrs[i].recommended);
-            if(!rs.length) { return jt.log("No recommended songs"); }
-            jt.out("reptbodydiv", jt.tac2html(
-                ["ul", {cla:"wt20list"}, rs.map((s) =>
-                    ["li",
-                     ["span", {id:"wtidspan" + s.dsId},
-                      songLinkAndDescripHTML(s)]])]));
-            jt.out("aelrangediv", "");
-            jt.out("repsongtotaldiv", "");
-            rs.forEach(function (s) {
-                if(!authobj) {  //not signed in
-                    noaccResponseAction(s); }
-                else if(authobj.dsId === rundata.aid) { //recommending listener
-                    jt.out("srespdiv" + s.dsId, ""); }
-                else if(!rst.resp) {  //response not fetched yet
-                    fetchResponse();
-                    jt.out("srespdiv" + s.dsId, "getting your responses..."); }
-                else {  //responding visitor
-                    const rsp = rst.resp.acts.find((a) => a.recid === s.dsId);
-                    if(!rsp) {
-                        [Add to Queue]; }
-                    else if(rsp.rspid) {  //in collection
-                        "Collected",
-
-                        want an opportunity to update your own comment...
-
-                    rst.resp
-                    draw control...
-
-                    if(respIsStale()) {
-                        rebuildResponses(); } } }); }
         function isCurated () {
             if(!rundata.curate) { return false; }
             if(typeof rundata.curate === "string") {
@@ -1005,10 +1206,10 @@ app.login = (function () {
                         ["button", {type:"button",
                                     onclick:mdfs("rpt.startCuration")},
                          "Curate"]));
-                    redrawResponseControls(); } }  //show visitor view
+                    mgrs.rsp.redraw(sdat); } }  //show visitor view
             else {  //visitor
                 if(isCurated()) {  //if not curated then wt20 display stays
-                    redrawResponseControls(); } } }
+                    mgrs.rsp.redraw(sdat); } } }
         function deserialize (sasum) {
             const jfs = ["songs", "easiest", "hardest", "chillest", "ampest",
                          "curate"];
@@ -1025,6 +1226,7 @@ app.login = (function () {
                 const dat = app.prof.dispatch("util", "authdata", pobj);
                 jt.call("POST", app.util.dr("/api/updqr8"), dat,
                         function (sasums) {
+                            dst.tmo = null;
                             const sasum = deserialize(sasums[0]);
                             //rundata.curate is already updated from editing
                             rundata.modified = sasum.modified; },
@@ -1065,15 +1267,26 @@ app.login = (function () {
                             refetchSongs(function () {
                                 updateSongTextIfChanged(idx); }); }); } }
     return {
-        requireAccToRespond: function () {
-            app.prof.dispatch("gen", "setRequireAccountFunctions",
-                              redrawResponseControls, redrawResponseControls);
-            app.prof.dispatch("gen", "requireAcc"); },
+        alelkspan: function (song) {
+            return jt.tac2html(
+                ["span", {cla:"alelkspan"},
+                 [["span", {cla:"isdelaspan"},
+                   [["img", {src:app.util.dr("img/compstar.png")}], song.al]],
+                  ["span", {cla:"isdelaspan"},
+                   [["img", {src:app.util.dr("img/lightning.png")}], song.el]],
+                  ["span", {cla:"isdekwspan"}, song.kws]]]); },
+        songcmtspan: function (song) {
+            const doc = new DOMParser().parseFromString(song.nt, "text/html");
+            const nt = doc.body.textContent || "";
+            return jt.tac2html(
+                ["span", {cla:"isdntspan"},  //safe comment text
+                 app.player.dispatch("cmt", "cleanCommentText", nt)]); },
+        songDispHTML: songLinkAndDescripHTML,
         startCuration: function () {
             if(!rundata.curate) {
                 rundata.curate = {inits:new Date().toISOString()}; }
             dst.mode = "curating";
-            redrawCurationControls();
+            rptRedrawInteractive();
             saveCuration(); },
         endCuration: function () {
             dst.mode = "share";  //curation updates already saved
@@ -1094,12 +1307,6 @@ app.login = (function () {
                 instr = "";
                 updateSongTextIfChanged(i); }
             jt.out("rcmtinstdiv" + i, instr); },
-        placeholdercheck: function (event) {
-            if(event.type === "blur" && !event.target.innerText) {
-                event.target.innerText = event.target.dataset.placetext; }
-            else if(event.type === "focus" &&
-                    event.target.innerText === event.target.dataset.placetext) {
-                event.target.innerHTML = ""; } },
         initialize: function () {
             jt.byId("hubaccountcontentdiv").style.display = "none";
             activateSongLinks();

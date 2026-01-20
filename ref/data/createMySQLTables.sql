@@ -127,6 +127,19 @@ CREATE TABLE SASum (  -- Song activity summary, e.g. weekly top20
 );
 ALTER TABLE SASum AUTO_INCREMENT = 2020;
 
+CREATE TABLE SAResp (  -- Song activity response
+  dsId BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE,
+  created VARCHAR(256) NOT NULL,
+  modified VARCHAR(256) NOT NULL,
+  batchconv VARCHAR(256),
+  aid BIGINT NOT NULL,
+  sasid BIGINT NOT NULL,
+  acts LONGTEXT,
+  rebchk VARCHAR(256),
+  PRIMARY KEY (dsId)
+);
+ALTER TABLE SAResp AUTO_INCREMENT = 2020;
+
 CREATE TABLE XConvo (  -- Extended conversation e.g. hubsync
   dsId BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE,
   created VARCHAR(256) NOT NULL,

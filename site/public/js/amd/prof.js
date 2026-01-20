@@ -27,8 +27,8 @@ app.prof = (function () {
                  ["span", {cla:"dsabspan"}, b.ab]]); },
         v4f: function (fld) {
             switch(fld) {
-            case "cs": return ["Listened","Notable","Considering","Collected",
-                               "Archived"];
+            case "cs": return ["Pending", "Listened", "Notable", "Considering",
+                               "Collected", "Archived"];
             case "bmt": return ["Album","Performance","Song","Other"]; } },
         authdata: function (obj) {
             const acct = app.login.getAuth();
@@ -117,7 +117,7 @@ app.prof = (function () {
 
     //The edit bookmark manager handles adding or updating a bookmark
     mgrs.edb = (function () {
-        var bmk = null;
+        var bmk = null; var cbfs = null; var edid = "profelemdetdiv";
         function formValInput (fld, itype) {
             const iphs = {
                 url:"Link address for bookmark",
@@ -144,8 +144,13 @@ app.prof = (function () {
                               placeholder:iphs[fld]},
                  (bmk[fld] || "")]); } }
         function formAttrVal (fld, itype) {
+            var label = fld;
+            if(fld === "url") {
+                label = jt.tac2html(
+                    ["a", {href:"#open", onclick:mdfs("edb.openurl")},
+                     "URL"]); }
             return jt.tac2html(
-                [["div", {cla:"edbformattrdiv"}, fld],
+                [["div", {cla:"edbformattrdiv"}, label],
                  ["div", {cla:"edbformvalindiv"}, formValInput(fld, itype)]]); }
         function formline (content) {
             return ["div", {cla:"edbformlinediv"}, content]; }
@@ -187,12 +192,16 @@ app.prof = (function () {
                             jt.out("edbformactmsgdiv", po.okmsg);
                             po.btids.forEach(function (btid) {
                                 mgrs.util.activateButton(btid); });
-                            setTimeout(mgrs.bks.initialize, 500); },
+                            setTimeout(cbfs.donesave, 500); },
                         function (code, errtxt) {
                             mgrs.util.activateButton("edbsaveb");
                             jt.out("edbformactmsgdiv", po.failpre + " " + code +
                                    ": " + errtxt); }); }, 100); }
     return {
+        openurl: function () {
+            const url = jt.byId("edbinurl").value;
+            window.open(url);
+            return false; },
         bmkshtxt: function (b) {
             return [b.url,
                     "type: " + b.bmt + ",  stat: " + b.cs,
@@ -214,9 +223,11 @@ app.prof = (function () {
                 jt.out(sdivid, ""); }, 3800); },
         artistChange: function (fld) {
             const input = jt.byId("edbin" + fld);
-            mgrs.bks.setHeaderFieldValue(fld, input.value); },
+            cbfs.archg(fld, input.value); },
         cancel: function () {
-            jt.out("profelemdetdiv", ""); },
+            jt.out(edid, "");
+            if(cbfs.donecancel) {
+                cbfs.donecancel(); } },
         rmbkmk: function () {
             jt.out("edbformactmsgdiv", "Delete bookmark?");
             jt.out("edbformbuttonsdiv", jt.tac2html(
@@ -238,9 +249,12 @@ app.prof = (function () {
             updateAndEnd({waitmsg:"Saving...", okmsg:"Saved.",
                           failpre:"Save failed",
                           btids:["edbdeleteb", "edbsaveb"]}); },
-        editBookmark: function (bookmark) {
+        editBookmark: function (bookmark, cbfo, editformdiv) {
             bmk = bookmark;
-            jt.out("profelemdetdiv", jt.tac2html(
+            cbfs = cbfo || {archg:mgrs.bks.setHeaderFieldValue,
+                            donesave:mgrs.bks.initialize};
+            edid = editformdiv || edid;
+            jt.out(edid, jt.tac2html(
                 ["div", {id:"edbform"},
                  [["div", {id:"edbformtopdiv"},
                    [["div", {id:"edbformtitlediv"}, "Edit Bookmark"],

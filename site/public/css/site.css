@@ -219,7 +219,7 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
 .isdelaspan { vertical-align:middle; white-space:nowrap; }
 .isdelaspan img { max-height:20px; opacity:0.3; }
 .isdekwspan { padding:0px 5px; font-style:italic; }
-.isdntspan { display:block; font-size:medium; color:#999; }
+.isdntspan { display:block; font-size:medium; color:#333; }
 .graytext { color:#666; }
 .pageskipico { vertical-align:middle; height:20px; padding:0px 0px 0px 10px; }
 
@@ -229,10 +229,19 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
 .recinfodiv { display:table-cell; }
 .rcmtinstdiv { font-size:small; }
 .rcmtdiv { font-size:small; padding:1px 2px; font-weight:bold;
-  background-image:url("../img/white60percent.png"); }
+  background-image:url("../img/white60percent.png");
+  margin-bottom:4px; }
 .recarspan { }
 .rectispan { font-style:italic; }
 
+.respdetdiv { margin-left:-60px; max-width:360px; }
+.respinstrdiv { }
+.resplinkdiv { font-size:medium; }
+.respdetcontextspan { padding:0px 4px 0px 0px; }
+.respbmkbmtspan { padding:0px 4px 0px 0px; }
+.respbmkcsspan { font-style:italic; font-weight:bold; }
+.respactcmtdiv { }
+.isdntspan { }
 
 
 /* -------------------- */
