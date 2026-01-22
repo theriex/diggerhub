@@ -279,18 +279,25 @@ def get_wt20_nav_link(direction, sasum):
     return "<a href=\"" + pdt + "\">" + img + "</a>"
 
 
-def weekly_top20_content_html(sasum):
-    digname = sasum["digname"]
-    mdstart = month_and_day_from_dbtimestamp(sasum["start"])
-    mdend = month_and_day_from_dbtimestamp(sasum["end"])
-    tline = ("Collected recommendations" +
-             " <span id=\"hrtpspan\" class=\"datevalspan\"" +
-             " data-plink=\"plink/wt20/" + sasum["digname"] + "/" +
-             sasum["end"][0:10] + "\">" +
-             mdstart + "-" + mdend +
-             "<span>" + get_wt20_nav_link("prev", sasum) + "</span>" +
-             "<span>" + get_wt20_nav_link("next", sasum) + "</span>" +
-             "</span>")
+def curated_wt20_content(sasum):
+    qr8 = util.load_json_or_default(sasum["curate"], {})
+    recs = [r for r in qr8.get("rovrs", []) if r.get("recommended", "")]
+    if not recs:  # curated with no recommendations is not curated
+        return ""
+    songs = util.load_json_or_default(sasum["songs"], [])
+    html = "<ul class=\"wt20list\">\n"
+    for idx, rec in enumerate(qr8["rovrs"]):
+        if rec["recommended"]:
+            html += ("<li>" + song_html(songs[idx]) + "\n" +
+                     "<span class=\"isdntspan\">" + str(rec["text"]) +
+                     "</span>\n")
+    html += "</ul>\n\n"
+    html += ("<div id=\"aelrangediv\"></div>\n" +
+             "<div id=\"repsongtotaldiv\"></div>\n")
+    return html
+
+
+def automated_wt20_content(sasum):
     html = "<ul class=\"wt20list\">\n"
     songs = util.load_json_or_default(sasum["songs"], [])
     for song in songs:
@@ -308,11 +315,26 @@ def weekly_top20_content_html(sasum):
         if sasum[lab["fld"]]:
             html += ("<span class=\"repsummarylabelspan\">" + lab["name"] +
                      ":</span>" + song_html(sasum[lab["fld"]]) + "<br/>\n")
-    html += "</div><div id=\"curatebuttondiv\"></div>\n"
-    html += ("<div id=\"repsongtotaldiv\">" + str(sasum["ttlsongs"]) +
+    html += ("</div>\n<div id=\"repsongtotaldiv\">" + str(sasum["ttlsongs"]) +
              " songs synchronized to <a href=\"https://diggerhub.com\">" +
-             "DiggerHub</a></div>\n"
-             "<div id=\"profelemdetdiv\"></div>\n")
+             "DiggerHub</a></div>\n")
+    return html
+
+
+def weekly_top20_content_html(sasum):
+    digname = sasum["digname"]
+    mdstart = month_and_day_from_dbtimestamp(sasum["start"])
+    mdend = month_and_day_from_dbtimestamp(sasum["end"])
+    presentation = "Curated" if sasum["curate"] else "Collected"
+    tline = (presentation + " recommendations" +
+             " <span id=\"hrtpspan\" class=\"datevalspan\"" +
+             " data-plink=\"plink/wt20/" + sasum["digname"] + "/" +
+             sasum["end"][0:10] + "\">" +
+             mdstart + "-" + mdend +
+             "<span>" + get_wt20_nav_link("prev", sasum) + "</span>" +
+             "<span>" + get_wt20_nav_link("next", sasum) + "</span>" +
+             "</span>")
+    html = curated_wt20_content(sasum) or automated_wt20_content(sasum)
     return listener_report_page_html(digname, tline, html)
 
 
@@ -367,7 +389,7 @@ def weekly_top20(stinf, rtype="page"):
         startts = dbacc.dt2ISO(stdt)
         sasums = [{"aid":0, "digname":digname, "sumtype":"wt20", "songs":[],
                    "easiest":"", "hardest":"", "chillest":"", "ampest":"",
-                   "start":startts, "end":endts, "ttlsongs":0}]
+                   "curate":"", "start":startts, "end":endts, "ttlsongs":0}]
     sasum = sasums[0]
     if rtype == "image":
         return weekly_top20_image(sasum)
