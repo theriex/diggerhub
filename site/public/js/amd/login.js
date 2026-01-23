@@ -1095,7 +1095,8 @@ app.login = (function () {
             app.prof.dispatch("gen", "requireAcc"); },
         redraw: function (sdat) {
             rst.recs = sdat.songs.filter((ignore, i) =>
-                rundata.curate.rovrs[i].recommended);
+                (rundata.curate && rundata.curate.rovrs &&
+                 rundata.curate.rovrs[i].recommended));
             rst.chgs = [];
             if(!rst.recs.length) { return jt.log("No recommended songs"); }
             jt.out("reptbodydiv", jt.tac2html(
