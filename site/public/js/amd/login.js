@@ -129,7 +129,8 @@ app.login = (function () {
                        400); },
         initDisplay: function (dispdiv) {
             dispdiv = dispdiv || haid;
-            if(!jt.byId(dispdiv)) { return; }  //no account access
+            if(!jt.byId(dispdiv)) {  //no account access on home page. Just
+                return; }            //get the app. Listener pages separate.
             app.top.dispatch("aaa", "initialize");
             app.top.dispatch("afg", "runOutsideApp", dispdiv);
             app.pdat.addApresDataNotificationTask("hubCheckIfSignedIn",
@@ -1034,6 +1035,16 @@ app.login = (function () {
                     else if(frp.bmkid) {
                         html = responseBookmarkDisplay(frp.bmkid); } }
                 jt.out("srespdiv" + s.dsId, html); }); }
+        function myListenerPageLink () {
+            var html = "";
+            if(authobj && authobj.digname && authobj.dsId !== rundata.aid) {
+                const url = "/listener/" + authobj.digname;
+                html = jt.tac2html(
+                    ["a", {href:url,
+                           onclick:"window.open('" + url + "');return false"},
+                     [["img", {cla:"featureico", src:"/img/skip.png"}],
+                      url]]); }
+            return html; }
         function postSignInRebuild () {
             mgrs.rpt.endCuration(); }  //do a full redisplay of everything.
     return {
@@ -1088,10 +1099,11 @@ app.login = (function () {
             rst.chgs = [];
             if(!rst.recs.length) { return jt.log("No recommended songs"); }
             jt.out("reptbodydiv", jt.tac2html(
-                ["ul", {cla:"wt20list"}, rst.recs.map((s) =>
+                [["ul", {cla:"wt20list"}, rst.recs.map((s) =>
                     ["li",
                      ["span", {id:"wtidspan" + s.dsId},
-                      mgrs.rpt.songDispHTML(s)]])]));
+                      mgrs.rpt.songDispHTML(s)]])],
+                ["div", {id:"mylistenerpagelinkdiv"}, myListenerPageLink()]]));
             jt.out("aelrangediv", "");
             jt.out("repsongtotaldiv", "");
             redrawResponseControls(); }
