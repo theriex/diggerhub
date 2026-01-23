@@ -353,16 +353,40 @@ def weekly_top20_page(stinf, sasum):
     return replace_and_respond(stinf)
 
 
+def report_background_image():
+    wknum = datetime.datetime.today().isocalendar()[1]
+    adj = {"red":[0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0],
+           "green":[0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2],
+           "blue": [1.7,1.6,1.5,1.4,1.3,1.2,1.1,0.9]}
+    wka = {key: val[(wknum + 1) % len(val)] for key, val in adj.items()}
+    img = Image.open(mconf.rpbgimg).convert("RGB")
+    red, green, blue = img.split()
+    red = red.point(lambda i: i * wka["red"])
+    green = green.point(lambda i: i * wka["green"])
+    blue = blue.point(lambda i: i * wka["blue"])
+    img = Image.merge('RGB', (red, green, blue))
+    return img
+
 def weekly_top20_image(sasum):
     songs = util.load_json_or_default(sasum["songs"], [])
-    songs = songs[0:16]  # limited vertical space
-    mtxt = ""
+    if sasum["curate"]:
+        qr8 = util.load_json_or_default(sasum["curate"], {})
+        recs = [r for r in qr8.get("rovrs", []) if r.get("recommended", "")]
+        if recs:
+            recs = qr8.get("rovrs", [])
+            rsgs = []
+            for idx, rec in enumerate(qr8["rovrs"]):
+                if rec["recommended"]:
+                    rsgs.append(songs[idx])
+            songs = rsgs
+    songs = songs[0:15]  # limited vertical space
+    mtxt = "      " + sasum["digname"] + " recs week\n"
     for idx, song in enumerate(songs):
-        mtxt += str(idx + 1) + ". " + song["ti"] + " - " + song["ar"] + "\n"
+        mtxt += str(idx + 1) + ". " + song["ar"] + " - " + song["ti"] + "\n"
     if not songs:
-        mtxt += "All new music this week."
+        mtxt += "All new music this week"
     mtxt += "..."
-    img = Image.open(mconf.rpbgimg)
+    img = report_background_image()
     draw = ImageDraw.Draw(img)
     # image size may be reduced at least 3x, aim for minimum 10px font size
     draw.font = ImageFont.truetype(mconf.rpfgfnt, 30)
