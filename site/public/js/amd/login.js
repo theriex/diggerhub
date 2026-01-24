@@ -85,6 +85,7 @@ app.login = (function () {
     //The hub account manager handles account actions from the hub page.
     mgrs.hua = (function () {
         const haid = "hubaccountcontentdiv";
+        const psicbfs = [];
         function initialSignIn (contf, errf) {
             var auth = null;
             if(app.startParams.an && app.startParams.at) {
@@ -106,6 +107,7 @@ app.login = (function () {
                                      accntok[0], accntok[1]);
                     authobj = app.top.dispatch("aaa", "getAccount");
                     mgrs.ap.save();
+                    psicbfs.forEach(function (cbf) { cbf(); });
                     if(app.startParams.anchor === "resetpassword") {
                         const accdiv = jt.byId("hubaccountcontentdiv");
                         if(accdiv) {
@@ -127,6 +129,8 @@ app.login = (function () {
             setTimeout(function () {
                 app.top.dispatch("afg", "accountFanGroup", "offline", 1); },
                        400); },
+        registerPostSignInCBF: function (cbf) {
+            psicbfs.push(cbf); },
         initDisplay: function (dispdiv) {
             dispdiv = dispdiv || haid;
             if(!jt.byId(dispdiv)) {  //no account access on home page. Just
@@ -1326,6 +1330,7 @@ app.login = (function () {
             app.prof.dispatch("home", "wt20init", sdat.songs);
             adjustReportDisplay();
             mgrs.hua.initDisplay();
+            mgrs.hua.registerPostSignInCBF(rptRedrawInteractive);
             app.pdat.addApresDataNotificationTask("rptRedrawInteractive",
                                                   rptRedrawInteractive); }
     };  //end mgrs.rpt returned functions
