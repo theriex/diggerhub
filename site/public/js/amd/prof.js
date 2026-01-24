@@ -293,7 +293,8 @@ app.prof = (function () {
         const dst = {  //runtime display state
             hfs:{  //header field definitions
                 sortord:{t:"toggle", vi:0, vs:["recent", "oldest"],
-                         bmkfld:"modified", vdf:(v) => jt.tac2html(
+                         tdc:"bmfldnowrap", bmkfld:"modified",
+                         vdf:(v) => jt.tac2html(
                              ["span", {cla:"bmfmodspan"},
                               v.slice(0,16).replace("T", "&nbsp;")])},
                 cs:{t:"select", vi:0, vs:["collstat", ...mgrs.util.v4f("cs")],
@@ -393,6 +394,7 @@ app.prof = (function () {
         headerFieldClick: function (fnm) {
             var iref;
             const fldat = dst.hfs[fnm];
+            jt.log("bks.headerFieldClick " + fnm);
             switch(fldat.t) {
             case "toggle":
                 fldat.vi = (fldat.vi? 0 : 1);
@@ -409,6 +411,8 @@ app.prof = (function () {
                                                        fnm)},
                               val])])); }
                 else {  //have selection
+                    if(fldat.vi === iref.selectedIndex) {
+                        return; }  //ignore non-change call
                     fldat.vi = iref.selectedIndex;
                     return fetchAndDisplayBookmarks(); }
             case "search":  //laggy UI, but have to hit the db each time
