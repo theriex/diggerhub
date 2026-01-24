@@ -185,7 +185,8 @@ def send_activity_summary(user, songsum):
     if not plink:
         plink = "Set a digname for your account to publish weekly summaries"
     subj = "DiggerHub weekly activity summary"
-    body = "Account weekly summary set for " + runinfo["tdow"] + "\n"
+    body = ("Your top songs for " + runinfo["tdow"] +
+            "are ready to be curated into essential recommendations.\n")
     body += plink + "\n"
     body += str(songsum["ttlsongs"]) + " songs synchronized to DiggerHub\n"
     body += "Top Songs:\n\n"
@@ -197,7 +198,7 @@ def send_activity_summary(user, songsum):
     body += "Most Chill: " + song_ident_text(songsum["chillest"]) + "\n"
     body += "Most Amped: " + song_ident_text(songsum["ampest"]) + "\n"
     body += "\n"
-    body += "Let your friends know what they're missing.\n\n"
+    body += "Help people hear the good stuff.\n\n"
     if runinfo["mode"] == "all":
         util.send_mail(user["email"], subj, body, domain="diggerhub.com")
         logging.info("wt20 mail sent to " + user["email"])
