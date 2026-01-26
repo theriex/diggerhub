@@ -186,7 +186,7 @@ def send_activity_summary(user, songsum):
         plink = "Set a digname for your account to publish weekly summaries"
     subj = "DiggerHub weekly activity summary"
     body = ("Your top songs for " + runinfo["tdow"] +
-            "are ready to be curated into essential recommendations.\n")
+            " are ready to be curated into essential recommendations.\n")
     body += plink + "\n"
     body += str(songsum["ttlsongs"]) + " songs synchronized to DiggerHub\n"
     body += "Top Songs:\n\n"
