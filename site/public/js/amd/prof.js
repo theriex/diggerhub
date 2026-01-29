@@ -711,7 +711,8 @@ app.prof = (function () {
             mgrs.home.byRecent();   //display songs
             mgrs.home.byUpdated();  //display bookmarks
             app.login.dispatch("hua", "initDisplay");
-            app.login.dispatch("hua", registerPostSignInCBF(friendManagement));
+            app.login.dispatch("hua", "registerPostSignInCBF",
+                               friendManagement);
             app.pdat.addApresDataNotificationTask("profHomeFriendManagement",
                                                   friendManagement); }
     };  //end mgrs.home returned functions
