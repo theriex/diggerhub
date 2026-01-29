@@ -91,6 +91,9 @@ app.prof = (function () {
             mgrs.gen.setRequireAccountFunctions(accountSignInCallback,
                                                 accountSignInCallback);
             mgrs.gen.requireAcc(); },
+        isCurrentlyFriend: function (siacc) {
+            siacc = siacc || app.login.getAuth();
+            return isFriend(siacc); },
         modFriend: function (modaction) {
             const actxt = {add:"Adding", rem:"Removing"};
             jt.out(divid, actxt[modaction] + " " + fa.digname + "...");
@@ -102,7 +105,9 @@ app.prof = (function () {
                         function (results) {
                             const ua = results[0]; //updated account
                             app.login.dispatch("hsi", "noteUpdatedAccount", ua);
-                            friendLinkForAccount(); },
+                            friendLinkForAccount();
+                            if(psicbf) {
+                                psicbf(); } },
                         function (code, errtxt) {
                             jt.out(divid, "api/fangrpact failed " + code +
                                    ": " + errtxt); }); }, 400); },
@@ -619,8 +624,18 @@ app.prof = (function () {
                  ["div", {id:"pititlediv"}, b.ab],
                  ["div", {id:"picommentdiv"}, b.nt],
                  ["div", {id:"pikwdsdiv"}, b.haf]]); }
+        function updateDiggerCollabLink () {
+            jt.out("profcontdisptoplinediv", "");
+            if(mgrs.frnd.isCurrentlyFriend()) {
+                jt.out("profcontdisptoplinediv", jt.tac2html(
+                    //PENDING: Open the Digger app if installed on mobile
+                    [["a", {href:"#opendigger",
+                            onclick:"window.open('/');return false"},
+                      "Collaborate with " + rundata.acct.digname],
+                     " on Digger"])); } }
         function friendManagement () {
-            mgrs.frnd.initFriendManagement("addfrienddiv", rundata.acct); }
+            mgrs.frnd.initFriendManagement("addfrienddiv", rundata.acct,
+                                           updateDiggerCollabLink); }
     return {
         songSearchURL: function (t1, t2) {  //primary search term, secondary
             var txt = t1 + " " + t2;  //e.g. title artist
@@ -699,7 +714,8 @@ app.prof = (function () {
                     b.cs !== "Deleted"); }  //in case cached
             jt.out("profnamespan", rundata.acct.digname);
             jt.out("profcontdispdiv", jt.tac2html(
-                [["div", {cla:"profsectiontitlediv"}, "Songs"],
+                [["div", {id:"profcontdisptoplinediv"}],
+                 ["div", {cla:"profsectiontitlediv"}, "Songs"],
                  ["div", {id:"songsdiv"}],
                  ["div", {id:"profmuwkdiv"},
                   [["span", {id:"profmuwklabel"}, wt20label()],
@@ -750,7 +766,8 @@ app.prof = (function () {
                               "Data currently unavailable, try again later"); }
             jt.out("reportinnercontentdiv", jt.tac2html(
                 [["div", {id:"proftitlelinediv"},
-                  ["span", {id:"profnamespan"}]],
+                  [["div", {id:"overnametextdiv"}, "Latest hub data from"],
+                   ["span", {id:"profnamespan"}]]],
                  ["div", {id:"hubaccountcontentdiv", cla:"boxedcontentdiv",
                           style:"display:none"}],
                  ["div", {id:"addfrienddiv"}],
