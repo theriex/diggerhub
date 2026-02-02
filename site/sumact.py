@@ -267,7 +267,7 @@ def check_user_activity(user, settings):
                                " AND lp < \"" + untilts + "\"" +
                                " AND (pd IS NULL OR pd IN (\"played\"" +
                                ", \"iosqueue\", \"digaudpl\"))" +
-                               " AND kws LIKE \"%Social%\"" +
+                               " AND kws NOT LIKE \"%Personal%\"" +
                                " AND rv >= 5" +
                                " ORDER BY rv DESC, lp DESC")
     for song in songs:
