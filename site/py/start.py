@@ -15,7 +15,7 @@ from PIL import Image, ImageDraw, ImageFont
 import json
 import datetime
 
-CACHE_BUST_PARAM = "v=260209"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=260213"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -145,9 +145,9 @@ FLOWCONTENTHTML = """
 
 <div id="quickdispdiv" class="textcontentdiv">
 
-Digger will continuously select and play all music in your collection
-matching your retrieval filters, least recently played first, working from
-your own impressions.
+Digger is a player for immediate music similar to what you might expect from
+a streaming app, working entirely off your own music files and your own song
+impressions.
 
 </div>
 
