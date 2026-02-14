@@ -145,7 +145,7 @@ FLOWCONTENTHTML = """
 
 <div id="quickdispdiv" class="textcontentdiv">
 
-Digger is a player for immediate music comparable to streaming, using your own music files and your own song impressions.
+Digger is a player for immediate music similar to streaming, using your own music files and your own song impressions.  Put some of your favorite albums on your phone and use Digger as your personal anytime music station.
 
 </div>
 
@@ -164,9 +164,9 @@ Digger is a player for immediate music comparable to streaming, using your own m
   <div class="platoptdescdiv"></div>
 </div>
 
-<div id="joinusdispdiv" class="textcontentdiv">
+<div id="joinindispdiv" class="textcontentdiv">
 
-Listeners use DiggerHub for backup and sync across devices, sharing top songs for the week, bookmarking new music for consideration, collaborating through collections, and whatever other useful fun we come up with. Join us.
+Listeners use DiggerHub for backup and sync across devices, sharing top songs for the week, bookmarking new music for consideration, collaborating through collections, and whatever other useful fun we come up with. Join in.
 
 </div>
 
