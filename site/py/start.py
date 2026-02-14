@@ -15,7 +15,7 @@ from PIL import Image, ImageDraw, ImageFont
 import json
 import datetime
 
-CACHE_BUST_PARAM = "v=260213"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=260214"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -145,9 +145,7 @@ FLOWCONTENTHTML = """
 
 <div id="quickdispdiv" class="textcontentdiv">
 
-Digger is a player for immediate music similar to what you might expect from
-a streaming app, working entirely off your own music files and your own song
-impressions.
+Digger is a player for immediate music comparable to streaming, using your own music files and your own song impressions.
 
 </div>
 
