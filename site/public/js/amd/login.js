@@ -437,7 +437,7 @@ app.login = (function () {
                     return (stint.status === "Complete" || 
                             (cnts && cnts.ttl >= 50 && cnts.mto >= 6)); },
                 display:function () {
-                    jt.out("btpnavdiv", "Your beta test has started! If you have not already installed Digger for " + stint.stdat.pretest.whichplat + ", click the download link on " + hublink + " to request a promo code, then sign in with the app and start listening.  Return to this page to see your progress.  If you have any questions email " + supplink + ". Thanks for testing!");
+                    jt.out("btpnavdiv", "Your beta test has started! If you have not already installed Digger for " + stint.stdat.pretest.whichplat + ", click the download link on " + hublink + ", then sign in with the app and start listening.  Return to this page to see your progress.  If you have any questions email " + supplink + ". Thanks for testing!");
                     if(cnts && cnts.ttl > 0) {
                         jt.out("btpnavdiv", "So far you've described <b>" + over50(cnts.ttl) + "</b> songs from your collection and listened to <b>" + over50(cnts.mto) + "</b> songs more than once.  After listening to 50+ songs, use the filter toggles and range selectors to try filtered continuous selection in at least two different listening situations.  If you have any questions, concerns, comments or anything else email " + supplink + ". Thanks for testing!"); }
                     jt.out("btpdetdiv", jt.tac2html(
