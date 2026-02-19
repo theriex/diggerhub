@@ -65,18 +65,19 @@ app.prof = (function () {
                     siacc.musfs.find((mf) => mf.dsId === fa.dsId)); }
         function friendLinkForAccount () {
             const acc = app.login.getAuth();
+            const dftxt = "Add " + fa.digname + " as a Music Friend";
             if(!acc) {  //not signed in
                 jt.out(divid, jt.tac2html(
                     ["a", {href:"#addfriend",
                            onclick:mdfs("frnd.requireAccAndRedraw")},
-                     "Add As Music Friend"])); }
+                     dftxt])); }
             else if(fa.dsId === acc.dsId) {  //self
                 jt.out(divid, ""); }
             else if(!isFriend(acc)) {
                 jt.out(divid, jt.tac2html(
                     ["a", {href:"#addfriend",
                            onclick:mdfs("frnd.modFriend", "add")},
-                     "Add As Music Friend"])); }
+                     dftxt])); }
             else {  //isFriend
                 jt.out(divid, jt.tac2html(
                     ["a", {href:"#removefriend",
@@ -474,121 +475,86 @@ app.prof = (function () {
     //requires authentication and authorization.
     mgrs.home = (function () {
         const dst = {  //display state
-            //sord, songs set on init
-            slen:5,
-            slentoga:"more...",
-            //bord, bkmks set on init
-            blen:5,
-            blentoga:"more..."};
-        function modTimeStr (sb) {  //song or bookmark
-            return sb.modified.slice(0, 19).replace("T", " "); }  //placeholder
-        function t20star (song) {
-            const playcsv = "played,iosqueue,digaudpl";
-            if(song.pd && !playcsv.csvcontains(song.pd)) { 
-                return "&#x21B7;"; }  //skip arrow indicator
-            if(!song.kws.csvcontains("Social")) {
-                return "-"; }  //no rating to share socially
-            if(song.rv < 5) { return "g"; }
-            return "&#x2605;"; }
-        function linkUnless (cond, hreft, oct, txt) {
-            if(cond) { return txt; }
-            return jt.tac2html(["a", {href:hreft, onclick:oct}, txt]); }
-        function rowsOrPlaceholder(typestr, rows) {
-            if(!rows.length) {
-                return jt.tac2html(
-                    ["tr", ["td", {cla:"profmodtd"},
-                            "No " + typestr + " found"]]); }
-            return rows; }
+            sord:"best", slen:5, slentoga:"more...",
+            bord:"best", blen:5, blentoga:"more..."};
         function displaySongs () {
-            if(!rundata.songs) {
-                return jt.out("songsdiv", 
-                              "No songs for " + rundata.acct.digname); }
+            if(!rundata.songs || !rundata.songs.length) {
+                return jt.out("songsdiv", "No recent songs"); }
+            const songs = dst.songs.slice(0, dst.slen);
             jt.out("songsdiv", jt.tac2html(
-                ["table", {id:"profsongstable"},
-                 [["tr", {style:"text-align:left"},
-                   [["th", {id:"pshmodth"},
-                     linkUnless(dst.sord === "modified", "#byrecent",
-                                mdfs("home.byRecent"), "modified")],
-                    ["th", {id:"psht20th"},
-                     linkUnless(dst.sord === "best", "#bybest",
-                                mdfs("home.byBest"), "&#x2605;")],
-                    ["th", {id:"pshidth"},
-                     ["a", {href:"#more", onclick:mdfs("home.toglen", "slen",
-                                                       "slentoga"),
-                            cla:"profdescth"},
-                      dst.slentoga]]]],
-                  ...rowsOrPlaceholder("Songs",
-                      dst.songs.slice(0, dst.slen).map((s, i) =>
-                          ["tr",
-                           [["td", {cla:"profmodtd"}, modTimeStr(s)],
-                            ["td", {cla:"psdt20td"}, t20star(s)],
-                            ["td", {cla:"psdidenttd"},
-                             ["a", {href:"#" + s.dsId,
-                                    onclick:mdfs("home.itemdet", "songs", i)},
-                              app.deck.dispatch("util", "songIdentHTML",
-                                                s)]]]]))]])); }
+                [["ul", {cla:"wt20list"}, songs.map((s) =>
+                    ["li",
+                     ["span", {id:"wtidspan" + s.dsId},
+                      app.login.dispatch("rpt", "songDispHTML", s)]])],
+                 ["div", {id:"songdispactionsdiv", cla:"profdispactionsdiv"},
+                  [["a", {href:"#" + (dst.sord === "best"? "recent" : "best"),
+                          onclick:(dst.sord === "best"? mdfs("home.byRecent") :
+                                                        mdfs("home.byBest"))},
+                    (dst.sord === "best"? "recent" : "best")],
+                   ",&nbsp;&nbsp;",
+                   ["a", {href:"#more", onclick:mdfs("home.toglen", "slen",
+                                                     "slentoga")},
+                    dst.slentoga]]]])); }
         function displayBookmarks () {
+            if(!rundata.bkmks || !rundata.bkmks.length) {
+                return jt.out("bkmksdiv", "No recent bookmarke"); }
+            const bmks = dst.bkmks.slice(0, dst.blen);
             jt.out("bkmksdiv", jt.tac2html(
-                ["table", {id:"profbkmkstable"},
-                 [["tr", {style:"text-align:left"},
-                   [["th", {id:"pbhmodth"},
-                     linkUnless(dst.bord === "modified", "#byUpdate",
-                                mdfs("home.byUpdated"), "updated")],
-                    ["th", {id:"pbhpurth"},
-                     linkUnless(dst.bord === "collected", "#collected",
-                                mdfs("home.byCollected"), "collected")],
-                    ["th", {id:"pbhidth"},
-                     ["a", {href:"#more", onclick:mdfs("home.toglen", "blen",
-                                                       "blentoga"),
-                            cla:"profdescth"},
-                      dst.blentoga]]]],
-                  ...rowsOrPlaceholder("Bookmarks",
-                      dst.bkmks.slice(0, dst.blen).map((b, i) =>
-                          ["tr",
-                           [["td", {cla:"profmodtd"}, modTimeStr(b)],
-                            ["td", {cla:"bmfldcentertd"},
-                             ["span", {cla:"bmfcsspan"}, b.cs]],
-                            ["td", {cla:"pbdidenttd"},
-                             ["a", {href:"#" + b.dsId,
-                                    onclick:mdfs("home.itemdet", "bkmks", i)},
-                             mgrs.util.bookmarkIdentHTML(b)]]]]))]]));
-            app.pdat.addApresDataNotificationTask("displayBookmarkPageAccess",
-                                                  displayBookmarkPageAccess); }
+                [["ul", {cla:"bmrklist"}, bmks.map((b) =>
+                    ["li",
+                     [["span", b.cs],
+                      ["a", {href:"#" + b.dsId,
+                             onclick:"window.open('" + b.url +
+                                     "');return false"},
+                       mgrs.util.bookmarkIdentHTML(b)]]])],
+                 ["div", {id:"bmksdispactiondiv", cla:"profdispactionsdiv"},
+                  [["a", {href:"#" + (dst.bord === "best"? "recent" : "best"),
+                          onclick:(dst.bord === "best"? mdfs("home.byMod") :
+                                                        mdfs("home.byCons"))},
+                    (dst.bord === "best"? "recent" : "best")],
+                   ",&nbsp;&nbsp;",
+                   ["a", {href:"#more", onclick:mdfs("home.toglen", "blen",
+                                                     "blentoga")},
+                    dst.blentoga]]]])); }
         function displayBookmarkPageAccess () {
             jt.out("profbkmkaccessdiv", jt.tac2html(
                 ["a", {href:"#update", onclick:mdfs("home.requireAcc4Bkmks")},
                  "Update"])); }
-        function guessLastReportDate () {
-            var dnum = 1; var diffdays = 0; var gd = new Date();
-            const dns = ["Sunday", "Monday", "Tuesday", "Wednesday",
-                         "Thursday", "Friday", "Saturday"];
-            const dn = jt.saferef(rundata, "acct.?settings.?sumact.?sendon");
-            if(dn) {
-                dnum = dns.indexOf(dn);
-                if(dnum < 0) { dnum = 1; } }
-            diffdays = gd.getDay() - dnum;
-            if(diffdays < 0) { diffdays = 7 + diffdays; }
-            gd.setDate(gd.getDate() - diffdays);
-            gd = new Date(gd.getTime() - gd.getTimezoneOffset() * 60000);
-            return gd.toISOString(); }
-        function wt20label () {
-            const det = {
-                lab:"collection listening summary",
-                digname:jt.saferef(rundata, "acct.?digname"),
-                tiso:jt.saferef(rundata, "acct.?settings.?sumact.?lastsend"),
-                cla:"normal"};
-            if(det.digname) {
-                if(!det.tiso || jt.elapsedSince(det.tiso, "days") > 7) {
-                    det.cla = "graytext";
-                    det.tiso = guessLastReportDate(); }
-                const url = app.util.dr("/plink/wt20/" + det.digname + "/" +
-                                        det.tiso.slice(0, 10));
-                det.lab = jt.tac2html(
-                    ["a", {href:url}, ["span", {cla:det.cla}, det.lab]]); }
-            return det.lab; }
-        function wt20day () {
-            const so = jt.saferef(rundata, "acct.?settings.?sumact.?sendon");
-            return so || "Default"; }
+        function wt20Content () {
+            const tsi = {  //top songs info
+                daynames:["Sunday", "Monday", "Tuesday", "Wednesday",
+                          "Thursday", "Friday", "Saturday"],
+                daynum:1,  //default to Monday
+                sendday:"Default",
+                sendon:jt.saferef(rundata, "acct.?settings.?sumact.?sendon"),
+                sent:jt.saferef(rundata, "acct.?settings.?sumact.?lastsend")};
+            if(tsi.sendon) {
+                tsi.daynum = tsi.daynames.indexOf(tsi.sendon);
+                if(tsi.daynum < 0 || tsi.daynum > 6) {
+                    tsi.daynum = 1; }
+                else {
+                    tsi.sendday = tsi.daynames[tsi.daynum]; } }
+            tsi.xsnd = new Date();
+            tsi.diffdays = tsi.xsnd.getDay() - tsi.daynum;
+            if(tsi.diffdays < 0) {  //future day. need to wrap back around
+                tsi.diffdays = 7 + tsi.diffdays; }
+            tsi.xsnd.setDate(tsi.xsnd.getDate() - tsi.diffdays);
+            tsi.xsnd = new Date(tsi.xsnd.getTime() -
+                                tsi.xsnd.getTimezoneOffset() * 60000);
+            tsi.xsnd = tsi.xsnd.toISOString().slice(0, 10);
+            dst.wt20ts = tsi.xsnd;
+            tsi.html = "<!-- sendday:" + tsi.sendday + ", xsnd:" + tsi.xsnd +
+                " -->\n";
+            if(tsi.sent) {
+                const url = app.util.dr("/plink/wt20/" + rundata.acct.digname +
+                                        "/" + tsi.sent.slice(0, 10));
+                tsi.html += jt.tac2html(
+                    ["a", {href:url,
+                           onclick:"window.open('" + url + "');return false"},
+                     ["Recommendations this week",
+                      ["img", {src:app.util.dr("img/rtnwlink.png"),
+                               cla:"ico20"}]]]); }
+            return tsi.html; }
         function songdethtml (s) {
             const eavs = app.player.dispatch("cmt", "elal2txtvals", s);
             return jt.tac2html(
@@ -650,24 +616,31 @@ app.prof = (function () {
             displaySongs();
             displayBookmarks(); },
         byRecent: function () {
-            dst.sord = "modified";
+            dst.sord = "recent";
             dst.songs = rundata.songs;
             displaySongs(); },
         byBest: function () {
-            dst.sord = "best";
-            const cutoff = new Date(Date.now() - 2 * 7 * 24 * 60 * 60 * 1000)
-                  .toISOString();
-            dst.songs = rundata.songs.filter((s) => s.modified >= cutoff)
+            dst.sord = "best";  //songs since wt20 have display priority
+            dst.songs = rundata.songs.filter(
+                (s) => s.modified >= dst.wt20ts && s.rv > 7)  //>= 3.5 stars
                 .sort((a, b) => ((b.rv - a.rv) ||
                                  b.modified.localeCompare(a.modified)));
+            const rest = rundata.songs.filter((s) => s.modified < dst.wt20ts)
+                .sort((a, b) => ((b.rv - a.rv) ||
+                                 b.modified.localeCompare(a.modified)));
+            dst.songs = dst.songs.concat(rest);
             displaySongs(); },
-        byUpdated: function () {
-            dst.bord = "modified";
+        byMod: function () {
+            dst.bord = "recent";
             dst.bkmks = rundata.bkmks;
             displayBookmarks(); },
-        byCollected: function () {
-            dst.bord = "collected";
-            dst.bkmks = rundata.bkmks.filter((b) => b.cs === "Collected");
+        byCons: function () {
+            dst.bord = "best";
+            const pcs = ["Deleted", "Archived", "Pending", "Listened",
+                         "Notable", "Considering", "Collected"];
+            dst.bkmks = rundata.bkmks.slice().sort((a, b) =>
+                (pcs.indexOf(b.cs) - pcs.indexOf(a.cs) ||
+                 b.modified.localeCompare(a.modified)));
             displayBookmarks(); },
         closedet: function () {
             jt.out("profelemdetdiv", ""); },
@@ -715,17 +688,17 @@ app.prof = (function () {
             jt.out("profnamespan", rundata.acct.digname);
             jt.out("profcontdispdiv", jt.tac2html(
                 [["div", {id:"profcontdisptoplinediv"}],
+                 ["div", {id:"profmuwkdiv"}, wt20Content()],
                  ["div", {cla:"profsectiontitlediv"}, "Songs"],
                  ["div", {id:"songsdiv"}],
-                 ["div", {id:"profmuwkdiv"},
-                  [["span", {id:"profmuwklabel"}, wt20label()],
-                   ["span", {id:"profmuwkday"}, wt20day()]]],
                  ["div", {cla:"profsectiontitlediv"},
                   ["Bookmarks",
                    ["div", {id:"profbkmkaccessdiv"}]]],
                  ["div", {id:"bkmksdiv"}]]));
-            mgrs.home.byRecent();   //display songs
-            mgrs.home.byUpdated();  //display bookmarks
+            mgrs.home.byBest();   //display songs
+            mgrs.home.byCons();  //display bookmarks
+            app.pdat.addApresDataNotificationTask("displayBookmarkPageAccess",
+                                                  displayBookmarkPageAccess);
             app.login.dispatch("hua", "initDisplay");
             app.login.dispatch("hua", "registerPostSignInCBF",
                                friendManagement);
@@ -766,14 +739,15 @@ app.prof = (function () {
                               "Data currently unavailable, try again later"); }
             jt.out("reportinnercontentdiv", jt.tac2html(
                 [["div", {id:"proftitlelinediv"},
-                  [["div", {id:"overnametextdiv"}, "Latest hub data from"],
+                  [["div", {id:"overnametextdiv"},
+                    "Recent listening from"],
                    ["span", {id:"profnamespan"}]]],
                  ["div", {id:"hubaccountcontentdiv", cla:"boxedcontentdiv",
                           style:"display:none"}],
-                 ["div", {id:"addfrienddiv"}],
                  ["div", {id:"profcontentdiv"},
                   [["div", {id:"profcontdispdiv"}],
-                   ["div", {id:"profelemdetdiv"}]]]]));
+                   ["div", {id:"profelemdetdiv"}]]],
+                 ["div", {id:"addfrienddiv"}]]));
             app.top.dispatch("aaa", "initialize");
             app.top.dispatch("afg", "runOutsideApp", "hubaccountcontentdiv");
             if(app.startPath.startsWith("/listener")) {

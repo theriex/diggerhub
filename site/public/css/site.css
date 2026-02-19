@@ -208,9 +208,13 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
 .repsummarylabelspan { padding-right:5px; font-size:medium; font-style:italic;
   font-weight:bold; }
 #repsongtotaldiv { font-size:small; padding:10px 0px; text-align:center; }
-.wt20list { margin:10px 0px; list-style:none; }
+.wt20list, .bmrklist { margin:10px 0px; list-style:none; }
 .wt20list li { padding:0px 0px 6px 28px;
    background:url("../img/searchbullet.png") left top no-repeat; }
+.bmrklist li { padding:0px 0px 6px 28px;
+   background:url("../img/bookmarkbullet.png") left top no-repeat; }
+.bmrklist li span { font-size:small; padding-right:5px; }
+.bmrklist li a span { font-size:medium; }
 .wtarspan { font-size:medium; font-weight:bold; }
 .wttispan { font-size:medium; font-style:italic; }
 .wtabspan { font-size:small; }
@@ -252,7 +256,7 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
 #proftitlelinediv { height:64px; font-size:48px; font-weight:bold;
   padding:10px 0px 0px 70px; margin-top:-10px; }
 #overnametextdiv { font-size:small; font-weight:normal; font-style:italic; }
-#addfrienddiv { padding:0px 0px 0px 70px; margin:-4px 0px 16px 0px; }
+#addfrienddiv { padding:8px 0px 0px 70px; }
 #profcontentdiv { position:relative; }
 #profelemdetdiv { position:absolute; left:10px; top:8px; 
   background:#ffc2a4; background:linear-gradient(#ffc2a4, #ff9c6b); }
@@ -269,16 +273,15 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
 #picommentdiv { font-size:medium; padding-top:5px; }
 #profelemitemsharediv { text-align:center; font-size:small; padding-top:10px; }
 #muwkdiv { padding:7px 0px; }
-#profmuwklabel { display:inline-block; font-size:small; font-weight:normal;
-  vertical-align:middle; padding:0px 2px 0px 0px; }
-#profmuwkdiv { padding-bottom:12px; }
-#profmuwkday { font-style:italic; font-weight:bold; font-size:medium; }
+#profmuwkdiv { padding-bottom:8px; font-style:italic; font-weight:bold; 
+  padding:0px 0px 8px 70px; }
 .profdescth { padding-left:42px; }
 .profmodtd { font-size:small; }
 #profcontdisptoplinediv { margin:-4px 0px 8px 0px; font-size:medium;
   font-style:italic; }
-.profsectiontitlediv { letter-spacing:0.4em; padding:0px 0px 5px 42px;
-  font-size:small; text-transform:uppercase; font-style:italic; }
+.profsectiontitlediv { letter-spacing:0.4em; text-transform:uppercase;
+  font-size:small; font-style:italic; }
+.profdispactionsdiv { margin:-12px 0px 4px 200px; font-size:small; }
 #profbkmktitlediv { position:relative; }
 #profbkmkaccessdiv { display:inline-block; vertical-align:middle;
   margin-left:12px; padding:5px; border-radius:12px; background:white;
