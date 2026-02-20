@@ -306,11 +306,13 @@ app.login = (function () {
             jt.out(qid + "qerrdiv", "");
             ctx.stint.stdat[ctx.tdef][qid] = val; },
         checkAnswers: function () {
+            app.prof.dispatch("util", "deactivateButton", "btqcontb");
             sdefs[ctx.tdef].forEach(function (q) {  //clear any prev errmsgs
                 jt.out(q.id + "qerrdiv", ""); });
             const noval = findUnanswered(ctx.tdef, ctx.stint);
             if(noval) {
                 jt.out(noval.id + "qerrdiv", "Please answer this question");
+                app.prof.dispatch("util", "activateButton", "btqcontb");
                 return; }
             ctx.cbf(); },
         completed: function (tdef, stint) {
@@ -329,7 +331,8 @@ app.login = (function () {
                       ["div", {id:q.id + "qadiv", cla:"btqadiv"},
                        rend[q.qtype](qas, q.id, q.sel)]]]),
                  ["div", {cla:"dlgbuttonsdiv"},
-                  ["button", {type:"button", onclick:mdfs("btq.checkAnswers")},
+                  ["button", {type:"button", id:"btqcontb",
+                              onclick:mdfs("btq.checkAnswers")},
                     "Continue"]]])); }
     };  //end mgrs.btq returned functions
     }());
