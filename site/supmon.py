@@ -43,6 +43,8 @@ def check_active_beta_testers():
                 tsum += "    *** WAITING FOR GIFTCARD ***\n"
                 tsum += "    " + sti["stdat"] + "\n"
         body += tsum
+    if not body:
+        body = "No StInt instances found."
     subj = "beta test activity summary"
     util.send_mail(util.supnm() + "@" + util.domnm(), subj, body,
                    domain=util.domnm())
