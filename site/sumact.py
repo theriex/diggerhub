@@ -25,7 +25,28 @@ runinfo = {"mode": "logonly",  # send mail only if "summary" or "all"
 dfltact = {"lastsend": "1970-01-01T00:00:00Z", "sendon": "Wednesday"}
 
 
-def daily_activity_totals():
+def user_activity_summary():
+    txt = ""
+    modmin = dbacc.dt2ISO(runinfo["sod"] - datetime.timedelta(days=1))
+    sql = ("SELECT dsId AS uid, digname, modified," +
+           " (SELECT COUNT(*) FROM Song WHERE aid=uid AND modified > \"" +
+           modmin + "\") AS tsc," +
+           " (SELECT COUNT(*) FROM Bookmark WHERE aid=uid AND modified > \"" +
+           modmin + "\") AS tbc" +
+           " FROM DigAcc ORDER BY uid DESC")
+    qres = dbacc.custom_query(sql, ["uid", "digname", "modified", "tsc", "tbc"])
+    for rec in qres:
+        if rec["modified"] >= modmin or rec["tsc"] > 0 or rec["tbc"] > 0:
+            txt += (f"{str(rec['uid']):>6} {rec['digname']:>10}"
+                    f" {str(rec['tsc']):>8} {str(rec['tbc']):>8}\n")
+    if txt:
+        txt = "   uid    digname    songs  bookmarks\n" + txt
+    else:
+        txt = "No active users found"
+    return txt
+
+
+def daily_song_activity_totals():
     dat = {"yts": dbacc.dt2ISO(runinfo["sod"] - datetime.timedelta(days=1))}
     sql = ("SELECT COUNT(DISTINCT aid) AS ttlusers, COUNT(*) AS ttlsongs" +
            " FROM Song" +
@@ -95,7 +116,8 @@ def beta_activity_monitoring():
 
 def send_hub_summary():
     subj = "DiggerHub user activity send for " + runinfo["tdow"]
-    sta = [daily_activity_totals(),
+    sta = [user_activity_summary(),
+           # daily_song_activity_totals(),
            user_weekly_top20_send_summary(),
            beta_activity_monitoring()]
     body = "\n".join(sta) + "\n"
