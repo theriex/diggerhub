@@ -29,7 +29,8 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
 
 .textsectionspacerdiv { height:42px; }
 #toptextdiv { min-height:44px;  /* logodiv h - textcontentdiv pad */
-  display:flex; flex-direction:column; justify-content:space-around; }
+  display:flex; flex-direction:column; justify-content:space-around;
+  opacity:0.8; }
 .textcontentdiv, .textcontentctrdiv { margin:0px 10px 10px 10px; padding:10px;
   font-size:large; color:#663922; text-shadow: 0.5px 0.5px 1px #37190a;
   word-spacing:0.1ch; }
@@ -38,6 +39,7 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
 .boxedcontentdiv { background-image:url("../img/white60percent.png");
   border-radius:14px; text-align:left; word-spacing:normal; }
 .convocontentdiv { font-style:italic; }
+#joinindispdiv { font-style:italic; opacity:0.8; }
 
 /* -------------------- */
 /* app */
