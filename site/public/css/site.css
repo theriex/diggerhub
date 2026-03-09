@@ -144,6 +144,7 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
 /* -------------------- */
 /* marketing message display */
 
+#announcediv { text-align:center; }
 #mmdcontentdiv { min-width:360px; max-width:600px; min-height:360px;
   background:#ffd2bc; padding:10px; clear:both; margin:60px auto;
   border-radius:14px; }

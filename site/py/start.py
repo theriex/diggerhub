@@ -15,7 +15,7 @@ from PIL import Image, ImageDraw, ImageFont
 import json
 import datetime
 
-CACHE_BUST_PARAM = "v=260305"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=260309"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -165,6 +165,9 @@ station.
     <div><a href="https://play.google.com/store/apps/details?id=com.diggerhub.digger" onclick="app.login.dldet(event);return false">Android</a></div>
   </div>
   <div class="platoptdescdiv"></div>
+</div>
+
+<div id="announcediv" class="textcontentdiv">
 </div>
 
 <div id="joinindispdiv" class="textcontentdiv">

@@ -214,6 +214,18 @@ app.login = (function () {
     }());
 
 
+    //The announcement manager handles homepage dynamic announcements.
+    mgrs.annc = (function () {
+    return {
+        display: function () {
+            const betaurl = "/beta";
+            jt.out("announcediv", jt.tac2html(
+                ["div", {id:"anncbetadiv"},
+                 ["a", {href:betaurl}, "Beta test Digger"]])); }
+    };  //end mgrs.annc returned functions
+    }());
+
+
     //The beta test questions manager handles defined survey questions.
     mgrs.btq = (function () {
         const nevudef = ["Never", "Unlikely", "Unsure",
@@ -1373,6 +1385,7 @@ app.login = (function () {
             //setTimeout(mgrs.mrq.runMarquee, 12000);
             //mgrs.sld.runSlideshow();
             //setTimeout(mgrs.dld.displayInterstitial, 1200);
+            setTimeout(mgrs.annc.display, 4200);
             mgrs.hua.initDisplay(); },
         scrollToTopOfContent: function () {
             const div = jt.byId("sitecontentdiv");
