@@ -345,8 +345,8 @@ def weekly_top20_content_html(sasum):
 def weekly_top20_page(stinf, sasum):
     moday = month_and_day_from_dbtimestamp(sasum["end"])
     html = weekly_top20_content_html(sasum)
-    stinf["replace"]["$TITLE"] = sasum["digname"] + " Weekly Top 20 " + moday
-    stinf["replace"]["$DESCR"] = ("Top 20 songs from " + sasum["digname"] +
+    stinf["replace"]["$TITLE"] = sasum["digname"] + " top weekly songs " + moday
+    stinf["replace"]["$DESCR"] = ("Top songs from " + sasum["digname"] +
                                   " for week ending " + moday)
     stinf["replace"]["$CONTENTHTML"] = REPORTFRAMEHTML
     stinf["replace"]["$REPORTHTML"] = html
