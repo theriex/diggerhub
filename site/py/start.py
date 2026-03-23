@@ -15,7 +15,7 @@ from PIL import Image, ImageDraw, ImageFont
 import json
 import datetime
 
-CACHE_BUST_PARAM = "v=260309"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=260323"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -329,8 +329,8 @@ def weekly_top20_content_html(sasum):
     digname = sasum["digname"]
     mdstart = month_and_day_from_dbtimestamp(sasum["start"])
     mdend = month_and_day_from_dbtimestamp(sasum["end"])
-    presentation = "Curated" if sasum["curate"] else "Collected"
-    tline = (presentation + " recommendations" +
+    prt = "Curated" if sasum["curate"] else "Collected"
+    tline = ("<span id=\"hrprspan\">" + prt + " recommendations</span>" +
              " <span id=\"hrtpspan\" class=\"datevalspan\"" +
              " data-plink=\"plink/wt20/" + sasum["digname"] + "/" +
              sasum["end"][0:10] + "\">" +
