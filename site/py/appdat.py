@@ -131,7 +131,7 @@ def rebuild_derived_song_fields(song):
     song["smab"] = standardized_colloquial_match(song["ab"])
 
 
-def update_song_fields(updsong, dbsong):
+def update_song_fields(updsong, dbsong, only=None):
     """ Update dbsong with field values from updsong """
     reset_dead_spid_if_metadata_changed(updsong, dbsong)
     flds = {  # do NOT copy general db fields from client data. only these:
@@ -152,22 +152,28 @@ def update_song_fields(updsong, dbsong):
         "srcid": {"pt": "string", "dv": ""},
         "srcrat": {"pt": "string", "dv": ""}}
     for field, fdesc in flds.items():
-        dbsong[field] = updsong.get(field, fdesc["dv"])
+        if not only or field in only:
+            dbsong[field] = updsong.get(field, fdesc["dv"])
     rebuild_derived_song_fields(dbsong)
 
 
 # This function requires substantial database work.  There is one call to
 # find the song, and another to insert or update it.  Calling this function
 # in a loop risks bogging down the server.  Calling from a web API endpoint
-# risks exceeding processing time/effort limits.
+# risks exceeding server processing time/effort limits.
 def write_upd_song(updsong, accid):
     """ Write the given updated song information. """
     verify_required_song_field_values(updsong, accid)
     # logging.info("appdat.write_upd_song " + str(updsong))
     dbsong = find_song(updsong)  # calls dbacc.query_entity
-    if not dbsong:  # create new song shell to fill
-        dbsong = {"dsType":"Song", "aid":int(accid), "modified":""}
-    update_song_fields(updsong, dbsong)
+    if not dbsong and is_unrated_song(updsong): # nothing to create or update
+        return updsong
+    if dbsong and is_unrated_song(updsong): # merge lp w/prev rating info
+        update_song_fields(updsong, dbsong, only=["lp", "pd", "pc"])
+    else: # create or update
+        if not dbsong:  # create new song to fill
+            dbsong = {"dsType":"Song", "aid":int(accid), "modified":""}
+        update_song_fields(updsong, dbsong)
     updsong = dbacc.write_entity(dbsong, dbsong.get("modified") or "")
     return updsong
 
@@ -274,7 +280,6 @@ HSMAXUP = 20
 def upd_hs_upload_songs(hsd, accid, uplds):
     uplds = [csv2song(u) for u in uplds]
     uplds = [unescape_song_fields(s) for s in uplds]
-    uplds = [s for s in uplds if not is_unrated_song(s)]
     uplds = uplds[0:HSMAXUP]
     retsongs = []
     for song in uplds:
