@@ -167,6 +167,7 @@ def write_upd_song(updsong, accid):
     # logging.info("appdat.write_upd_song " + str(updsong))
     dbsong = find_song(updsong)  # calls dbacc.query_entity
     if not dbsong and is_unrated_song(updsong): # nothing to create or update
+        updsong["dsId"] = 0  # required for serialization, shows song not found.
         return updsong
     if dbsong and is_unrated_song(updsong): # merge lp w/prev rating info
         update_song_fields(updsong, dbsong, only=["lp", "pd", "pc"])
