@@ -1,4 +1,4 @@
-/*global app, jt, rundata, DOMParser */
+/*global app, jt, rundata, colorAdjWk, DOMParser */
 /*jslint browser, white, unordered, long */
 
 app.login = (function () {
@@ -1122,8 +1122,9 @@ app.login = (function () {
             jt.out("reptbodydiv", jt.tac2html(
                 [["ul", {cla:"wt20list"}, rst.recs.map((s) =>
                     ["li",
-                     ["span", {id:"wtidspan" + s.dsId},
-                      mgrs.rpt.songDispHTML(s)]])],
+                     ["div", {cla:"wt20itemdiv"},
+                      ["span", {cla:"wtidspan", id:"wtidspan" + s.dsId},
+                       mgrs.rpt.songDispHTML(s)]]])],
                 ["div", {id:"mylistenerpagelinkdiv"}, myListenerPageLink()]]));
             jt.out("aelrangediv", "");
             jt.out("repsongtotaldiv", "");
@@ -1139,6 +1140,19 @@ app.login = (function () {
     mgrs.rpt = (function () {
         const sdat = {};
         const dst = {mode:"share", stat:"", tmo:null, gst:0};
+        function adjustWeeklyBackgroundColor () {
+            if(colorAdjWk) {
+                const clrs = {top:{red:0xFF, green:0xC2, blue:0xA4},
+                              end:{red:0xFF, green:0x9C, blue:0x6B}};
+                Object.keys(clrs).forEach(function (sk) {
+                    Object.keys(clrs[sk]).forEach(function (ck) {
+                        clrs[sk][ck] = Math.min(
+                            255, clrs[sk][ck] * colorAdjWk[ck]); }); });
+                const rgbs = Object.keys(clrs).map((sk) =>
+                    ("rgb(" + clrs[sk].red + ", " + clrs[sk].green + ", " +
+                     clrs[sk].blue) + ")");
+                const grad = "linear-gradient(" + rgbs.join(",") + ")";
+                jt.byId("sitecontentdiv").style.background = grad; } }
         function searchLinkOC (t1, t2) {
             return "window.open('" +
                 app.prof.dispatch("home", "songSearchURL", t1, t2) +
@@ -1341,6 +1355,7 @@ app.login = (function () {
                 updateSongTextIfChanged(i); }
             jt.out("rcmtinstdiv" + i, instr); },
         initialize: function () {
+            adjustWeeklyBackgroundColor();
             jt.byId("hubaccountcontentdiv").style.display = "none";
             activateSongLinks();
             app.prof.dispatch("home", "wt20init", sdat.songs);

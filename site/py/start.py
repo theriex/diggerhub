@@ -59,6 +59,7 @@ INDEXHTML = """
 </script>
 <script>
   var rundata = "";
+  var colorAdjWk = "";
 </script>
 <script src="$RDRjs/jtmin.js?$CBPARAM"></script>
 <script src="$RDRjs/app.js?$CBPARAM"></script>
@@ -354,15 +355,22 @@ def weekly_top20_page(stinf, sasum):
     diop = stinf["path"].replace("plink", "dio") + "/wt20img.png"
     stinf["replace"]["$SITEPIC"] = "/" + diop
     stinf["replace"]["rundata = \"\""] = "rundata = " + json.dumps(sasum)
+    wka = color_adjustment_for_this_week()
+    stinf["replace"]["colorAdjWk = \"\""] = "colorAdjWk = " + json.dumps(wka)
     return replace_and_respond(stinf)
 
 
-def report_background_image():
+def color_adjustment_for_this_week():
     wknum = datetime.datetime.today().isocalendar()[1]
     adj = {"red":[0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0],
            "green":[0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2],
            "blue": [1.7,1.6,1.5,1.4,1.3,1.2,1.1,0.9]}
     wka = {key: val[(wknum + 1) % len(val)] for key, val in adj.items()}
+    return wka
+
+
+def report_background_image():
+    wka = color_adjustment_for_this_week()
     img = Image.open(mconf.rpbgimg).convert("RGB")
     red, green, blue = img.split()
     red = red.point(lambda i: i * wka["red"])
@@ -370,6 +378,7 @@ def report_background_image():
     blue = blue.point(lambda i: i * wka["blue"])
     img = Image.merge('RGB', (red, green, blue))
     return img
+
 
 def weekly_top20_image(sasum):
     songs = util.load_json_or_default(sasum["songs"], [])

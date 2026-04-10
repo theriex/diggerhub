@@ -214,6 +214,10 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
 .wt20list, .bmrklist { margin:10px 0px; list-style:none; }
 .wt20list li { padding:0px 0px 6px 28px;
    background:url("../img/searchbullet.png") left top no-repeat; }
+.wt20itemdiv { background-image:url("../img/white60percent.png");
+  padding:5px; border-radius:12px; max-width:600px; }
+.srespdiv { padding-left:16px; }
+.srespdiv button { font-size:x-small; }
 .bmrklist li { padding:0px 0px 6px 28px;
    background:url("../img/bookmarkbullet.png") left top no-repeat; }
 .bmrklist li span { font-size:small; padding-right:5px; }
