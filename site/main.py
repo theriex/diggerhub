@@ -18,6 +18,7 @@ handler.setFormatter(logging.Formatter(
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 logger.addHandler(handler)
+# logging.info("main.py starting imports")
 import flask
 import py.util as util
 import py.start as start
