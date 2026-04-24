@@ -326,10 +326,25 @@ app.prof = (function () {
                 case "Considering": return "background-color:#9ff6c1"; //green;
                 case "Notable": return "background-color:#9feaf6";     //blue;
                 default: return ""; } }
+        function getTSVDataURI () {
+            var tsv;  //tab separated values for spreadsheet use
+            const bookmarks = dst.fbks[fetchKey()];
+            if(!bookmarks) { return; }  //display not initialized yet
+            const flds = ["modified","cs","bmt","ar","ab","nt","url","haf"];
+            tsv = flds.join("\t") + "\n";
+            bookmarks.forEach(function (bmk) {
+                flds.forEach(function (fld) {
+                    tsv += bmk[fld].replace(/[\t\n]/g, " ") + "\t"; });
+                tsv += "\n"; });
+            return "data:text/html;charset=utf-8," + jt.enc(tsv); }
         function makeTabularDisplay (ctrs) {  //redraw matched header/content
             jt.out("profcontdispdiv", jt.tac2html(
                 [["div", {cla:"profsectiontitlediv"},
                   ["Bookmarks",
+                   ["a", {href:getTSVDataURI(),
+                          download:"DiggerHubBookmarks.tsv"},
+                    ["img", {src:app.util.dr("img/download.png"),
+                             cla:"featureico"}]],
                    ["a", {href:"#addbookmark", id:"addbookmarklink",
                           onclick:mdfs("bks.showDetails", -1)},
                     ["img", {src:app.util.dr("img/plusbutton.png"),
