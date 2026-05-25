@@ -15,7 +15,7 @@ from PIL import Image, ImageDraw, ImageFont
 import json
 import datetime
 
-CACHE_BUST_PARAM = "v=260424"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=260525"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -146,10 +146,8 @@ FLOWCONTENTHTML = """
 
 <div id="quickdispdiv" class="textcontentdiv">
 
-Digger is an immediate music player similar to what you would expect from a
-streaming service, using your own music files and song impressions.  If you
-have some albums on your phone, use Digger as your personal anytime music
-station.
+Digger turns the music you own into a personal music station, automatically playing what you want to hear based entirely on how you feel. No AI or outside data used.
+
 
 </div>
 
@@ -173,7 +171,7 @@ station.
 
 <div id="joinindispdiv" class="textcontentdiv">
 
-Listeners use DiggerHub for backup and sync across devices, sharing top songs for the week, bookmarking new music for consideration, collaborating through collections, and whatever other useful fun we come up with. Join in.
+Listeners use DiggerHub to backup and sync their data, share top songs for the week, bookmark new music to consider, collaborate through their collections and more. If and when they want.
 
 </div>
 
@@ -379,6 +377,22 @@ def report_background_image():
     img = Image.merge('RGB', (red, green, blue))
     return img
 
+def wt20_image_title(sasum, songs):
+    mtxt = "      "
+    if sasum["curate"]:
+        mtxt += ("Curated top " + str(len(songs)) + " of " +
+                 str(sasum["ttlsongs"]))
+    else:
+        mtxt += "Recommended"
+    mtxt += " songs:\n\n"
+    return mtxt
+
+def wt20_image_footer(sasum, songs, maxsglines):
+    foot = "\n"
+    if len(songs) > maxsglines:
+        foot = "...\n"
+    foot += "\nLinks not tracked. Listener: " + sasum["digname"] + "\n"
+    return foot
 
 def weekly_top20_image(sasum):
     songs = util.load_json_or_default(sasum["songs"], [])
@@ -392,13 +406,15 @@ def weekly_top20_image(sasum):
                 if rec["recommended"]:
                     rsgs.append(songs[idx])
             songs = rsgs
-    songs = songs[0:15]  # limited vertical space
-    mtxt = "      " + sasum["digname"] + " recs week\n"
+    maxsglines = 12
+    mtxt = wt20_image_title(sasum, songs)
+    foot = wt20_image_footer(sasum, songs, maxsglines)
+    songs = songs[0:maxsglines]  # limited vertical space
     for idx, song in enumerate(songs):
         mtxt += str(idx + 1) + ". " + song["ar"] + " - " + song["ti"] + "\n"
     if not songs:
         mtxt += "All new music this week"
-    mtxt += "..."
+    mtxt += foot
     img = report_background_image()
     draw = ImageDraw.Draw(img)
     # image size may be reduced at least 3x, aim for minimum 10px font size
