@@ -207,6 +207,7 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
 #reptitlelinediv { font-size:20px; font-style:italic; }
 #reportoutercontentdiv { min-height:90vh; }
 #reportinnercontentdiv { padding:10px; }  /* adjusted in login.js */
+.outofspan { font-size:small; font-style:normal; }
 .datevalspan { font-size:small; }
 .repsummarylabelspan { padding-right:5px; font-size:medium; font-style:italic;
   font-weight:bold; }
