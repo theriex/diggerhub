@@ -15,7 +15,7 @@ from PIL import Image, ImageDraw, ImageFont
 import json
 import datetime
 
-CACHE_BUST_PARAM = "v=260526"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=260713"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -306,8 +306,8 @@ def automated_wt20_content(sasum):
     for song in songs:
         html += "<li>" + song_html(song) + "\n"
     if not songs:
-        html += ("<p>All new music this week.<br/>" +
-                 "Will recommend as collected.</p>")
+        html += ("<p>New music discovery and consideration.<br/>" +
+                 "Check back next week.</p>")
     html += "</ul>\n\n"
     html += "<div id=\"aelrangediv\">\n"
     labs = [{"name":"Easiest", "fld":"easiest"},
@@ -328,9 +328,11 @@ def weekly_top20_content_html(sasum):
     digname = sasum["digname"]
     mdstart = month_and_day_from_dbtimestamp(sasum["start"])
     mdend = month_and_day_from_dbtimestamp(sasum["end"])
-    prt = "Curated" if sasum["curate"] else "Collected"
-    tline = ("<span id=\"hrprspan\">" + prt + " recommendations</span>" +
-             " <span class=\"outofspan\">from " + str(sasum["ttlsongs"]) + 
+    prt = "Best from my library"   # see also login.rsp.redraw
+    if sasum["curate"]:
+        prt += " (curated)"
+    tline = ("<span id=\"hrprspan\">" + prt + "</span>" +
+             " <span class=\"outofspan\">of " + str(sasum["ttlsongs"]) + 
              "</span>" +
              " <span id=\"hrtpspan\" class=\"datevalspan\"" +
              " data-plink=\"plink/wt20/" + sasum["digname"] + "/" +
@@ -415,7 +417,7 @@ def weekly_top20_image(sasum):
     for idx, song in enumerate(songs):
         mtxt += str(idx + 1) + ". " + song["ar"] + " - " + song["ti"] + "\n"
     if not songs:
-        mtxt += "All new music this week"
+        mtxt += "New music discovery and consideration."
     mtxt += foot
     img = report_background_image()
     draw = ImageDraw.Draw(img)

@@ -566,7 +566,7 @@ app.prof = (function () {
                 tsi.html += jt.tac2html(
                     ["a", {href:url,
                            onclick:"window.open('" + url + "');return false"},
-                     ["Recommendations this week",
+                     ["Best songs from my library",
                       ["img", {src:app.util.dr("img/rtnwlink.png"),
                                cla:"ico20"}]]]); }
             return tsi.html; }

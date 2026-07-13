@@ -1118,7 +1118,9 @@ app.login = (function () {
                  rundata.curate.rovrs[i].recommended));
             rst.chgs = [];
             if(!rst.recs.length) { return jt.log("No recommended songs"); }
-            jt.out("hrprspan", "Curated recommendations");
+            jt.out("hrprspan", "Best from my library");
+            if(rundata.curate && rundata.curate.rovrs) {
+                jt.out("hrprspan", "Best from my library (curated)"); }
             jt.out("reptbodydiv", jt.tac2html(
                 [["ul", {cla:"wt20list"}, rst.recs.map((s) =>
                     ["li",
