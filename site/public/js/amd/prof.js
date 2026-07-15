@@ -149,11 +149,11 @@ app.prof = (function () {
                 ["textarea", {id:"edbta" + fld, rows:4, cols:34,
                               placeholder:iphs[fld]},
                  (bmk[fld] || "")]); } }
-        function formAttrVal (fld, itype) {
+        function formAttrVal (fld, itype, bmk) {
             var label = fld;
             if(fld === "url") {
                 label = jt.tac2html(
-                    ["a", {href:"#open", onclick:mdfs("edb.openurl")},
+                    ["a", {href:bmk.url, onclick:mdfs("edb.openurl")},
                      "URL"]); }
             return jt.tac2html(
                 [["div", {cla:"edbformattrdiv"}, label],
@@ -271,7 +271,7 @@ app.prof = (function () {
                     ["div", {id:"edbformtopmsgdiv"}],
                     ["div", {id:"edbformxdiv"},
                      ["a", {href:"#close", onclick:mdfs("edb.cancel")}, "X"]]]],
-                  formline(formAttrVal("url", "string")),
+                  formline(formAttrVal("url", "string", bmk)),
                   formline([formAttrVal("bmt", "select"),
                             formAttrVal("cs", "select")]),
                   formline(formAttrVal("ar", "string")),
