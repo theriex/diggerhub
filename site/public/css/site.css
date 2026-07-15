@@ -287,8 +287,12 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
 .profmodtd { font-size:small; }
 #profcontdisptoplinediv { margin:-4px 0px 8px 0px; font-size:medium;
   font-style:italic; }
+.profsectionhdrdiv { font-size:medium; }
+.psdordiv { display:inline-block; font-style:italic; padding:0px 6px 0px 0px; }
+.psdqtdiv { display:inline-block; font-weight:bold; }
 .profsectiontitlediv { letter-spacing:0.4em; text-transform:uppercase;
-  font-size:small; font-style:italic; }
+  font-size:large; font-style:italic; display:inline-block;
+  padding:0px 0px 0px 8px; }
 .profsectiontitlediv a { padding:0px 6px; }
 .profdispactionsdiv { margin:-12px 0px 4px 200px; font-size:small; }
 #profbkmktitlediv { position:relative; }

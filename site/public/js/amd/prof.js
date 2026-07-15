@@ -497,40 +497,40 @@ app.prof = (function () {
                 return jt.out("songsdiv", "No recent songs"); }
             const songs = dst.songs.slice(0, dst.slen);
             jt.out("songsdiv", jt.tac2html(
-                [["ul", {cla:"wt20list"}, songs.map((s) =>
+                ["ul", {cla:"wt20list"}, songs.map((s) =>
                     ["li",
                      ["span", {id:"wtidspan" + s.dsId},
-                      app.login.dispatch("rpt", "songDispHTML", s)]])],
-                 ["div", {id:"songdispactionsdiv", cla:"profdispactionsdiv"},
-                  [["a", {href:"#" + (dst.sord === "best"? "recent" : "best"),
-                          onclick:(dst.sord === "best"? mdfs("home.byRecent") :
-                                                        mdfs("home.byBest"))},
-                    (dst.sord === "best"? "recent" : "best")],
-                   ",&nbsp;&nbsp;",
-                   ["a", {href:"#more", onclick:mdfs("home.toglen", "slen",
-                                                     "slentoga")},
-                    dst.slentoga]]]])); }
+                      app.login.dispatch("rpt", "songDispHTML", s)]])]));
+            jt.out("sgordiv", jt.tac2html(
+                ["a", {href:"#" + (dst.sord === "best"? "recent" : "best"),
+                       onclick:(dst.sord === "best"? mdfs("home.byRecent") :
+                                                     mdfs("home.byBest"))},
+                 (dst.sord === "best"? "Top" : "Recent")]));
+            jt.out("sgqtdiv", jt.tac2html(
+                ["a", {href:"#more",
+                       onclick:mdfs("home.toglen", "slen", "slentoga")},
+                 dst.slen])); }
         function displayBookmarks () {
             if(!rundata.bkmks || !rundata.bkmks.length) {
                 return jt.out("bkmksdiv", "No recent bookmarke"); }
             const bmks = dst.bkmks.slice(0, dst.blen);
             jt.out("bkmksdiv", jt.tac2html(
-                [["ul", {cla:"bmrklist"}, bmks.map((b) =>
+                ["ul", {cla:"bmrklist"}, bmks.map((b) =>
                     ["li",
                      [["span", b.cs],
                       ["a", {href:"#" + b.dsId,
                              onclick:"window.open('" + b.url +
                                      "');return false"},
-                       mgrs.util.bookmarkIdentHTML(b)]]])],
-                 ["div", {id:"bmksdispactiondiv", cla:"profdispactionsdiv"},
-                  [["a", {href:"#" + (dst.bord === "best"? "recent" : "best"),
+                       mgrs.util.bookmarkIdentHTML(b)]]])]));
+            jt.out("bmordiv", jt.tac2html(
+                ["a", {href:"#" + (dst.bord === "best"? "recent" : "best"),
                           onclick:(dst.bord === "best"? mdfs("home.byMod") :
                                                         mdfs("home.byCons"))},
-                    (dst.bord === "best"? "recent" : "best")],
-                   ",&nbsp;&nbsp;",
-                   ["a", {href:"#more", onclick:mdfs("home.toglen", "blen",
-                                                     "blentoga")},
-                    dst.blentoga]]]])); }
+                 (dst.bord === "best"? "Top" : "Recent")]));
+            jt.out("bmqtdiv", jt.tac2html(
+                ["a", {href:"#more",
+                       onclick:mdfs("home.toglen", "blen", "blentoga")},
+                 dst.blen])); }
         function displayBookmarkPageAccess () {
             jt.out("profbkmkaccessdiv", jt.tac2html(
                 ["a", {href:"#update", onclick:mdfs("home.requireAcc4Bkmks")},
@@ -704,11 +704,17 @@ app.prof = (function () {
             jt.out("profcontdispdiv", jt.tac2html(
                 [["div", {id:"profcontdisptoplinediv"}],
                  ["div", {id:"profmuwkdiv"}, wt20Content()],
-                 ["div", {cla:"profsectiontitlediv"}, "Songs"],
+                 ["div", {cla:"profsectionhdrdiv"},
+                  [["div", {cla:"psdordiv", id:"sgordiv"}, ""], //e.g. "Top"
+                   ["div", {cla:"psdqtdiv", id:"sgqtdiv"}, ""], //e.g. 5
+                   ["div", {cla:"profsectiontitlediv"}, "Songs"]]],
                  ["div", {id:"songsdiv"}],
-                 ["div", {cla:"profsectiontitlediv"},
-                  ["Bookmarks",
-                   ["div", {id:"profbkmkaccessdiv"}]]],
+                 ["div", {cla:"profsectionhdrdiv"},
+                  [["div", {cla:"psdordiv", id:"bmordiv"}, ""], //e.g. "Top"
+                   ["div", {cla:"psdqtdiv", id:"bmqtdiv"}, ""], //e.g. 5
+                   ["div", {cla:"profsectiontitlediv"},
+                    ["Bookmarks",
+                     ["div", {id:"profbkmkaccessdiv"}]]]]],
                  ["div", {id:"bkmksdiv"}]]));
             mgrs.home.byBest();   //display songs
             mgrs.home.byCons();  //display bookmarks
