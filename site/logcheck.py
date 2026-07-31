@@ -26,6 +26,24 @@ def mail_error_notice(txt):
                    domain=mconf.domain)
 
 
+def err_tighten(line):
+    known = [{"emk":"Multiple/Conflicting Connection Header Data Found",
+              "mid":"Header fuckery",
+              "stm":r"\[data\s\"([^\"]*)\"\]"},
+             {"emk":"Restricted File Access Attempt",
+              "mid":"Restricted access",
+              "stm":r"REQUEST_FILENAME:\s([^\"]*)\""},
+             {"emk":"URL file extension is restricted by policy",
+              "mid":"Restricted filetype",
+              "stm":r"\[data\s\"([^\"]*)\"\]"}]
+    for sdef in known:
+        if sdef["emk"] in line:
+            mres = re.search(sdef["stm"], line)
+            if mres:
+                return sdef["mid"] + ": " + mres.group(1) + "\n"
+    return line
+
+
 def check_line_for_errs(ctx, line, markers, skips):
     for marker in markers:
         if re.search(marker, line):
@@ -35,7 +53,7 @@ def check_line_for_errs(ctx, line, markers, skips):
                     iserr = False
             if iserr:
                 ctx["errc"] += 1
-                ctx["info"] += line  # includes newline at end
+                ctx["info"] += err_tighten(line)  # includes newline at end
 
 
 def is_relevant_log_line(lc, srchts, line):
