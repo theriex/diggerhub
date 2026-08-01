@@ -28,19 +28,28 @@ def mail_error_notice(txt):
 
 def err_tighten(line):
     known = [{"emk":"Multiple/Conflicting Connection Header Data Found",
-              "mid":"Header fuckery",
+              "mid":"Header hacking",
               "stm":r"\[data\s\"([^\"]*)\"\]"},
              {"emk":"Restricted File Access Attempt",
               "mid":"Restricted access",
               "stm":r"REQUEST_FILENAME:\s([^\"]*)\""},
              {"emk":"URL file extension is restricted by policy",
               "mid":"Restricted filetype",
-              "stm":r"\[data\s\"([^\"]*)\"\]"}]
+              "stm":r"\[data\s\"([^\"]*)\"\]"},
+             {"emk":"PHP Injection Attack: PHP Open Tag Found",
+              "mid":"PHP Inject Open Tag",
+              "stm":r"\sfound\swithin\s([^\"]*)\""},
+             {"emk":"PHP Injection Attack: I/O Stream Found",
+              "mid":"PHP Inject I/O Stream",
+              "stm":r"Matched\sData:\s([^\"]*)\""},
+             {"emk":"SQL Injection Attack: SQL function name detected",
+              "mid":"SQL Inject func name",
+              "stm":r"Matched\sData:\s([^\"]*)"}]  #term \" may not be in line
     for sdef in known:
         if sdef["emk"] in line:
             mres = re.search(sdef["stm"], line)
             if mres:
-                return sdef["mid"] + ": " + mres.group(1) + "\n"
+                return "*>>" + sdef["mid"] + ": " + mres.group(1) + "\n"
     return line
 
 
