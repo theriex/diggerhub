@@ -47,12 +47,24 @@ def err_tighten(line):
               "stm":r"Matched\sData:\s([^\"]*)"},  #term \" may not be in line
              {"emk":"Match of \"within ",
               "mid":"Content injection:",
-              "stm":r"(within)"}]
+              "stm":r"(within)"},
+             {"emk":"Invalid character in request (null character)",
+              "mid":"Invalid request char",
+              "stm":r"(null)"},
+             {"emk":"Possible Unicode character bypass detected",
+              "mid":"Unicode bypass attempt",
+              "stm":r"Pattern\smatch.*\sat\s([^.]*)"},
+             {"emk":"Attempt to access a backup or working file",
+              "mid":"Backup file fishing",
+              "stm":r"\[data\s\"([^\"]*)\"\]"}]
     for sdef in known:
         if sdef["emk"] in line:
             mres = re.search(sdef["stm"], line)
             if mres:
-                return "*>>" + sdef["mid"] + ": " + mres.group(1) + "\n"
+                errdet = mres.group(1)
+                if len(errdet) > 30:
+                    errdet = errdet[0:30] + "..."
+                return "*>>" + sdef["mid"] + ": " + errdet + "\n"
     return line
 
 
