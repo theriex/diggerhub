@@ -44,7 +44,10 @@ def err_tighten(line):
               "stm":r"Matched\sData:\s([^\"]*)\""},
              {"emk":"SQL Injection Attack: SQL function name detected",
               "mid":"SQL Inject func name",
-              "stm":r"Matched\sData:\s([^\"]*)"}]  #term \" may not be in line
+              "stm":r"Matched\sData:\s([^\"]*)"},  #term \" may not be in line
+             {"emk":"Match of \"within ",
+              "mid":"Content injection:",
+              "stm":r"(within)"}]
     for sdef in known:
         if sdef["emk"] in line:
             mres = re.search(sdef["stm"], line)
