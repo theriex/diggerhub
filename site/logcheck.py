@@ -42,6 +42,9 @@ def err_tighten(line):
              {"emk":"PHP Injection Attack: I/O Stream Found",
               "mid":"PHP Inject I/O Stream",
               "stm":r"Matched\sData:\s([^\"]*)\""},
+             {"emk":"PHP Injection Attack: Variable Function Call Found",
+              "mid":"PHP Inject var funcall",
+              "stm":r"Matched\sData:\s([^\"]*)"},
              {"emk":"SQL Injection Attack: SQL function name detected",
               "mid":"SQL Inject func name",
               "stm":r"Matched\sData:\s([^\"]*)"},  #term \" may not be in line
@@ -56,7 +59,19 @@ def err_tighten(line):
               "stm":r"Pattern\smatch.*\sat\s([^.]*)"},
              {"emk":"Attempt to access a backup or working file",
               "mid":"Backup file fishing",
-              "stm":r"\[data\s\"([^\"]*)\"\]"}]
+              "stm":r"\[data\s\"([^\"]*)\"\]"},
+             {"emk":"Path Traversal Attack (/../) or (/.../)",
+              "mid":"Path traversal attack",
+              "stm":r"REQUEST_URI_RAW:\s([^\"]*)\"\]"},
+             {"emk":"/proc/self/environ access",
+              "mid":"Process env access",
+              "stm":r"uri\s\"([^\"]*)\"\]"},
+             {"emk":"Deep directory recursion",
+              "mid":"Too many rel refs",
+              "stm":r"\[data\s\"([^\"]*)\"\]"},
+             {"emk":"OS File Access Attempt",
+              "mid":"OS file reference",
+              "stm":r"Matched\sData:\s([^\"]*)\"\]"}]
     for sdef in known:
         if sdef["emk"] in line:
             mres = re.search(sdef["stm"], line)
