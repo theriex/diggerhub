@@ -71,7 +71,10 @@ def err_tighten(line):
               "stm":r"\[data\s\"([^\"]*)\"\]"},
              {"emk":"OS File Access Attempt",
               "mid":"OS file reference",
-              "stm":r"Matched\sData:\s([^\"]*)\"\]"}]
+              "stm":r"Matched\sData:\s([^\"]*)\"\]"},
+             {"emk":"Found User-Agent associated with security scanner",
+              "mid":"Security Scanner Id",
+              "stm":r"Matched\sData:\s([^\s]*)\s"}]
     for sdef in known:
         if sdef["emk"] in line:
             mres = re.search(sdef["stm"], line)
