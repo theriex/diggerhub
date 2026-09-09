@@ -45,6 +45,9 @@ def err_tighten(line):
              {"emk":"PHP Injection Attack: Variable Function Call Found",
               "mid":"PHP Inject var funcall",
               "stm":r"Matched\sData:\s([^\"]*)"},
+             {"emk":"PHP Injection Attack: High-Risk PHP Function Call Found",
+              "mid":"PHP Inject High-Risk function call",
+              "stm":r"Matched\sData:\s([^\"]*)"},
              {"emk":"SQL Injection Attack: SQL function name detected",
               "mid":"SQL Inject func name",
               "stm":r"Matched\sData:\s([^\"]*)"},  #term \" may not be in line
@@ -74,6 +77,12 @@ def err_tighten(line):
               "stm":r"Matched\sData:\s([^\"]*)\"\]"},
              {"emk":"Found User-Agent associated with security scanner",
               "mid":"Security Scanner Id",
+              "stm":r"Matched\sData:\s([^\s]*)\s"},
+             {"emk":"Request Containing Content, but Missing Content-Type",
+              "mid":"Missing Content-Type header",
+              "stm":r"uri\s\"([^\"]*)\"\]"},
+             {"emk":"Node.js Injection Attack",
+              "mid":"Node.js Injection Attack",
               "stm":r"Matched\sData:\s([^\s]*)\s"}]
     for sdef in known:
         if sdef["emk"] in line:
