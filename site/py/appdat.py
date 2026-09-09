@@ -1124,7 +1124,16 @@ def songttls():
     return util.respJSON([digacc], audience="private")
 
 
-# Auth required. Fetch the oldest hub songs to maybe transfer to device.
+# Auth required. Fetch the oldest playable hub songs that match the given
+# filter parameters. The caller would like to suggest 5-6 albums, from a
+# variety of artists, that could be downloaded to the local device for more
+# listening variety. Look for the least recently played, average or above,
+# playable more than once a year songs and return enough for the client to
+# make some reasonable suggestions. Bear in mind some artists have a lot of
+# songs (e.g. The Beatles:245, Ray Charles:130). If those are also the least
+# recently played then fetching ~1k songs seems appropriate for a good
+# chance finding a variety of 5-6 artists to suggest. Figuring ~.65k/song
+# for comms load so 650k. Hefty, but tolerable. Could be improved using CSV.
 def suggdown():
     try:
         digacc, _ = util.authenticate()
@@ -1145,11 +1154,12 @@ def suggdown():
         where += (" AND al >= " + almin +
                   " AND al <= " + almax +
                   " AND el >= " + elmin +
-                  " and el <= " + elmax +
-                  " AND find_in_set(fq, \"N,P,B,Z,O\")" +
+                  " AND el <= " + elmax +
+                  " AND rv >= 5" +
+                  " AND find_in_set(fq, \"N,P,B,Z\")" +
                   " AND lp IS NOT NULL" +
                   # avg 10-15 tracks per album, need 5+1 albums worth
-                  " ORDER BY lp LIMIT 100")
+                  " ORDER BY lp LIMIT 1000")
         logging.info("suggdown query " + where)
         songs = dbacc.query_entity("Song", where)
     except ValueError as e:
