@@ -1,4 +1,6 @@
 #!/bin/bash
 kill -SIGINT $(ps -A | grep "gunicorn" | head -1 | awk '{$1=$1};1' | cut -d' ' -f 1)
 nginx -s quit
-echo "# brew services stop mysql"
+echo "# mysql.server stop"
+echo "# deactivate"
+
