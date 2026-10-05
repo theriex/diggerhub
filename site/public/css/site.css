@@ -205,6 +205,7 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
 #repheadingdiv { padding:0px 0px 0px 70px; margin-top:-12px; }
 #reptopactiondiv { padding-bottom:5px; }
 #reptitlelinediv { font-size:20px; font-style:italic; }
+#hrtpspan { white-space:nowrap; }
 #reportoutercontentdiv { min-height:90vh; }
 #reportinnercontentdiv { padding:10px; }  /* adjusted in login.js */
 .outofspan { font-size:small; font-style:normal; }
