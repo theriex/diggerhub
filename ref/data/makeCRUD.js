@@ -432,6 +432,7 @@ function helperFunctions () {
     pyc += "    isostr = re.sub(r\"\\.\\d*Z\", \"Z\", isostr)  # remove microsecond if any\n";
     pyc += "    dt = datetime.datetime.now(datetime.UTC)\n";
     pyc += "    dt = dt.strptime(isostr, \"%Y-%m-%dT%H:%M:%SZ\")\n";
+    pyc += "    dt = dt.replace(tzinfo=datetime.timezone.utc)\n";
     pyc += "    return dt\n";
     pyc += "\n";
     pyc += "\n";

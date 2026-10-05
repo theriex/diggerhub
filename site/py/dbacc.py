@@ -480,6 +480,7 @@ def ISO2dt(isostr):
     isostr = re.sub(r"\.\d*Z", "Z", isostr)  # remove microsecond if any
     dt = datetime.datetime.now(datetime.UTC)
     dt = dt.strptime(isostr, "%Y-%m-%dT%H:%M:%SZ")
+    dt = dt.replace(tzinfo=datetime.timezone.utc)
     return dt
 
 
