@@ -5,6 +5,7 @@
 #pylint: disable=logging-not-lazy
 #pylint: disable=too-many-lines
 #pylint: disable=consider-using-from-import
+#pylint: disable=chained-comparison
 
 import logging
 import json
@@ -530,7 +531,7 @@ def fetch_matching_songs(digacc, fvs, limit):
              " AND rv >= " + str(fvs["minrat"]))
     where += fvs_match_sql_clauses(fvs)
     if (fvs["fpst"] == "on") and (fvs["fq"] == "on"):  # freq filtering active
-        now = datetime.datetime.utcnow().replace(microsecond=0)
+        now = datetime.datetime.now(datetime.UTC).replace(microsecond=0)
         pst = dbacc.dt2ISO(now - datetime.timedelta(days=1))
         bst = dbacc.dt2ISO(now - datetime.timedelta(days=90))
         zst = dbacc.dt2ISO(now - datetime.timedelta(days=180))
@@ -708,7 +709,7 @@ def acct2mf(digacc):
 # This might be improved, but whoever has listened to the most music in the
 # past 6 monthis is not a bad person to meet.
 def connect_me(digacc):
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.now(datetime.UTC)
     since = dbacc.dt2ISO(now - datetime.timedelta(days=180))
     sql = ("SELECT aid, count(dsId) AS scount FROM Song" +
            " WHERE modified >= \"" + since + "\"" +
@@ -817,7 +818,7 @@ def reply_to_digmsg(digacc, msgid, msgtype):
         return srcmsg
     too_many_messages = False
     if msgtype == "recresp":
-        now = datetime.datetime.utcnow()
+        now = datetime.datetime.now(datetime.UTC)
         time_window_start = dbacc.dt2ISO(now - datetime.timedelta(hours=24))
         where = ("WHERE msgtype = \"recresp\"" +
                  " AND sndr = " + str(digacc["dsId"]) +
@@ -870,7 +871,7 @@ def send_share_messages(digacc, idcsv):
     pms = dbacc.query_entity("DigMsg", where)
     if pms:
         rmsg = pms[0]
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.now(datetime.UTC)
     thresh = dbacc.dt2ISO(now - datetime.timedelta(days=reactdays))
     if not rmsg["modified"] or rmsg["modified"] < thresh:
         rmsg = dbacc.write_entity(rmsg, rmsg["modified"])

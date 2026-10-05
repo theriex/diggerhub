@@ -15,7 +15,7 @@ from PIL import Image, ImageDraw, ImageFont
 import json
 import datetime
 
-CACHE_BUST_PARAM = "v=261003"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=261005"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -273,7 +273,7 @@ def get_wt20_nav_link(direction, sasum):
     pdt = dbacc.dt2ISO(dbacc.ISO2dt(sasum["end"]) - td7)
     if direction == "next":
         ep7 = dbacc.ISO2dt(sasum["end"]) + td7
-        if ep7 > datetime.datetime.utcnow():
+        if ep7 > datetime.datetime.now(datetime.UTC):
             return ""
         img = "/img/skip.png"
         pdt = dbacc.dt2ISO(ep7)
@@ -476,7 +476,7 @@ def most_recent_songs(digacc):
     if not digacc:
         return ""
     # 5 weeks back ought to be enough for reasonable data
-    dback = datetime.datetime.utcnow() - datetime.timedelta(days=35)
+    dback = datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=35)
     where = ("WHERE aid = " + digacc["dsId"] +
              " AND modified >= \"" + dbacc.dt2ISO(dback) + "\"" +
              " ORDER BY modified DESC")

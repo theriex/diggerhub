@@ -20,7 +20,7 @@ import json
 
 
 def elapsed_days_since(timestamp):
-    diff = datetime.datetime.utcnow() - dbacc.ISO2dt(timestamp)
+    diff = datetime.datetime.now(datetime.UTC) - dbacc.ISO2dt(timestamp)
     return diff.days
 
 

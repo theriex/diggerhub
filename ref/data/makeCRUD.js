@@ -188,7 +188,7 @@ function entityKeyFields () {
     pyc += "\n";
     pyc += "\n";
     pyc += "def timestamp(offset=0):\n";
-    pyc += "    now = datetime.datetime.utcnow().replace(microsecond=0)\n";
+    pyc += "    now = datetime.datetime.now(datetime.UTC).replace(microsecond=0)\n";
     pyc += "    return dt2ISO(now + datetime.timedelta(minutes=offset))\n";
     pyc += "\n";
     pyc += "\n";
@@ -430,7 +430,7 @@ function helperFunctions () {
     pyc += "\n";
     pyc += "def ISO2dt(isostr):\n";
     pyc += "    isostr = re.sub(r\"\\.\\d*Z\", \"Z\", isostr)  # remove microsecond if any\n";
-    pyc += "    dt = datetime.datetime.utcnow()\n";
+    pyc += "    dt = datetime.datetime.now(datetime.UTC)\n";
     pyc += "    dt = dt.strptime(isostr, \"%Y-%m-%dT%H:%M:%SZ\")\n";
     pyc += "    return dt\n";
     pyc += "\n";
@@ -445,7 +445,7 @@ function helperFunctions () {
     pyc += "\n";
     pyc += "def nowISO():\n";
     pyc += "    \"\"\" Return the current time as an ISO string \"\"\"\n";
-    pyc += "    return dt2ISO(datetime.datetime.utcnow())\n";
+    pyc += "    return dt2ISO(datetime.datetime.now(datetime.UTC))\n";
     pyc += "\n";
     pyc += "\n";
     pyc += "def initialize_timestamp_fields(fields, vck):\n";
@@ -955,6 +955,11 @@ function createPythonDBAcc () {
     pyc += "#pylint: disable=too-many-branches\n";
     pyc += "#pylint: disable=too-many-locals\n";
     pyc += "#pylint: disable=unused-argument\n";
+    pyc += "#pylint: disable=consider-using-from-import\n";
+    pyc += "#pylint: disable=unnecessary-dict-index-lookup\n";
+    pyc += "#pylint: disable=raise-missing-from\n";
+    pyc += "#pylint: disable=too-many-statements\n";
+    pyc += "#pylint: disable=consider-using-dict-items\n";
     pyc += "import logging\n";
     pyc += "import flask\n";
     pyc += "import re\n";

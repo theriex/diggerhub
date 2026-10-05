@@ -21,6 +21,11 @@
 #pylint: disable=too-many-branches
 #pylint: disable=too-many-locals
 #pylint: disable=unused-argument
+#pylint: disable=consider-using-from-import
+#pylint: disable=unnecessary-dict-index-lookup
+#pylint: disable=raise-missing-from
+#pylint: disable=too-many-statements
+#pylint: disable=consider-using-dict-items
 import logging
 import flask
 import re
@@ -239,7 +244,7 @@ cachedefs = {
 
 
 def timestamp(offset=0):
-    now = datetime.datetime.utcnow().replace(microsecond=0)
+    now = datetime.datetime.now(datetime.UTC).replace(microsecond=0)
     return dt2ISO(now + datetime.timedelta(minutes=offset))
 
 
@@ -473,7 +478,7 @@ def db2app_fieldval(entity, field, inst):
 
 def ISO2dt(isostr):
     isostr = re.sub(r"\.\d*Z", "Z", isostr)  # remove microsecond if any
-    dt = datetime.datetime.utcnow()
+    dt = datetime.datetime.now(datetime.UTC)
     dt = dt.strptime(isostr, "%Y-%m-%dT%H:%M:%SZ")
     return dt
 
@@ -488,7 +493,7 @@ def dt2ISO(dt):
 
 def nowISO():
     """ Return the current time as an ISO string """
-    return dt2ISO(datetime.datetime.utcnow())
+    return dt2ISO(datetime.datetime.now(datetime.UTC))
 
 
 def initialize_timestamp_fields(fields, vck):

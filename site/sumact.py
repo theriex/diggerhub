@@ -99,14 +99,14 @@ def beta_activity_monitoring():
         activated = stdat.get("activated")
         if activated:
             dt = dbacc.ISO2dt(activated)
-            difft = datetime.datetime.utcnow() - dt
+            difft = datetime.datetime.now(datetime.UTC) - dt
             cdat["daysact"] = difft.total_seconds() // cdat["dsec"]
         cnts = stdat.get("cnts")
         if cnts:
             newest = cnts.get("newest")
             if newest:
                 dt = dbacc.ISO2dt(newest[0:20])
-                difft = datetime.datetime.utcnow() - dt
+                difft = datetime.datetime.now(datetime.UTC) - dt
                 cdat["daysidle"] = difft.total_seconds() // cdat["dsec"]
         txt += ("  " + str(bt["aid"]) + " " + bt["status"] + " " + bt["email"] +
                 " days active: " + str(cdat["daysact"]) +
@@ -338,7 +338,7 @@ def check_users():
 #   python sumact.py batch     # write SASum, email and update users
 #   python sumact.py remed 2025-08-27T00:00:00Z
 def run_with_params():
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.now(datetime.UTC)
     if len(sys.argv) > 1 and sys.argv[1] == "batch":
         runinfo["mode"] = "all"  # send mail and update digaccs
     if len(sys.argv) > 2:    # have specified ISO timestamp
