@@ -15,7 +15,7 @@ from PIL import Image, ImageDraw, ImageFont
 import json
 import datetime
 
-CACHE_BUST_PARAM = "v=261005"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=261009"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
