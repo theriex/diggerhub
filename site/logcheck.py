@@ -84,6 +84,9 @@ def err_tighten(line):
               "stm":r"uri\s\"([^\"]*)\"\]"},
              {"emk":"Node.js Injection Attack",
               "mid":"Node.js Injection Attack",
+              "stm":r"Matched\sData:\s([^\s]*)\s"},
+             {"emk":"Detects MSSQL code execution and info",
+              "mid":"MSSQL execution info",
               "stm":r"Matched\sData:\s([^\s]*)\s"}]
     for sdef in known:
         if sdef["emk"] in line:
