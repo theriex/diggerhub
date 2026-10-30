@@ -87,7 +87,10 @@ def err_tighten(line):
               "stm":r"Matched\sData:\s([^\s]*)\s"},
              {"emk":"Detects MSSQL code execution and info",
               "mid":"MSSQL execution info",
-              "stm":r"Matched\sData:\s([^\s]*)\s"}]
+              "stm":r"Matched\sData:\s([^\s]*)\s"},
+             {"emk":"Malformed multipart body",
+              "mid":"Content parser fuckery",
+              "stm":r"Match\sof\s\"([^\"]*)\""}]
     for sdef in known:
         if sdef["emk"] in line:
             mres = re.search(sdef["stm"], line)
