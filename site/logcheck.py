@@ -90,7 +90,10 @@ def err_tighten(line):
               "stm":r"Matched\sData:\s([^\s]*)\s"},
              {"emk":"Malformed multipart body",
               "mid":"Content parser fuckery",
-              "stm":r"Match\sof\s\"([^\"]*)\""}]
+              "stm":r"Match\sof\s\"([^\"]*)\""},
+             {"emk":"WordPress data harvesting, sweep fingerprint",
+              "mid":"WordPress data harvesting",
+              "stm":r"\[data\s\"([^\"]*)\"\]"}]
     for sdef in known:
         if sdef["emk"] in line:
             mres = re.search(sdef["stm"], line)
