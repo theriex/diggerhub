@@ -15,7 +15,7 @@ from PIL import Image, ImageDraw, ImageFont
 import json
 import datetime
 
-CACHE_BUST_PARAM = "v=261103"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=261120"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -146,9 +146,20 @@ FLOWCONTENTHTML = """
 
 <div id="quickdispdiv" class="textcontentdiv">
 
-Digger turns the music you own into a personal music station, automatically playing what you want to hear based entirely on how you feel. No AI or outside data used.
+Digger is a shuffle-style music library player featuring the controls you
+need to match what's on deck to your current listening situation. Tweak or
+annotate what's playing as you feel. Adjust the Energy Level range you are
+interested in hearing, whether you are listening in a flow state, listening
+with others, how challenging you want, and more.
 
+</div>
 
+<div id="playfeaturesdiv" class="boxedcontentdiv">
+<table>
+<tr><td><img class="featureico" src="img/deck.png"/></td><td>Continuous tuneable library select.</td></tr>
+<tr><td><img class="featureico" src="img/album.png"/></td><td>Switch to (or from) album listening anytime.</td></tr>
+<tr><td><img class="featureico" src="img/search.png"/></td><td>Fast find music by Artist, Album, Title, genre/keyword and personal notes simultaneously.</td></tr>
+</table>
 </div>
 
 <div id="downloadsdiv" class="boxedcontentdiv">
@@ -169,22 +180,8 @@ Digger turns the music you own into a personal music station, automatically play
 <div id="announcediv" class="textcontentdiv">
 </div>
 
-<div id="joinindispdiv" class="textcontentdiv">
-
-Listeners use DiggerHub to backup and sync their data, share top songs for the week, bookmark new music to consider, collaborate through their collections and more. If and when they want.
-
-</div>
-
-<div id="playfeaturesdiv" class="boxedcontentdiv">
-<table>
-<tr><td><img class="featureico" src="img/deck.png"/></td><td>Continuous select autoplay from your own music impressions.</td></tr>
-<tr><td><img class="featureico" src="img/album.png"/></td><td>Switch to (or from) album listening anytime.</td></tr>
-<tr><td><img class="featureico" src="img/search.png"/></td><td>Fast find music by artist, album, title, genre and personal note.</td></tr>
-</table>
-</div>
-
 <div id="gettingstartedtitlediv" class="textcontentctrdiv">
-- Getting started -
+Here's some screenshots using a subset of Eric's library. Your music tastes may vary.
 </div>
 
 <div class="annoscrdiv">
@@ -210,6 +207,12 @@ Listeners use DiggerHub to backup and sync their data, share top songs for the w
 -->
 
 <div class="textsectionspacerdiv"></div>
+
+<div id="joinindispdiv" class="textcontentdiv">
+
+Listeners use DiggerHub to backup and sync their data, share top songs for the week, bookmark new music to consider, collaborate through their collections and more. If and when they want.
+
+</div>
 
 <div class="textcontentdiv convocontentdiv"> Digger reaches across genres,
 styles, time periods and geography, preferring what you've least recently

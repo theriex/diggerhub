@@ -28,7 +28,7 @@ app.prof = (function () {
         v4f: function (fld) {
             switch(fld) {
             case "cs": return ["Pending", "Listened", "Notable", "Considering",
-                               "Collected", "Archived"];
+                               "Searching", "Collected", "Archived"];
             case "bmt": return ["Album","Performance","Song","Other"]; } },
         authdata: function (obj) {
             const acct = app.login.getAuth();

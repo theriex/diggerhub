@@ -155,6 +155,7 @@ module.exports = (function () {
      //        "Listened" - Listened to it, see my comments if I bothered.
      //        "Notable" - Worth hearing, not considering owning.
      //        "Considering" - Might add this to my collection.
+     //        "Searching" - Looking for a recording.
      //        "Collected" - Own this, might have associated song ratings.
      //        "Archived" - No longer in listening rotation.
      //        "Deleted" - Mark for deletion processing.

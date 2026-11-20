@@ -218,10 +218,11 @@ app.login = (function () {
     mgrs.annc = (function () {
     return {
         display: function () {
-            const betaurl = "/beta";
-            jt.out("announcediv", jt.tac2html(
-                ["div", {id:"anncbetadiv"},
-                 ["a", {href:betaurl}, "Beta test Digger"]])); }
+            jt.out("announcediv", ""); }
+            // const betaurl = "/beta";
+            // jt.out("announcediv", jt.tac2html(
+            //     ["div", {id:"anncbetadiv"},
+            //      ["a", {href:betaurl}, "Beta test Digger"]])); }
     };  //end mgrs.annc returned functions
     }());
 
