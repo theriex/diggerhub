@@ -15,7 +15,7 @@ from PIL import Image, ImageDraw, ImageFont
 import json
 import datetime
 
-CACHE_BUST_PARAM = "v=261120"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=261125"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -146,11 +146,11 @@ FLOWCONTENTHTML = """
 
 <div id="quickdispdiv" class="textcontentdiv">
 
-Digger is a shuffle-style music library player featuring the controls you
-need to match what's on deck to your current listening situation. Tweak or
-annotate what's playing as you feel. Adjust the Energy Level range you are
-interested in hearing, whether you are listening in a flow state, listening
-with others, how challenging you want, and more.
+Digger is a shuffle-style music library player with the controls you need to
+match selection to your listening context. Mark up what's playing as you
+feel. Adjust the <em>Energy Level</em> range you want, whether you are
+listening in a <em>flow</em> state, what <em>Approachability</em> range you
+want, whether you are listening with others, and more. Play your library.
 
 </div>
 
@@ -158,7 +158,7 @@ with others, how challenging you want, and more.
 <table>
 <tr><td><img class="featureico" src="img/deck.png"/></td><td>Continuous tuneable library select.</td></tr>
 <tr><td><img class="featureico" src="img/album.png"/></td><td>Switch to (or from) album listening anytime.</td></tr>
-<tr><td><img class="featureico" src="img/search.png"/></td><td>Fast find music by Artist, Album, Title, genre/keyword and personal notes simultaneously.</td></tr>
+<tr><td><img class="featureico" src="img/search.png"/></td><td>Fast find music by Artist, Album, Title, genre/keyword and personal notes.</td></tr>
 </table>
 </div>
 
@@ -168,7 +168,8 @@ with others, how challenging you want, and more.
     <div><a href="downloads/digger-linux" onclick="app.login.dldet(event);return false">Linux</a></div>
     <div><a href="downloads/Digger.dmg" onclick="app.login.dldet(event);return false">Mac</a></div>
     <div><a href="downloads/digger-win.zip" onclick="app.login.dldet(event);return false">Windows</a><br/>
-         <span>(win8.1+)</span></div>
+         <!-- <span>(win8.1+)</span>-->
+    </div>
   </div>
   <div class="downloadsline">
     <div><a href="https://apps.apple.com/app/id6446126460" onclick="app.login.dldet(event);return false">iOS</a></div>
@@ -181,36 +182,43 @@ with others, how challenging you want, and more.
 </div>
 
 <div id="gettingstartedtitlediv" class="textcontentctrdiv">
-Here's some screenshots using a subset of Eric's library. Your music tastes may vary.
+Here's some sample screenshots using a subset of Eric's library. Your music tastes may vary.
 </div>
 
 <div class="annoscrdiv">
-<div>Select one of your albums to play.</div>
-<div class="scrnshotdiv"><img src="docs/screenshots/01SuggAlb.png"/></div>
+<div>Just me, in the zone, probably on headphones.</div>
+<div class="scrnshotdiv"><img src="docs/screenshots/01flowhigh.png"/></div>
 </div>
 
 <div class="annoscrdiv">
-<div>Adjust knobs, keywords, stars and comment to reflect what you feel as you're listening. </div>
-<div class="scrnshotdiv"><img src="docs/screenshots/02AlbPlayRating.png"/></div>
+<div>Friends over. Enjoying music and company. </div>
+<div class="scrnshotdiv"><img src="docs/screenshots/02socchill.png"/></div>
 </div>
 
 <div class="annoscrdiv">
-<div>Filter continuous selection for the music you want to hear.</div>
-<div class="scrnshotdiv"><img src="docs/screenshots/03DeckFilters.png"/></div>
+<div>Switch to album playback anytime.</div>
+<div class="scrnshotdiv"><img src="docs/screenshots/03album.png"/></div>
 </div>
 
-<!--
 <div class="annoscrdiv">
-<div>Fast find what you want by artist, album, title, comment.</div>
-<div class="scrnshotdiv"><img src="docs/screenshots/04Search.png"/></div>
+<div>Fast find artists, albums, songs including genre, keywords and your own comments.</div>
+<div class="scrnshotdiv"><img src="docs/screenshots/04search.png"/></div>
 </div>
--->
+
+<div class="annoscrdiv">
+<div>Dark mode, chill flow, not too easy. </div>
+<div class="scrnshotdiv"><img src="docs/screenshots/05darkedge.png"/></div>
+</div>
 
 <div class="textsectionspacerdiv"></div>
 
 <div id="joinindispdiv" class="textcontentdiv">
 
-Listeners use DiggerHub to backup and sync their data, share top songs for the week, bookmark new music to consider, collaborate through their collections and more. If and when they want.
+Digger is <a href="https://github.com/theriex/digger">FOSS</a>. Build it
+yourself and use anything you want. Optionally sign in to DiggerHub from
+Digger to backup and sync your song markup, share top songs for the week,
+and more. Bookmark new music for consideration from your DiggerHub profile
+page.
 
 </div>
 
