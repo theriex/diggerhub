@@ -5,6 +5,7 @@
 #pylint: disable=consider-using-from-import
 #pylint: disable=wrong-import-order
 #pylint: disable=too-many-return-statements
+#pylint: disable=too-many-locals
 
 import logging
 import py.mconf as mconf
@@ -15,7 +16,7 @@ from PIL import Image, ImageDraw, ImageFont
 import json
 import datetime
 
-CACHE_BUST_PARAM = "v=261125"  # Updated via ../../build/cachev.js
+CACHE_BUST_PARAM = "v=261127"  # Updated via ../../build/cachev.js
 
 INDEXHTML = """
 <!doctype html>
@@ -399,15 +400,21 @@ def wt20_image_title(sasum, songs):
                  str(sasum["ttlsongs"]))
     else:
         mtxt += "Recommended"
-    mtxt += " songs:\n\n"
+    mtxt += " songs:\n"
     return mtxt
 
 def wt20_image_footer(sasum, songs, maxsglines):
     foot = "\n"
     if len(songs) > maxsglines:
         foot = "...\n"
-    foot += "\nLinks not tracked. Listener: " + sasum["digname"] + "\n"
+    foot += "\nTracks not linked. Links not tracked. " + sasum["digname"] + "\n"
     return foot
+
+def ellip60(text):
+    text = text or ""
+    if len(text) > 60:
+        text = text[0:57] + "..."
+    return text
 
 def weekly_top20_image(sasum):
     songs = util.load_json_or_default(sasum["songs"], [])
@@ -419,14 +426,18 @@ def weekly_top20_image(sasum):
             rsgs = []
             for idx, rec in enumerate(qr8["rovrs"]):
                 if rec["recommended"]:
-                    rsgs.append(songs[idx])
+                    rsgs.append({"ar":songs[idx]["ar"],
+                                 "ti":songs[idx]["ti"],
+                                 "nt":rec["text"]})
             songs = rsgs
-    maxsglines = 12
+    maxsglines = 4  # 12 lines, \n+arti+comment per song
     mtxt = wt20_image_title(sasum, songs)
     foot = wt20_image_footer(sasum, songs, maxsglines)
     songs = songs[0:maxsglines]  # limited vertical space
     for idx, song in enumerate(songs):
-        mtxt += str(idx + 1) + ". " + song["ar"] + " - " + song["ti"] + "\n"
+        narti = ellip60(str(idx + 1) + ". " + song["ar"] + " - " + song["ti"])
+        cmtln = ellip60("     " + song["nt"])
+        mtxt += "\n" + narti + "\n" + cmtln + "\n"
     if not songs:
         mtxt += "New music discovery and consideration."
     mtxt += foot

@@ -1327,10 +1327,10 @@ app.login = (function () {
                   ["span", {cla:"isdekwspan"}, song.kws]]]); },
         songcmtspan: function (song) {
             const doc = new DOMParser().parseFromString(song.nt, "text/html");
-            const nt = doc.body.textContent || "";
+            const nt = doc.body.textContent || song.nt || "";
             return jt.tac2html(
                 ["span", {cla:"isdntspan"},  //safe comment text
-                 app.player.dispatch("cmt", "cleanCommentText", nt)]); },
+                 app.player.dispatch("cmt", "hasComment", {"nt":nt})]); },
         songDispHTML: songLinkAndDescripHTML,
         startCuration: function () {
             if(!rundata.curate) {
