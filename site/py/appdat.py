@@ -1268,10 +1268,10 @@ def updqr8():
         curate = dbacc.reqarg("curate", "json", required=True)
         where = ("WHERE aid = " + str(digacc["dsId"]) +
                  " AND end = \"" + endts + "\"")
-        sasums = dbacc.query_entity("SASum", where)
-        if not sasums:
+        sas = dbacc.query_entity("SASum", where)
+        if not sas:
             raise ValueError("No SASum " + str(digacc["dsId"]) + " " + endts)
-        sasum = sasums[0]
+        sasum = sas[0]
         sasum["curate"] = curate
         sasum = dbacc.write_entity(sasum, sasum["modified"])
     except ValueError as e:
@@ -1313,6 +1313,17 @@ def saveresp():
     except ValueError as e:
         return util.serve_value_error(e)
     return util.respJSON(saresp)
+
+
+def sasums():
+    try:
+        digacc, _ = util.authenticate()
+        where = ("WHERE aid = " + str(digacc["dsId"]) +
+                 " ORDER BY end DESC LIMIT 21")
+        sas = dbacc.query_entity("SASum", where)
+    except ValueError as e:
+        return util.serve_value_error(e)
+    return util.respJSON(sas)
 
 
 # Read the given items in the given dataformat (albums or tracks), and

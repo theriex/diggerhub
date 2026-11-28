@@ -130,6 +130,10 @@ def fetchresp():  # params: auth, sasid
 def saveresp():  # params: auth, SAResp
     return appdat.saveresp()
 
+@app.route('/api/sasums')
+def sasums():  # params: auth
+    return appdat.sasums()
+
 
 ####### Spotify song data and collaboration actions (inactive):
 

@@ -1136,6 +1136,57 @@ app.login = (function () {
     }());
 
 
+    //The previous curated reference manager provides information on prior
+    //curated weekly summary mentions by artist and title.
+    mgrs.pcr = (function () {
+        const rd = {currsas:null, prevsas:null, ars:{}, artis:{}};
+        function artikey (song) { return song.ar + song.ti; }
+        function findWeeksBackMention (mf) {
+            const wkidx = rd.prevsas.findIndex((sas) =>
+                sas.recsongs.find(mf));
+            return (wkidx + 1) * -1; }  //not found:0, -1 last week...
+        function updateArsArtisRefs () {
+            rd.prevsas.forEach(function (sasum) {
+                sasum.recsongs = [];
+                if(sasum.curate && sasum.curate.rovrs) {
+                    sasum.curate.rovrs.forEach(function (o, i) {
+                        if(o.recommended) {
+                            sasum.recsongs.push({
+                                ar:sasum.songs[i].ar,
+                                ti:sasum.songs[i].ti}); } }); } });
+            rd.currsas.songs.forEach(function (song) {
+                rd.ars[song.ar] = findWeeksBackMention(
+                    (s) => s.ar === song.ar);
+                rd.artis[artikey(song)] = findWeeksBackMention(
+                    (s) => s.ar === song.ar && s.ti === song.ti); }); }
+        function fetchSummariesAndUpdateReferences () {
+            const data = {an:authobj.email, at:authobj.token};
+            const url = app.util.cb(app.util.dr("/api/sasums"), data);
+            jt.call("GET", url, null,
+                    function (sasums) {
+                        sasums.forEach(function (sa) {
+                            mgrs.rpt.deserializeSASum(sa); });
+                        rd.currsas = sasums[0];
+                        rd.prevsas = sasums.slice(1);
+                        updateArsArtisRefs();
+                        mgrs.rpt.startCuration(); }, //redisplay
+                    function (code, errtxt) {
+                        jt.log("pcr.fetchSummariesAndUpdateReferences failed " +
+                               code + ": " + errtxt); }); }
+    return {
+        crefsum: function (song) {
+            if(!rd.prevsas) {
+                rd.prevsas = ["fetching"];
+                fetchSummariesAndUpdateReferences(); }
+            if(!rd.ars[song.ar]) {
+                return ""; }
+            const retval = ("[arc:" + rd.ars[song.ar] + 
+                            ", tic:" + rd.artis[artikey(song)] + "]");
+            return retval; }
+    };  //end mgrs.pcr returned functions
+    }());
+
+
     //The report manager handles interactive enhancement of the permalink
     //wt20 display. Each permalink wt20 instance is a static web artifact
     //rendered server side for sharing and reference purposes, whether
@@ -1221,7 +1272,9 @@ app.login = (function () {
                        [["div", {id:"rsongidentdiv" + i, cla:"rsongidentdiv"},
                          [["span", {cla:"recarspan"}, sdat.songs[i].ar],
                           " - ",
-                          ["span", {cla:"rectispan"}, sdat.songs[i].ti]]],
+                          ["span", {cla:"rectispan"}, sdat.songs[i].ti],
+                          ["span", {cla:"wkcmspan"},
+                           mgrs.pcr.crefsum(sdat.songs[i])]]],
                         ["div", {id:"rcmtinstdiv" + i, cla:"rcmtinstdiv"}],
                         ["div", {id:"rcmtdiv" + i, cla:"rcmtdiv",
                                  contentEditable:"plaintext-only",
@@ -1260,13 +1313,6 @@ app.login = (function () {
             else {  //visitor
                 if(isCurated()) {  //if not curated then wt20 display stays
                     mgrs.rsp.redraw(sdat); } } }
-        function deserialize (sasum) {
-            const jfs = ["songs", "easiest", "hardest", "chillest", "ampest",
-                         "curate"];
-            jfs.forEach(function (jf) {
-                if(sasum[jf] && typeof sasum[jf] === "string") {
-                    sasum[jf] = JSON.parse(sasum[jf]); } });
-            return sasum; }
         function saveCuration () {  //background write, no UI interference
             clearTimeout(dst.tmo);  //reset time if already waiting
             dst.tmo = setTimeout(function () {
@@ -1277,7 +1323,7 @@ app.login = (function () {
                 jt.call("POST", app.util.dr("/api/updqr8"), dat,
                         function (sasums) {
                             dst.tmo = null;
-                            const sasum = deserialize(sasums[0]);
+                            const sasum = mgrs.rpt.deserializeSASum(sasums[0]);
                             //rundata.curate is already updated from editing
                             rundata.modified = sasum.modified; },
                         function (code, errtxt) {
@@ -1317,6 +1363,13 @@ app.login = (function () {
                             refetchSongs(function () {
                                 updateSongTextIfChanged(idx); }); }); } }
     return {
+        deserializeSASum: function (sasum) {
+            const jfs = ["songs", "easiest", "hardest", "chillest", "ampest",
+                         "curate"];
+            jfs.forEach(function (jf) {
+                if(sasum[jf] && typeof sasum[jf] === "string") {
+                    sasum[jf] = JSON.parse(sasum[jf]); } });
+            return sasum; },
         alelkspan: function (song) {
             return jt.tac2html(
                 ["span", {cla:"alelkspan"},

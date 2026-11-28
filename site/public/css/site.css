@@ -247,6 +247,7 @@ h3 { font-weight:normal; text-align:center; margin-bottom:0px; }
   margin-bottom:4px; }
 .recarspan { }
 .rectispan { font-style:italic; }
+.wkcmspan { font-size:small; padding-left:5px; font-weight:bold; }
 
 .respdetdiv { margin-left:-60px; max-width:360px; }
 .respinstrdiv { }
